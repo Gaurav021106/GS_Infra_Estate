@@ -2,25 +2,23 @@ const Property = require('../models/property');
 const nodemailer = require('nodemailer');
 const { makeSlug, splitByCategory } = require('../utils/propertyHelpers');
 
-// Nodemailer transporter for enquiries with enhanced configuration
+// Nodemailer transporter using port 465 (SSL) - works better on cloud platforms
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, // use STARTTLS
-  requireTLS: true, // enforce TLS
-  connectionTimeout: 10000,
+  port: 465,
+  secure: true, // use SSL
+  connectionTimeout: 15000, // 15 seconds
   socketTimeout: 30000,
   auth: {
     user: 'gs.infra.estates@gmail.com',
     pass: process.env.GMAIL_APP_PASSWORD,
   },
   tls: {
-    // Do not fail on invalid certs
     rejectUnauthorized: false,
     minVersion: 'TLSv1.2'
   },
-  debug: process.env.NODE_ENV !== 'production', // Enable debug in development
-  logger: process.env.NODE_ENV !== 'production' // Enable logging in development
+  debug: process.env.NODE_ENV !== 'production',
+  logger: process.env.NODE_ENV !== 'production'
 });
 
 // Verify transporter configuration on startup
@@ -28,8 +26,9 @@ transporter.verify(function (error, success) {
   if (error) {
     console.error('❌ Gmail SMTP Verification Failed:', error.message);
     console.error('Check GMAIL_APP_PASSWORD environment variable');
+    console.error('Full error:', error.code);
   } else {
-    console.log('✅ Gmail SMTP Server is ready to send emails');
+    console.log('✅ Gmail SMTP Server is ready to send emails (Port 465/SSL)');
   }
 });
 
@@ -225,6 +224,7 @@ Source: Website (${req.get('referrer') || 'Direct'})
     });
   } catch (err) {
     console.error('❌ Enquiry email failed:', err.message);
+    console.error('Error code:', err.code);
     console.error('Full error:', err);
     
     // Provide more specific error messages
@@ -232,11 +232,13 @@ Source: Website (${req.get('referrer') || 'Direct'})
     
     if (err.code === 'ETIMEDOUT') {
       errorMessage = 'Connection timeout. Please try again in a moment.';
+      console.error('⚠️ SMTP Connection timeout - Port 465 blocked or network issue');
     } else if (err.code === 'EAUTH') {
       errorMessage = 'Email configuration error. Please contact support.';
       console.error('⚠️ SMTP Authentication failed. Check GMAIL_APP_PASSWORD');
-    } else if (err.code === 'ECONNECTION') {
+    } else if (err.code === 'ECONNECTION' || err.code === 'ECONNREFUSED') {
       errorMessage = 'Unable to connect to email server. Please try again.';
+      console.error('⚠️ SMTP Connection refused - Check port and host settings');
     }
     
     res
