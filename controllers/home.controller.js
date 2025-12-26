@@ -2,17 +2,35 @@ const Property = require('../models/property');
 const nodemailer = require('nodemailer');
 const { makeSlug, splitByCategory } = require('../utils/propertyHelpers');
 
-// Nodemailer transporter for enquiries
+// Nodemailer transporter for enquiries with enhanced configuration
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
   port: 587,
-  secure: false,
+  secure: false, // use STARTTLS
+  requireTLS: true, // enforce TLS
   connectionTimeout: 10000,
   socketTimeout: 30000,
   auth: {
     user: 'gs.infra.estates@gmail.com',
     pass: process.env.GMAIL_APP_PASSWORD,
   },
+  tls: {
+    // Do not fail on invalid certs
+    rejectUnauthorized: false,
+    minVersion: 'TLSv1.2'
+  },
+  debug: process.env.NODE_ENV !== 'production', // Enable debug in development
+  logger: process.env.NODE_ENV !== 'production' // Enable logging in development
+});
+
+// Verify transporter configuration on startup
+transporter.verify(function (error, success) {
+  if (error) {
+    console.error('❌ Gmail SMTP Verification Failed:', error.message);
+    console.error('Check GMAIL_APP_PASSWORD environment variable');
+  } else {
+    console.log('✅ Gmail SMTP Server is ready to send emails');
+  }
 });
 
 // ======================= HOME PAGE =======================
@@ -199,14 +217,30 @@ Source: Website (${req.get('referrer') || 'Direct'})
       text: body,
     });
 
+    console.log('✅ Enquiry email sent successfully:', { name, phone });
+
     res.json({
       ok: true,
       message: "Thank you! We'll contact you within 2 hours.",
     });
   } catch (err) {
-    console.error('Enquiry failed:', err);
+    console.error('❌ Enquiry email failed:', err.message);
+    console.error('Full error:', err);
+    
+    // Provide more specific error messages
+    let errorMessage = 'Server error. Please try again.';
+    
+    if (err.code === 'ETIMEDOUT') {
+      errorMessage = 'Connection timeout. Please try again in a moment.';
+    } else if (err.code === 'EAUTH') {
+      errorMessage = 'Email configuration error. Please contact support.';
+      console.error('⚠️ SMTP Authentication failed. Check GMAIL_APP_PASSWORD');
+    } else if (err.code === 'ECONNECTION') {
+      errorMessage = 'Unable to connect to email server. Please try again.';
+    }
+    
     res
       .status(500)
-      .json({ ok: false, error: 'Server error. Please try again.' });
+      .json({ ok: false, error: errorMessage });
   }
 };
