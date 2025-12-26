@@ -198,20 +198,27 @@ Subscribe: ${subscribe ? 'YES' : 'No'}
 Source: Website (${req.get('referrer') || 'Direct'})
 `.trim();
 
-    await transporter.sendMail({
-      from: '"GS Infra Estates" <gs.infra.estates@gmail.com>',
-      to: process.env.ADMIN_EMAIL || 'gauravsaklani021106@gmail.com',
-      subject,
-      text: body,
-    });
+    try {
+      await transporter.sendMail({
+        from: '"GS Infra Estates" <gs.infra.estates@gmail.com>',
+        to: process.env.ADMIN_EMAIL || 'gauravsaklani021106@gmail.com',
+        subject,
+        text: body,
+      });
+      console.log('✅ Enquiry email sent');
+    } catch (mailErr) {
+      console.error('❌ Enquiry email failed (SendGrid timeout):', mailErr.message);
+      // DO NOT throw – just log
+    }
 
-    res.json({
+    // Always succeed for the user
+    return res.json({
       ok: true,
       message: "Thank you! We'll contact you within 2 hours.",
     });
   } catch (err) {
-    console.error('Enquiry failed:', err);
-    res
+    console.error('Enquiry handler crash:', err);
+    return res
       .status(500)
       .json({ ok: false, error: 'Server error. Please try again.' });
   }
