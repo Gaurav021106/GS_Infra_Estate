@@ -4,20 +4,19 @@ const { generateOTP, splitByCategory } = require('../utils/propertyHelpers');
 
 // Create transporter with proper Gmail settings
 const transporter = nodemailer.createTransport({
-  host: 'smtp.sendgrid.net',
-  port: 587,
-  secure: false,
+  service: 'gmail', // Let Nodemailer handle Gmail config automatically
   auth: {
-    user: 'apikey',           // literal
-    pass: process.env.SENDGRID_API_KEY,
+    user: 'gs.infra.estates@gmail.com',
+    pass: process.env.GMAIL_APP_PASSWORD, // Must be 16-char App Password
   },
 });
 
+// Test the connection on startup
 transporter.verify((error, success) => {
   if (error) {
-    console.error('❌ SendGrid SMTP Error:', error.message);
+    console.error('❌ Gmail SMTP Error:', error.message);
   } else {
-    console.log('✅ SendGrid SMTP Ready - Emails will work');
+    console.log('✅ Gmail SMTP Ready - OTP emails will work');
   }
 });
 

@@ -4,21 +4,13 @@ const { makeSlug, splitByCategory } = require('../utils/propertyHelpers');
 
 // Nodemailer transporter for enquiries
 const transporter = nodemailer.createTransport({
-  host: 'smtp.sendgrid.net',
+  host: 'smtp.gmail.com',
   port: 587,
   secure: false,
   auth: {
-    user: 'apikey',           // literal
-    pass: process.env.SENDGRID_API_KEY,
+    user: 'gs.infra.estates@gmail.com',
+    pass: process.env.GMAIL_APP_PASSWORD,
   },
-});
-
-transporter.verify((error, success) => {
-  if (error) {
-    console.error('❌ SendGrid SMTP Error:', error.message);
-  } else {
-    console.log('✅ SendGrid SMTP Ready - Emails will work');
-  }
 });
 
 // ======================= HOME PAGE =======================
@@ -198,27 +190,20 @@ Subscribe: ${subscribe ? 'YES' : 'No'}
 Source: Website (${req.get('referrer') || 'Direct'})
 `.trim();
 
-    try {
-      await transporter.sendMail({
-        from: '"GS Infra Estates" <gs.infra.estates@gmail.com>',
-        to: process.env.ADMIN_EMAIL || 'gauravsaklani021106@gmail.com',
-        subject,
-        text: body,
-      });
-      console.log('✅ Enquiry email sent');
-    } catch (mailErr) {
-      console.error('❌ Enquiry email failed (SendGrid timeout):', mailErr.message);
-      // DO NOT throw – just log
-    }
+    await transporter.sendMail({
+      from: '"GS Infra Estates" <gs.infra.estates@gmail.com>',
+      to: process.env.ADMIN_EMAIL || 'gauravsaklani021106@gmail.com',
+      subject,
+      text: body,
+    });
 
-    // Always succeed for the user
-    return res.json({
+    res.json({
       ok: true,
       message: "Thank you! We'll contact you within 2 hours.",
     });
   } catch (err) {
-    console.error('Enquiry handler crash:', err);
-    return res
+    console.error('Enquiry failed:', err);
+    res
       .status(500)
       .json({ ok: false, error: 'Server error. Please try again.' });
   }
