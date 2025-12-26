@@ -4,7 +4,12 @@ const { generateOTP, splitByCategory } = require('../utils/propertyHelpers');
 
 // Create transporter with proper Gmail settings
 const transporter = nodemailer.createTransport({
-  service: 'gmail', // Let Nodemailer handle Gmail config automatically
+  host: "smtp.gamil.com",
+  port : 587,
+  secure: false,
+  requireTLS: true,
+  logger: true,
+  debug: true,
   auth: {
     user: 'gs.infra.estates@gmail.com',
     pass: process.env.GMAIL_APP_PASSWORD, // Must be 16-char App Password
