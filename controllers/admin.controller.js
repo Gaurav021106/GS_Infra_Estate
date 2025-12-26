@@ -4,12 +4,15 @@ const { generateOTP, splitByCategory } = require('../utils/propertyHelpers');
 
 // Create transporter with proper Gmail settings
 const transporter = nodemailer.createTransport({
-  service: 'gmail', // Let Nodemailer handle Gmail config automatically
+  host: 'smtp.sendgrid.net',
+  port: 587,
+  secure: false,
   auth: {
-    user: 'gs.infra.estates@gmail.com',
-    pass: process.env.GMAIL_APP_PASSWORD, // Must be 16-char App Password
+    user: 'apikey', // this literal string
+    pass: process.env.SENDGRID_API_KEY,
   },
 });
+
 
 // Test the connection on startup
 transporter.verify((error, success) => {
