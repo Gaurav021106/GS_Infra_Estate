@@ -8,11 +8,18 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false,
   auth: {
-    user: 'apikey', // this literal string
+    user: 'apikey',           // literal
     pass: process.env.SENDGRID_API_KEY,
   },
 });
 
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('❌ SendGrid SMTP Error:', error.message);
+  } else {
+    console.log('✅ SendGrid SMTP Ready - Emails will work');
+  }
+});
 
 // ======================= HOME PAGE =======================
 exports.homePage = async (req, res) => {

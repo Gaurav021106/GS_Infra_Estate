@@ -8,18 +8,16 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false,
   auth: {
-    user: 'apikey', // this literal string
+    user: 'apikey',           // literal
     pass: process.env.SENDGRID_API_KEY,
   },
 });
 
-
-// Test the connection on startup
 transporter.verify((error, success) => {
   if (error) {
-    console.error('❌ Gmail SMTP Error:', error.message);
+    console.error('❌ SendGrid SMTP Error:', error.message);
   } else {
-    console.log('✅ Gmail SMTP Ready - OTP emails will work');
+    console.log('✅ SendGrid SMTP Ready - Emails will work');
   }
 });
 
