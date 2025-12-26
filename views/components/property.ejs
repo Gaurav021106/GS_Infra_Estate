@@ -1,0 +1,252 @@
+<%- include('../components/header') %>
+
+<% if (flats.length > 0 || plots.length > 0 || agri.length > 0) { %>
+  <section
+    class="flex flex-col items-center justify-center mt-4 p-6 bg-gray-50 rounded-xl shadow-sm w-full
+           animate-fadeInUp animation-delay-300"
+  >
+    <h1 class="mb-6 text-3xl font-bold animate-slideInDown">Available Properties</h1>
+
+    <!-- Flats & Houses -->
+    <% if (flats.length > 0) { %>
+      <div class="w-full mb-6">
+        <h2 class="text-xl font-semibold mb-3">Flats &amp; Houses in Uttarakhand</h2>
+        <div class="grid md:grid-cols-3 gap-4">
+          <% flats.forEach(p => { %>
+            <div
+              class="property-card group bg-white rounded-xl shadow-md p-3 flex flex-col cursor-pointer
+                     border border-gray-100
+                     transform transition-all duration-200 ease-out
+                     hover:-translate-y-1 hover:shadow-xl hover:border-indigo-200
+                     animate-fadeInUp"
+              data-id="<%= p._id %>"
+            >
+              <% if (p.imageUrls && p.imageUrls.length) { %>
+                <div class="relative overflow-hidden rounded-lg mb-3">
+                  <img
+                    src="<%= p.imageUrls[0] %>"
+                    alt="front image"
+                    loading="lazy"
+                    class="w-full h-40 object-cover rounded-lg
+                           transition-transform duration-300 ease-out
+                           group-hover:scale-105"
+                  />
+                  <div
+                    class="pointer-events-none absolute inset-0 bg-black/0
+                           group-hover:bg-black/10 transition-colors duration-300"
+                  ></div>
+                </div>
+              <% } else { %>
+                <div
+                  class="w-full h-40 bg-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-500"
+                >
+                  No image
+                </div>
+              <% } %>
+
+              <h3 class="font-semibold text-lg mb-1 line-clamp-1">
+                <%= p.title %>
+              </h3>
+              <p class="text-sm text-gray-600 mb-1 line-clamp-1">
+                <%= p.location %>
+              </p>
+              <p class="text-sm font-semibold text-[#A1824C] mb-1">
+                ₹ <%= p.price.toLocaleString('en-IN') %>
+              </p>
+              <p class="text-xs text-gray-500 mb-2 line-clamp-2">
+                Suitable for: <%= (p.suitableFor || []).join(', ') || ' N/A' %>
+              </p>
+
+              <!-- CTAs -->
+              <div class="mt-2 flex flex-wrap gap-2">
+                <a
+                  href="https://wa.me/918279702969?text=<%= encodeURIComponent('I am interested in ' + p.title + ' at ' + p.location) %>"
+                  target="_blank"
+                  rel="noopener"
+                  class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold
+                         bg-emerald-600 text-white hover:bg-emerald-700
+                         shadow-sm hover:shadow-md transition-transform duration-200
+                         hover:-translate-y-0.5"
+                >
+                  WhatsApp Enquiry
+                </a>
+
+                <a
+                  href="tel:+918279702969"
+                  class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold
+                         bg-blue-600 text-white hover:bg-blue-700
+                         shadow-sm hover:shadow-md transition-transform duration-200
+                         hover:-translate-y-0.5"
+                >
+                  Call Now
+                </a>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    <% } %>
+
+    <!-- Plots -->
+    <% if (plots.length > 0) { %>
+      <div class="w-full mb-6">
+        <h2 class="text-xl font-semibold mb-3">Plots in Uttarakhand</h2>
+        <div class="grid md:grid-cols-3 gap-4">
+          <% plots.forEach(p => { %>
+            <div
+              class="property-card group bg-white rounded-xl shadow-md p-3 flex flex-col cursor-pointer
+                     border border-gray-100
+                     transform transition-all duration-200 ease-out
+                     hover:-translate-y-1 hover:shadow-xl hover:border-indigo-200
+                     animate-fadeInUp"
+              data-id="<%= p._id %>"
+            >
+              <% if (p.imageUrls && p.imageUrls.length) { %>
+                <div class="relative overflow-hidden rounded-lg mb-3">
+                  <img
+                    src="<%= p.imageUrls[0] %>"
+                    alt="front image"
+                    loading="lazy"
+                    class="w-full h-40 object-cover rounded-lg
+                           transition-transform duration-300 ease-out
+                           group-hover:scale-105"
+                  />
+                  <div
+                    class="pointer-events-none absolute inset-0 bg-black/0
+                           group-hover:bg-black/10 transition-colors duration-300"
+                  ></div>
+                </div>
+              <% } else { %>
+                <div
+                  class="w-full h-40 bg-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-500"
+                >
+                  No image
+                </div>
+              <% } %>
+
+              <h3 class="font-semibold text-lg mb-1 line-clamp-1">
+                <%= p.title %>
+              </h3>
+              <p class="text-sm text-gray-600 mb-1 line-clamp-1">
+                <%= p.location %>
+              </p>
+              <p class="text-sm font-semibold text-[#A1824C] mb-1">
+                ₹ <%= p.price.toLocaleString('en-IN') %>
+              </p>
+              <p class="text-xs text-gray-500 mb-2 line-clamp-2">
+                Suitable for: <%= (p.suitableFor || []).join(', ') || ' N/A' %>
+              </p>
+
+              <!-- CTAs -->
+              <div class="mt-2 flex flex-wrap gap-2">
+                <a
+                  href="https://wa.me/918279702969?text=<%= encodeURIComponent('I am interested in ' + p.title + ' at ' + p.location) %>"
+                  target="_blank"
+                  rel="noopener"
+                  class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold
+                         bg-emerald-600 text-white hover:bg-emerald-700
+                         shadow-sm hover:shadow-md transition-transform duration-200
+                         hover:-translate-y-0.5"
+                >
+                  WhatsApp Enquiry
+                </a>
+
+                <a
+                  href="tel:+918279702969"
+                  class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold
+                         bg-blue-600 text-white hover:bg-blue-700
+                         shadow-sm hover:shadow-md transition-transform duration-200
+                         hover:-translate-y-0.5"
+                >
+                  Call Now
+                </a>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    <% } %>
+
+    <!-- Agricultural Land -->
+    <% if (agri.length > 0) { %>
+      <div class="w-full">
+        <h2 class="text-xl font-semibold mb-3">Agricultural Land in Uttarakhand</h2>
+        <div class="grid md:grid-cols-3 gap-4">
+          <% agri.forEach(p => { %>
+            <div
+              class="property-card group bg-white rounded-xl shadow-md p-3 flex flex-col cursor-pointer
+                     border border-gray-100
+                     transform transition-all duration-200 ease-out
+                     hover:-translate-y-1 hover:shadow-xl hover:border-indigo-200
+                     animate-fadeInUp"
+              data-id="<%= p._id %>"
+            >
+              <% if (p.imageUrls && p.imageUrls.length) { %>
+                <div class="relative overflow-hidden rounded-lg mb-3">
+                  <img
+                    src="<%= p.imageUrls[0] %>"
+                    alt="front image"
+                    loading="lazy"
+                    class="w-full h-40 object-cover rounded-lg
+                           transition-transform duration-300 ease-out
+                           group-hover:scale-105"
+                  />
+                  <div
+                    class="pointer-events-none absolute inset-0 bg-black/0
+                           group-hover:bg-black/10 transition-colors duration-300"
+                  ></div>
+                </div>
+              <% } else { %>
+                <div
+                  class="w-full h-40 bg-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-500"
+                >
+                  No image
+                </div>
+              <% } %>
+
+              <h3 class="font-semibold text-lg mb-1 line-clamp-1">
+                <%= p.title %>
+              </h3>
+              <p class="text-sm text-gray-600 mb-1 line-clamp-1">
+                <%= p.location %>
+              </p>
+              <p class="text-sm font-semibold text-[#A1824C] mb-1">
+                ₹ <%= p.price.toLocaleString('en-IN') %>
+              </p>
+              <p class="text-xs text-gray-500 mb-2 line-clamp-2">
+                Suitable for: <%= (p.suitableFor || []).join(', ') || ' N/A' %>
+              </p>
+
+              <!-- CTAs -->
+              <div class="mt-2 flex flex-wrap gap-2">
+                <a
+                  href="https://wa.me/918279702969?text=<%= encodeURIComponent('I am interested in ' + p.title + ' at ' + p.location) %>"
+                  target="_blank"
+                  rel="noopener"
+                  class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold
+                         bg-emerald-600 text-white hover:bg-emerald-700
+                         shadow-sm hover:shadow-md transition-transform duration-200
+                         hover:-translate-y-0.5"
+                >
+                  WhatsApp Enquiry
+                </a>
+
+                <a
+                  href="tel:+918279702969"
+                  class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold
+                         bg-blue-600 text-white hover:bg-blue-700
+                         shadow-sm hover:shadow-md transition-transform duration-200
+                         hover:-translate-y-0.5"
+                >
+                  Call Now
+                </a>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    <% } %>
+  </section>
+<% } %>
+
+<%- include('../components/footer') %>

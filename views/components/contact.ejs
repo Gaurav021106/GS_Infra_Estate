@@ -1,0 +1,250 @@
+<%- include('../components/header') %>
+
+<section class="mt-8 p-6 bg-black rounded-xl shadow-sm w-full animate-fadeInUp">
+  <!-- Heading + intro -->
+  <div class="max-w-5xl mx-auto px-2 md:px-4 text-center">
+    <h1 class="text-white text-3xl md:text-4xl font-semibold animate-slideInDown">
+      Contact Us
+    </h1>
+    <p class="text-gray-200 mt-4 text-sm md:text-base leading-relaxed animate-fadeIn animation-delay-200">
+      Is there a problem finding your dream home? Need a guide for buying your first home, or confused about loans,
+      paperwork, or builder promises? Have questions about residential disputes, registry, mutation, or property
+      verification? Just contact us for a free, no‑pressure consultation and get clear answers before you decide.
+    </p>
+  </div>
+
+  <!-- Contact cards -->
+  <div
+    id="contact-options"
+    class="max-w-5xl mx-auto mt-8 px-2 md:px-4 grid gap-6
+           sm:grid-cols-1 md:grid-cols-2"
+  >
+    <!-- Call card -->
+    <div
+      class="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-100
+             border border-blue-100/70 rounded-3xl p-4
+             shadow-[0_18px_45px_rgba(37,99,235,0.25)]
+             hover:shadow-[0_22px_55px_rgba(37,99,235,0.35)]
+             transition-all duration-300 hover:-translate-y-1 hover:bg-white
+             animate-fadeInUp animation-delay-200"
+    >
+      <!-- glow -->
+      <div
+        class="pointer-events-none absolute -top-10 -right-10 w-32 h-32 bg-blue-400/20 blur-3xl rounded-full">
+      </div>
+
+      <div
+        class="relative flex items-center w-full bg-white/70 rounded-2xl px-3 py-2
+               border border-blue-100 shadow-inner gap-3"
+      >
+        <div
+          class="relative flex items-center justify-center w-12 h-12 md:w-14 md:h-14
+                 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-500 shadow-xl
+                 shadow-blue-500/40 ring-4 ring-white/80"
+        >
+          <span
+            class="absolute inset-0 rounded-2xl bg-blue-400/40
+                   animate-[ping_2.8s_ease-out_infinite]">
+          </span>
+          <img
+            src="/images/call_icon.jpeg"
+            alt="Phone Icon"
+            loading="lazy"
+            class="relative w-8 h-8 md:w-10 md:h-10 object-cover rounded-xl">
+        </div>
+
+        <div class="flex flex-col text-left">
+          <span
+            class="text-[0.65rem] md:text-xs uppercase tracking-[0.16em] text-blue-600 font-semibold">
+            Need Help?
+          </span>
+          <p class="text-base md:text-lg font-semibold text-gray-900">
+            Call us
+          </p>
+          <p class="text-[0.7rem] md:text-xs text-gray-500 mt-0.5">
+            Talk directly with GS Infra &amp; Estate expert
+          </p>
+        </div>
+      </div>
+
+      <p class="relative mt-3 text-xs md:text-sm font-semibold text-gray-500">
+        +91 8279702969
+      </p>
+
+      <a
+        href="tel:+918279702969"
+        class="relative mt-4 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500
+               hover:from-blue-700 hover:via-indigo-700 hover:to-blue-600
+               text-white font-semibold px-4 py-2.5 rounded-2xl
+               shadow-[0_16px_35px_rgba(37,99,235,0.6)]
+               hover:shadow-[0_20px_45px_rgba(37,99,235,0.8)]
+               transition-all duration-200
+               flex items-center justify-center gap-2 text-sm md:text-base
+               hover:-translate-y-0.5 hover:scale-[1.01]">
+        📞 Call Now
+      </a>
+    </div>
+
+    <!-- WhatsApp card -->
+    <div
+      class="relative overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-emerald-100
+             border border-emerald-100/70 rounded-3xl p-4
+             shadow-[0_18px_45px_rgba(16,185,129,0.25)]
+             hover:shadow-[0_22px_55px_rgba(16,185,129,0.35)]
+             transition-all duration-300 hover:-translate-y-1 hover:bg-white
+             animate-fadeInUp animation-delay-300"
+    >
+      <!-- glow -->
+      <div
+        class="pointer-events-none absolute -top-10 -left-10 w-32 h-32 bg-emerald-400/20 blur-3xl rounded-full">
+      </div>
+
+      <div
+        class="relative flex items-center w-full bg-white/70 rounded-2xl px-3 py-2
+               border border-emerald-100 shadow-inner gap-3"
+      >
+        <div
+          class="relative flex items-center justify-center w-12 h-12 md:w-14 md:h-14
+                 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-500 shadow-xl
+                 shadow-emerald-500/40 ring-4 ring-white/80"
+        >
+          <img
+            src="/images/whatsapp_icon.jpeg"
+            alt="WhatsApp Icon"
+            loading="lazy"
+            class="relative w-8 h-8 md:w-9 md:h-9 object-cover rounded-xl">
+        </div>
+
+        <div class="flex flex-col text-left">
+          <span
+            class="text-[0.65rem] md:text-xs uppercase tracking-[0.16em] text-emerald-600 font-semibold">
+            Fast reply
+          </span>
+          <p class="text-base md:text-lg font-semibold text-gray-900">
+            WhatsApp us
+          </p>
+          <p class="text-[0.7rem] md:text-xs text-gray-500 mt-0.5">
+            Get quick answers, photos &amp; locations on chat
+          </p>
+        </div>
+      </div>
+
+      <p class="relative mt-3 text-xs md:text-sm font-semibold text-gray-500">
+        +91 8279702969
+      </p>
+
+      <a
+        href="https://wa.me/918279702969?text=Hi%20GS%20Infra%20Estate%2C%20I%20have%20a%20property%20enquiry."
+        target="_blank"
+        rel="noopener"
+        class="relative mt-4 w-full bg-gradient-to-r from-emerald-600 via-green-500 to-emerald-500
+               hover:from-emerald-700 hover:via-green-600 hover:to-emerald-600
+               text-white font-semibold px-4 py-2.5 rounded-2xl
+               shadow-[0_16px_35px_rgba(16,185,129,0.6)]
+               hover:shadow-[0_20px_45px_rgba(16,185,129,0.8)]
+               transition-all duration-200
+               flex items-center justify-center gap-2 text-sm md:text-base
+               hover:-translate-y-0.5 hover:scale-[1.01]">
+        💬 WhatsApp Message
+      </a>
+    </div>
+  </div>
+
+  <!-- Info text under cards -->
+  <div class="max-w-5xl mx-auto mt-4 px-2 md:px-4 text-center animate-fadeInUp animation-delay-400">
+    <p class="text-xs md:text-sm text-gray-200">
+      Buying your first home, confused about documents, or planning to sell your property in
+      Rishikesh–Haridwar–Dehradun?
+      Fill the short form below and a GS Infra &amp; Estate expert will personally call you with clear, honest
+      guidance.
+    </p>
+  </div>
+
+  <!-- Enquiry form -->
+  <div class="max-w-3xl mx-auto mt-8 px-2 md:px-4 animate-fadeInUp animation-delay-500">
+    <h2 class="text-xl md:text-2xl font-semibold text-white text-center">
+      Quick Enquiry
+    </h2>
+    <p class="text-gray-300 text-center text-sm md:text-base mt-2">
+      Tell us your requirement or property details in 60 seconds and get a quick call back with best options, prices
+      and practical advice.
+    </p>
+
+    <form
+      id="enquiryForm"
+      class="mt-6 grid gap-4 md:grid-cols-2 bg-white/5 backdrop-blur-sm
+             border border-white/10 rounded-2xl p-4 md:p-6"
+    >
+      <div class="flex flex-col gap-1">
+        <label class="text-xs text-gray-200 font-semibold">Name</label>
+        <input
+          type="text"
+          name="name"
+          id="enq-name"
+          required
+          class="px-3 py-2 rounded-lg bg-black/40 border border-gray-600
+                 text-gray-100 text-sm focus:outline-none focus:ring-2
+                 focus:ring-[#A1824C]" />
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-xs text-gray-200 font-semibold">Phone</label>
+        <input
+          type="tel"
+          name="phone"
+          id="enq-phone"
+          required
+          class="px-3 py-2 rounded-lg bg-black/40 border border-gray-600
+                 text-gray-100 text-sm focus:outline-none focus:ring-2
+                 focus:ring-[#A1824C]" />
+      </div>
+
+      <div class="flex flex-col gap-1 md:col-span-2">
+        <label class="text-xs text-gray-200 font-semibold">Preferred Location / Property Location</label>
+        <input
+          type="text"
+          name="location"
+          id="enq-location"
+          placeholder="Rishikesh, Haridwar, Dehradun, village name, etc."
+          class="px-3 py-2 rounded-lg bg-black/40 border border-gray-600
+                 text-gray-100 text-sm focus:outline-none focus:ring-2
+                 focus:ring-[#A1824C]" />
+      </div>
+
+      <div class="flex flex-col gap-1 md:col-span-2">
+        <label class="text-xs text-gray-200 font-semibold">Requirement / Property Details &amp; Budget</label>
+        <textarea
+          name="requirement"
+          id="enq-requirement"
+          rows="3"
+          class="px-3 py-2 rounded-lg bg-black/40 border border-gray-600
+                 text-gray-100 text-sm focus:outline-none focus:ring-2
+                 focus:ring-[#A1824C]"
+          placeholder="Example: 2BHK in Rishikesh, budget 40–50L, loan needed OR 200 sqyd plot for sale near Haridwar, expected price, etc."></textarea>
+      </div>
+
+      <div class="md:col-span-2 flex items-center justify-between flex-wrap gap-3">
+        <label class="flex items-center gap-2 text-xs text-gray-300">
+          <input
+            type="checkbox"
+            name="subscribe"
+            id="enq-subscribe"
+            class="w-4 h-4 rounded border-gray-500 bg-black/40" />
+          Send me new listings and best offers matching my requirement
+        </label>
+
+        <button
+          type="submit"
+          class="px-5 py-2.5 rounded-xl bg-[#A1824C] text-white text-sm md:text-base
+                 font-semibold shadow-md hover:shadow-lg
+                 hover:bg-[#8d6f3f] transition-all duration-200">
+          Get Call Back
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<script src="/javascripts/enquiry.js"></script>
+
+<%- include('../components/footer') %>

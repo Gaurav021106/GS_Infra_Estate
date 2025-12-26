@@ -1,0 +1,403 @@
+<%- include('../components/header') %>
+
+<nav class="m-0 w-full h-[8vh] fixed top-0 left-0 right-0 z-50
+     bg-white/80 backdrop-blur flex items-center justify-between px-4 border-b border-gray-100">
+  <!-- Brand -->
+  <div class="flex items-center">
+    <a href="/admin/dashboard" class="flex items-center nav-link">
+      <img src="/images/logo.jpg" alt="Logo" class="w-10 h-10 md:w-12 md:h-12 mr-3 rounded-xl" />
+      <h1 class="font-semibold text-lg md:text-xl">GS Infra Estate Admin</h1>
+    </a>
+  </div>
+
+  <!-- Right actions -->
+  <div class="flex items-center space-x-2">
+    <a href="../"
+       class="mx-1 px-4 py-1 rounded-full text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors nav-link text-sm md:text-base">
+       Home
+    </a>
+    <a href="/admin/logout"
+       class="mx-1 px-4 py-1 rounded-full text-white bg-red-600 hover:bg-red-700 transition-colors nav-link text-sm md:text-base">
+       Logout
+    </a>
+  </div>
+</nav>
+
+<div class="min-h-screen bg-gray-50 px-4 md:px-6 lg:px-10 py-6 pt-24">
+  <h1 class="text-2xl md:text-3xl font-bold mb-6">
+    <%= editingProperty ? `Edit: ${editingProperty.title}` : 'Admin Dashboard' %>
+  </h1>
+
+  <!-- Add/Edit Property Form -->
+  <section class="bg-white rounded-xl shadow p-5 md:p-6 mb-10 border border-gray-100">
+    <h2 class="text-lg md:text-xl font-semibold mb-4">
+      <%= editingProperty ? 'Edit Property' : 'Add New Property' %>
+    </h2>
+    
+    <form 
+      id="propertyForm"
+      action="<%= editingProperty ? `/admin/properties/${editingProperty._id}/update` : '/admin/properties/new' %>" 
+      method="POST" 
+      enctype="multipart/form-data"
+      class="grid md:grid-cols-2 gap-4 md:gap-5"
+    >
+      <!-- Category/Type -->
+      <div>
+        <label class="block text-sm font-medium mb-1">Category</label>
+        <select name="category" class="border rounded-lg px-3 py-2 w-full text-sm md:text-base" required>
+          <option value="flat_house" <%= editingProperty?.category === 'flat_house' ? 'selected' : '' %>>Flats & Houses</option>
+          <option value="plot" <%= editingProperty?.category === 'plot' ? 'selected' : '' %>>Plot</option>
+          <option value="agri" <%= editingProperty?.category === 'agri' ? 'selected' : '' %>>Agricultural Land</option>
+        </select>
+      </div>
+
+      <!-- Title -->
+      <div>
+        <label class="block text-sm font-medium mb-1">Title</label>
+        <input 
+          name="title" 
+          value="<%= editingProperty?.title || '' %>" 
+          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base" 
+          required
+        >
+      </div>
+
+      <!-- Price -->
+      <div>
+        <label class="block text-sm font-medium mb-1">Price (INR)</label>
+        <input 
+          type="number" 
+          name="price" 
+          value="<%= editingProperty?.price || '' %>" 
+          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base" 
+          required
+        >
+      </div>
+
+      <!-- Location -->
+      <div>
+        <label class="block text-sm font-medium mb-1">Location</label>
+        <input 
+          name="location" 
+          value="<%= editingProperty?.location || '' %>" 
+          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+          placeholder="Rishikesh, Uttarakhand" 
+          required
+        >
+      </div>
+
+      <!-- Suitable For -->
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium mb-1">Suitable For</label>
+        <input 
+          name="suitableFor" 
+          value="<%= editingProperty?.suitableFor?.join(', ') || '' %>" 
+          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+          placeholder="Family, Investment, Farmhouse"
+        >
+      </div>
+
+      <!-- Current Files Preview (Edit mode only) -->
+      <% if (editingProperty) { %>
+        <% if (editingProperty.map3dUrl) { %>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium mb-1">Current 3D Map:</label>
+            <img src="<%= editingProperty.map3dUrl %>" class="w-32 h-32 object-cover rounded-lg border" />
+          </div>
+        <% } %>
+        
+        <% if (editingProperty.virtualTourUrl) { %>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium mb-1">Current Virtual Tour:</label>
+            <video src="<%= editingProperty.virtualTourUrl %>" class="w-32 h-32 object-cover rounded-lg border" controls></video>
+          </div>
+        <% } %>
+
+        <% if (editingProperty.imageUrls?.length) { %>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium mb-1">Current Images:</label>
+            <div class="grid grid-cols-4 md:grid-cols-6 gap-2 mt-2">
+              <% editingProperty.imageUrls.forEach(img => { %>
+                <img src="<%= img %>" class="w-20 h-20 object-cover rounded border" />
+              <% }) %>
+            </div>
+          </div>
+        <% } %>
+
+        <% if (editingProperty.videoUrls?.length) { %>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium mb-1">Current Videos:</label>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
+              <% editingProperty.videoUrls.slice(0,4).forEach(video => { %>
+                <video src="<%= video %>" class="w-20 h-20 object-cover rounded border" controls></video>
+              <% }) %>
+            </div>
+          </div>
+        <% } %>
+      <% } %>
+
+      <!-- New File Uploads -->
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium mb-1">3D Map / 360 Image (one file)</label>
+        <input type="file" name="map3dFile" accept="image/*,.glb,.gltf,.obj,.fbx"
+               class="border rounded-lg px-3 py-2 w-full text-sm md:text-base">
+      </div>
+
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium mb-1">Virtual Tour Video (one file)</label>
+        <input type="file" name="virtualTourFile" accept="video/*"
+               class="border rounded-lg px-3 py-2 w-full text-sm md:text-base">
+      </div>
+
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium mb-1">
+          Property Images (max 10) - <%= editingProperty?.imageUrls?.length || 0 %> existing
+        </label>
+        <input type="file" name="images" multiple accept="image/*"
+               class="border rounded-lg px-3 py-2 w-full text-sm md:text-base">
+      </div>
+
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium mb-1">
+          Property Videos (max 10) - <%= editingProperty?.videoUrls?.length || 0 %> existing
+        </label>
+        <input type="file" name="videos" multiple accept="video/*"
+               class="border rounded-lg px-3 py-2 w-full text-sm md:text-base">
+      </div>
+
+      <!-- Description -->
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium mb-1">Description</label>
+        <textarea 
+          name="description" 
+          rows="3"
+          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+        ><%= editingProperty?.description || '' %></textarea>
+      </div>
+
+      <div class="md:col-span-2 flex justify-end space-x-3">
+        <% if (editingProperty) { %>
+          <a href="/admin/dashboard" 
+             class="px-6 py-2 rounded-lg text-gray-700 bg-gray-200 hover:bg-gray-300 font-semibold transition">
+            Cancel
+          </a>
+        <% } %>
+        <button type="submit"
+                class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 text-sm md:text-base font-semibold shadow-sm transition">
+          <%= editingProperty ? 'Update Property' : 'Add Property' %>
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Property Lists (only show when not editing) -->
+  <% if (!editingProperty) { %>
+    <section class="space-y-8">
+      <!-- Flats & Houses -->
+      <div>
+        <h2 class="text-lg md:text-xl font-semibold mb-2">Flats & Houses</h2>
+        <div class="overflow-x-auto bg-white rounded-xl shadow border border-gray-200">
+          <table class="w-full text-xs md:text-sm">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="border px-2 py-2">Image</th>
+                <th class="border px-2 py-2">Title</th>
+                <th class="border px-2 py-2">Location</th>
+                <th class="border px-2 py-2">Price</th>
+                <th class="border px-2 py-2">Suitable For</th>
+                <th class="border px-2 py-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% flats.forEach(p => { %>
+                <tr class="even:bg-gray-50 hover:bg-gray-50">
+                  <td class="border px-2 py-1 text-center">
+                    <% if (p.imageUrls && p.imageUrls.length) { %>
+                      <img src="<%= p.imageUrls[0] %>" alt="front image"
+                           class="w-20 h-16 object-cover rounded mx-auto border" />
+                    <% } else { %>
+                      <span class="text-xs text-gray-400">No image</span>
+                    <% } %>
+                  </td>
+                  <td class="border px-2 py-1 font-medium"><%= p.title %></td>
+                  <td class="border px-2 py-1"><%= p.location %></td>
+                  <td class="border px-2 py-1">₹ <%= p.price.toLocaleString('en-IN') %></td>
+                  <td class="border px-2 py-1">
+                    <%= (p.suitableFor || []).join(', ').substring(0,20) +
+                        ((p.suitableFor || []).join(', ').length > 20 ? '...' : '') %>
+                  </td>
+                  <td class="border px-2 py-1 space-x-2 whitespace-nowrap">
+                    <a href="/admin/properties/<%= p._id %>/edit"
+                       class="inline-block px-3 py-1 text-xs rounded bg-yellow-500 text-white hover:bg-yellow-600 transition">
+                       Edit
+                    </a>
+                    <form action="/admin/properties/<%= p._id %>/delete" method="POST" class="inline"
+                          onsubmit="return confirm('Delete this property? Are you sure?')">
+                      <button type="submit"
+                              class="px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition">
+                        Delete
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+              <% if (!flats.length) { %>
+                <tr>
+                  <td colspan="6" class="border px-2 py-8 text-center text-gray-500">
+                    <div class="py-8">
+                      <p class="text-lg font-medium mb-2">No flats or houses yet</p>
+                      <p class="text-sm">Add your first residential property above</p>
+                    </div>
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Plots -->
+      <div>
+        <h2 class="text-lg md:text-xl font-semibold mb-2">Plots</h2>
+        <div class="overflow-x-auto bg-white rounded-xl shadow border border-gray-200">
+          <table class="w-full text-xs md:text-sm">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="border px-2 py-2">Image</th>
+                <th class="border px-2 py-2">Title</th>
+                <th class="border px-2 py-2">Location</th>
+                <th class="border px-2 py-2">Price</th>
+                <th class="border px-2 py-2">Suitable For</th>
+                <th class="border px-2 py-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% plots.forEach(p => { %>
+                <tr class="even:bg-gray-50 hover:bg-gray-50">
+                  <td class="border px-2 py-1 text-center">
+                    <% if (p.imageUrls && p.imageUrls.length) { %>
+                      <img src="<%= p.imageUrls[0] %>" alt="front image"
+                           class="w-20 h-16 object-cover rounded mx-auto border" />
+                    <% } else { %>
+                      <span class="text-xs text-gray-400">No image</span>
+                    <% } %>
+                  </td>
+                  <td class="border px-2 py-1 font-medium"><%= p.title %></td>
+                  <td class="border px-2 py-1"><%= p.location %></td>
+                  <td class="border px-2 py-1">₹ <%= p.price.toLocaleString('en-IN') %></td>
+                  <td class="border px-2 py-1">
+                    <%= (p.suitableFor || []).join(', ').substring(0,20) +
+                        ((p.suitableFor || []).join(', ').length > 20 ? '...' : '') %>
+                  </td>
+                  <td class="border px-2 py-1 space-x-2 whitespace-nowrap">
+                    <a href="/admin/properties/<%= p._id %>/edit"
+                       class="inline-block px-3 py-1 text-xs rounded bg-yellow-500 text-white hover:bg-yellow-600 transition">
+                       Edit
+                    </a>
+                    <form action="/admin/properties/<%= p._id %>/delete" method="POST" class="inline"
+                          onsubmit="return confirm('Delete this property? Are you sure?')">
+                      <button type="submit"
+                              class="px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition">
+                        Delete
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+              <% if (!plots.length) { %>
+                <tr>
+                  <td colspan="6" class="border px-2 py-8 text-center text-gray-500">
+                    <div class="py-8">
+                      <p class="text-lg font-medium mb-2">No plots yet</p>
+                      <p class="text-sm">Add your first plot above</p>
+                    </div>
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Agricultural Land -->
+      <div>
+        <h2 class="text-lg md:text-xl font-semibold mb-2">Agricultural Land</h2>
+        <div class="overflow-x-auto bg-white rounded-xl shadow border border-gray-200">
+          <table class="w-full text-xs md:text-sm">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="border px-2 py-2">Image</th>
+                <th class="border px-2 py-2">Title</th>
+                <th class="border px-2 py-2">Location</th>
+                <th class="border px-2 py-2">Price</th>
+                <th class="border px-2 py-2">Suitable For</th>
+                <th class="border px-2 py-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% agri.forEach(p => { %>
+                <tr class="even:bg-gray-50 hover:bg-gray-50">
+                  <td class="border px-2 py-1 text-center">
+                    <% if (p.imageUrls && p.imageUrls.length) { %>
+                      <img src="<%= p.imageUrls[0] %>" alt="front image"
+                           class="w-20 h-16 object-cover rounded mx-auto border" />
+                    <% } else { %>
+                      <span class="text-xs text-gray-400">No image</span>
+                    <% } %>
+                  </td>
+                  <td class="border px-2 py-1 font-medium"><%= p.title %></td>
+                  <td class="border px-2 py-1"><%= p.location %></td>
+                  <td class="border px-2 py-1">₹ <%= p.price.toLocaleString('en-IN') %></td>
+                  <td class="border px-2 py-1">
+                    <%= (p.suitableFor || []).join(', ').substring(0,20) +
+                        ((p.suitableFor || []).join(', ').length > 20 ? '...' : '') %>
+                  </td>
+                  <td class="border px-2 py-1 space-x-2 whitespace-nowrap">
+                    <a href="/admin/properties/<%= p._id %>/edit"
+                       class="inline-block px-3 py-1 text-xs rounded bg-yellow-500 text-white hover:bg-yellow-600 transition">
+                       Edit
+                    </a>
+                    <form action="/admin/properties/<%= p._id %>/delete" method="POST" class="inline"
+                          onsubmit="return confirm('Delete this property? Are you sure?')">
+                      <button type="submit"
+                              class="px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition">
+                        Delete
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+              <% if (!agri.length) { %>
+                <tr>
+                  <td colspan="6" class="border px-2 py-8 text-center text-gray-500">
+                    <div class="py-8">
+                      <p class="text-lg font-medium mb-2">No agricultural land yet</p>
+                      <p class="text-sm">Add your first agricultural property above</p>
+                    </div>
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  <% } %>
+</div>
+
+<script>
+(function () {
+  const form = document.getElementById('propertyForm');
+  if (!form) return;
+
+  form.addEventListener('submit', function () {
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving...';
+    }
+  });
+})();
+</script>
+
+<%- include('../components/footer') %>

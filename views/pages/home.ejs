@@ -1,0 +1,327 @@
+<%- include('../components/header') %>
+
+<div class="m-0 w-full h-screen flex flex-col overflow-hidden">
+  <%- include('../components/navbar') %>
+
+  <!-- MAIN: scrollable only -->
+  <main class="mt-[10vh] flex-1 overflow-y-auto gap-3">
+    <!-- Hero -->
+    <section id="home" class="flex justify-center items-center bg-gray-50 rounded-xl shadow-sm w-full px-4 py-6 animate-fadeInUp">
+      <div class="bg-black w-full rounded-3xl flex flex-col gap-3 p-4
+                  md:block md:h-auto md:rounded-4xl
+                  lg:flex lg:flex-row lg:items-center lg:justify-between
+                  lg:gap-8 lg:h-[60vh] lg:px-10">
+        <!-- Left -->
+        <div class="flex flex-col items-center md:items-center
+                    lg:items-start lg:flex-1 animate-slideInLeft">
+          <img src="/images/logo(black).jpg" alt="logo" loading="lazy" class="w-24 h-24 pt-1
+                      sm:w-24 sm:h-24
+                      md:w-28 md:h-28
+                      lg:w-32 lg:h-32 lg:ml-4 hover:scale-110 transition-transform duration-300" />
+
+          <div class="heading flex flex-col gap-1 text-center
+                      md:text-center md:mt-4
+                      lg:text-left lg:mt-4
+                      text-wrap break-words max-w-sm md:max-w-none mx-auto lg:mx-0">
+            <h1 class="text-3xl sm:text-4xl md:text-[2.6rem]
+                       lg:text-5xl
+                       font-semibold text-[#A1824C]
+                       lg:ml-4 animate-slideInLeft animation-delay-100">
+              "Redefining
+            </h1>
+            <h1 class="text-3xl sm:text-4xl md:text-[2.6rem]
+                       lg:text-5xl
+                       font-semibold text-[#A1824C]
+                       lg:ml-4 animate-slideInLeft animation-delay-200">
+              Premium Living &amp; Investment."
+            </h1>
+          </div>
+        </div>
+
+        <!-- Right -->
+        <div class="bg-black w-full rounded-2xl mt-4
+                    flex items-center justify-center
+                    md:mt-8 md:rounded-3xl
+                    lg:flex-1 lg:mt-0 lg:ml-4
+                    lg:flex lg:items-center lg:justify-end
+                    lg:overflow-hidden animate-slideInRight">
+          <img src="/images/house_image.jpeg" alt="house image" loading="lazy" class="w-full max-w-sm
+                     max-h-80
+                     sm:max-w-md sm:max-h-96
+                     md:max-w-xl md:max-h-[70vh]
+                     lg:max-w-[26rem] lg:max-h-[60vh]
+                     object-contain hover:scale-105 transition-transform duration-300" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Available Properties -->
+    <section id="property" class="animate-fadeInUp animation-delay-300">
+      <%- include('../components/property') %>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="animate-fadeInUp animation-delay-400">
+      <%- include('../components/about') %>
+    </section>
+
+    <!-- Services -->
+    <section id="services" class="animate-fadeInUp animation-delay-500">
+      <%- include('../components/service') %>
+    </section>
+
+    <!-- Contact -->
+    <footer id="contact" class="animate-fadeInUp animation-delay-600">
+      <%- include('../components/contact')%>  
+    </footer>
+  </main>
+</div>
+
+<!-- Property Detail Overlay -->
+<div id="propertyOverlay"
+  class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden animate-fadeIn">
+  <div class="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 relative animate-scaleIn">
+    <button id="overlayClose" class="absolute top-3 right-3 text-gray-500 hover:text-black text-xl hover:rotate-90 transition-transform duration-300">&times;</button>
+
+    <div id="propertyContent">
+      <p class="text-center text-gray-500">Loading...</p>
+    </div>
+  </div>
+</div>
+
+<script src="/javascripts/home.js"></script>
+
+<!-- Scroll Animation Observer -->
+<script>
+  // Observe elements and add animation on scroll
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  };
+
+  const scrollObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('animate-visible');
+        scrollObserver.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+
+  // Observe all scrollable sections
+  document.querySelectorAll('section, footer').forEach(el => {
+    scrollObserver.observe(el);
+  });
+
+  // Observe property cards for staggered animation
+  const cardObserver = new IntersectionObserver(function(entries) {
+    entries.forEach((entry, index) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.classList.add('animate-visible');
+        }, index * 100);
+        cardObserver.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+
+  // Observe cards
+  document.querySelectorAll('.property-card').forEach(card => {
+    cardObserver.observe(card);
+  });
+</script>
+
+<!-- Google Maps Lazy Loader with Intersection Observer -->
+<script>
+  (function () {
+    const mapContainer = document.getElementById('gsMap');
+    if (!mapContainer) return;
+
+    let mapScriptLoaded = false;
+
+    function loadGoogleMaps() {
+      if (mapScriptLoaded) return;
+      mapScriptLoaded = true;
+
+      const script = document.createElement('script');
+      script.src =
+        'https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initGsInfraMap';
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+
+    window.initGsInfraMap = function () {
+      const lat = parseFloat(mapContainer.dataset.lat || '30.086');
+      const lng = parseFloat(mapContainer.dataset.lng || '78.267');
+      const center = { lat, lng };
+
+      const map = new google.maps.Map(mapContainer, {
+        center,
+        zoom: 14,
+      });
+
+      new google.maps.Marker({
+        position: center,
+        map,
+        title: 'GS Infra Property Location',
+      });
+    };
+
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            loadGoogleMaps();
+            observer.unobserve(mapContainer);
+          }
+        });
+      });
+
+      observer.observe(mapContainer);
+    } else {
+      // Fallback: load immediately
+      loadGoogleMaps();
+    }
+  })();
+</script>
+
+<!-- Virtual Tour Click-to-Load -->
+<script>
+  (function () {
+    document.addEventListener('click', function (e) {
+      const thumb = e.target.closest('#virtualTourThumb');
+      if (!thumb) return;
+
+      const url = thumb.getAttribute('data-tour-url');
+      if (!url) return;
+
+      thumb.innerHTML = `
+        <iframe
+          src="${url}"
+          loading="lazy"
+          allowfullscreen
+          class="w-full h-full border-0 rounded-lg animate-fadeIn"
+          referrerpolicy="no-referrer-when-downgrade"
+        ></iframe>
+      `;
+    });
+  })();
+</script>
+
+<!-- Add Tailwind CSS Animations -->
+<style>
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .animate-fadeInUp {
+    animation: fadeInUp 0.6s ease-out;
+  }
+
+  .animate-slideInLeft {
+    animation: slideInLeft 0.6s ease-out;
+  }
+
+  .animate-slideInRight {
+    animation: slideInRight 0.6s ease-out;
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.4s ease-out;
+  }
+
+  .animate-scaleIn {
+    animation: scaleIn 0.3s ease-out;
+  }
+
+  .animate-visible {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  .animation-delay-100 {
+    animation-delay: 100ms;
+  }
+
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+
+  .animation-delay-400 {
+    animation-delay: 400ms;
+  }
+
+  .animation-delay-500 {
+    animation-delay: 500ms;
+  }
+
+  .animation-delay-600 {
+    animation-delay: 600ms;
+  }
+
+  /* Smooth scroll behavior */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Hover animations for interactive elements */
+  button:hover,
+  a:hover {
+    transition: all 0.3s ease-out;
+  }
+</style>
+
+<%- include('../components/footer') %>

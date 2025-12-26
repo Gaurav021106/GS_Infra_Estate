@@ -1,0 +1,113 @@
+<nav
+  class="m-0 w-full h-14 md:h-[7vh] mt-2 fixed top-0 left-0 right-0 z-50
+         rounded-none bg-white/80 backdrop-blur flex items-center justify-between px-4
+         shadow-sm animate-slideInDown"
+>
+  <!-- Logo + brand -->
+  <div class="flex items-center">
+    <a href="/admin/login" class="nav-link">
+      <div class="flex items-center gap-2">
+        <img
+          src="/images/logo.jpg"
+          alt="Logo"
+          loading="lazy"
+          class="w-10 h-10 md:w-14 md:h-14 mr-1 md:mr-3 rounded-xl shadow-sm
+                 transform transition-transform duration-300 hover:scale-105"
+        />
+        <h1
+          class="font-semibold text-base md:text-xl text-gray-900
+                 animate-fadeIn animation-delay-100"
+        >
+          GS Infra & Estate
+        </h1>
+      </div>
+    </a>
+  </div>
+
+  <!-- Center links (desktop) -->
+  <div class="hidden md:flex items-center gap-1 animate-fadeIn animation-delay-200">
+    <a
+      href="/"
+      class="mx-2 px-4 py-1 rounded-full text-gray-700 hover:text-gray-900 hover:bg-gray-100
+             transition-all duration-200 nav-link
+             hover:-translate-y-0.5"
+    >Home</a>
+    <a
+      href="#property"
+      class="mx-2 px-4 py-1 rounded-full text-gray-700 hover:text-gray-900 hover:bg-gray-100
+             transition-all duration-200 nav-link
+             hover:-translate-y-0.5"
+    >Properties</a>
+    <a
+      href="#about"
+      class="mx-2 px-4 py-1 rounded-full text-gray-700 hover:text-gray-900 hover:bg-gray-100
+             transition-all duration-200 nav-link
+             hover:-translate-y-0.5"
+    >About</a>
+    <a
+      href="#services"
+      class="mx-2 px-4 py-1 rounded-full text-gray-700 hover:text-gray-900 hover:bg-gray-100
+             transition-all duration-200 nav-link
+             hover:-translate-y-0.5"
+    >Services</a>
+    <a
+      href="#contact"
+      class="mx-2 px-4 py-1 rounded-full text-gray-700 hover:text-gray-900 hover:bg-gray-100
+             transition-all duration-200 nav-link
+             hover:-translate-y-0.5"
+    >Contact</a>
+  </div>
+
+  <!-- Right: dropdown button (MOBILE ONLY now) -->
+  <div class="relative md:hidden animate-fadeIn animation-delay-300">
+    <button
+      id="profileDropdownBtn"
+      class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-gray-200
+             bg-white/80 text-gray-700 text-sm hover:bg-gray-100 hover:text-gray-900
+             shadow-sm transition-all duration-200 hover:-translate-y-0.5"
+    >
+      <span
+        id="profileDropdownIcon"
+        class="inline-block transition-transform duration-150"
+      >
+        ▼
+      </span>
+    </button>
+
+    <!-- Dropdown menu -->
+    <div
+      id="profileDropdownMenu"
+      class="hidden absolute right-0 mt-2 w-40 rounded-lg bg-white shadow-lg border border-gray-100
+             py-2 text-sm animate-fadeInUp"
+    >
+      <a
+        href="/"
+        class="block px-4 py-2 text-gray-700 hover:bg-gray-100 nav-link
+               transition-colors"
+      >Home</a>
+      <a
+        href="#property"
+        class="block px-4 py-2 text-gray-700 hover:bg-gray-100 nav-link
+               transition-colors"
+      >Properties</a>
+      <a
+        href="#about"
+        class="block px-4 py-2 text-gray-700 hover:bg-gray-100 nav-link
+               transition-colors"
+      >About</a>
+      <a
+        href="#services"
+        class="block px-4 py-2 text-gray-700 hover:bg-gray-100 nav-link
+               transition-colors"
+      >Services</a>
+      <a
+        href="#contact"
+        class="block px-4 py-2 text-gray-700 hover:bg-gray-100 nav-link
+               transition-colors"
+      >Contact</a>
+    </div>
+  </div>
+</nav>
+
+<!-- later in layout, before </body> -->
+<script src="/javascripts/spa-nav.js"></script>
