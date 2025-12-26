@@ -4,14 +4,15 @@ const { makeSlug, splitByCategory } = require('../utils/propertyHelpers');
 
 // Nodemailer transporter for enquiries
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
+  host: 'smtp.sendgrid.net',
   port: 587,
   secure: false,
   auth: {
-    user: 'gs.infra.estates@gmail.com',
-    pass: process.env.GMAIL_APP_PASSWORD,
+    user: 'apikey', // this literal string
+    pass: process.env.SENDGRID_API_KEY,
   },
 });
+
 
 // ======================= HOME PAGE =======================
 exports.homePage = async (req, res) => {
