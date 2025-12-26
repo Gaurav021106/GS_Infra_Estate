@@ -4,11 +4,12 @@ const { makeSlug, splitByCategory } = require('../utils/propertyHelpers');
 
 // Nodemailer transporter using port 465 (SSL) - works better on cloud platforms
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true, // use SSL
-  connectionTimeout: 15000, // 15 seconds
-  socketTimeout: 30000,
+  host: "smtp.gamil.com",
+  port : 587,
+  secure: false,
+  requireTLS: true,
+  logger: true,
+  debug: true,
   auth: {
     user: 'gs.infra.estates@gmail.com',
     pass: process.env.GMAIL_APP_PASSWORD,
