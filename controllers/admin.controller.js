@@ -2,7 +2,14 @@ const Property = require('../models/property');
 const { Resend } = require('resend');
 const { generateOTP, splitByCategory } = require('../utils/propertyHelpers');
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Create transporter with proper Gmail settings
+const transporter = nodemailer.createTransport({
+  service: 'gmail', // Let Nodemailer handle Gmail config automatically
+  auth: {
+    user: 'gs.infra.estates@gmail.com',
+    pass: process.env.GMAIL_APP_PASSWORD, // Must be 16-char App Password
+  },
+});
 
 // Test Resend connection on startup
 resend.emails.list().then(() => {
