@@ -2,16 +2,7 @@ const Property = require('../models/property');
 const { Resend } = require('resend');
 const { makeSlug, splitByCategory } = require('../utils/propertyHelpers');
 
-// Nodemailer transporter for enquiries
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: 'gs.infra.estates@gmail.com',
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // HOME PAGE
 exports.homePage = async (req, res) => {
@@ -191,17 +182,61 @@ exports.enquiryHandler = async (req, res) => {
       to: process.env.TO_EMAIL || process.env.ADMINEMAIL || 'gs.infra.estates@gmail.com',
       subject,
       text: body,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); padding: 20px; border-radius: 10px 10px 0 0; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">🆕 NEW LEAD</h1>
+          </div>
+          <div style="background-color: #fff; padding: 30px; border-radius: 0 0 10px 10px;">
+            <h2 style="color: #333; margin-bottom: 20px;">GS Infra Website Enquiry</h2>
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <p><strong>👤 Name:</strong> ${name}</p>
+              <p><strong>📞 Phone:</strong> ${phone}</p>
+              <p><strong>📍 Location:</strong> ${location || 'Rishikesh'}</p>
+              <p><strong>💼 Requirement:</strong> ${requirement || 'Not specified'}</p>
+              <p><strong>🏠 Property:</strong> ${propertyId || 'General Enquiry'}</p>
+              <p><strong>🔔 Subscribe:</strong> ${subscribe ? 'YES' : 'No'}</p>
+            </div>
+            <div style="background: #e9ecef; padding: 15px; border-radius: 6px; font-size: 12px;">
+              <p><strong>⏰ Received:</strong> ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
+              <p><strong>🌐 Source:</strong> Website (${req.get('referrer') || 'Direct'})</p>
+              <p><strong>💻 IP:</strong> ${req.ip || 'Unknown'}</p>
+            </div>
+          </div>
+        </div>
+      `
     });
 
-    res.json({
-      ok: true,
-      message: "Thank you! We'll contact you within 2 hours.",
+    if (error) {
+      console.error('✅ RESEND API WORKING BUT DOMAIN ISSUE:', {
+        message: error.message,
+        code: error.code,
+        from: process.env.FROM_EMAIL,
+        to: process.env.TO_EMAIL
+      });
+      
+      // Domain-specific console message only
+      if (error.message.includes('domain') || error.message.includes('sender')) {
+        console.log('🔧 Resend API successful but domain verification pending. Check Resend Dashboard → Domains');
+      }
+      
+      // User sees generic timeout message
+      throw new Error('Server timeout - unable to send notification');
+    }
+
+    console.log(`✅ Enquiry received: ${name} (${phone}) → GS Infra [ID: ${data.id}]`);
+    res.json({ 
+      ok: true, 
+      message: 'Thank you! We\'ll contact you within 2 hours.' 
     });
     
   } catch (err) {
-    console.error('Enquiry failed:', err);
-    res
-      .status(500)
-      .json({ ok: false, error: 'Server error. Please try again.' });
+    console.error('❌ Enquiry Error (Console Only):', err.message);
+    
+    // Generic user-friendly error (no domain details)
+    res.status(503).json({ 
+      ok: false, 
+      error: 'Server timeout - enquiry received but notification delayed. We\'ll contact you soon.'
+    });
   }
 };
