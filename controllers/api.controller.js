@@ -1,12 +1,32 @@
 const Property = require('../models/property');
 
+// Helper function to build location-based filter object
+function getLocationFilter(req) {
+  const filter = {};
+  const { city, locality, state } = req.params;
+  const { city: cityQuery, state: stateQuery, locality: localityQuery } = req.query;
+  
+  // Add filters from route parameters or query parameters
+  if (city || cityQuery) {
+    filter.city = new RegExp(`^${city || cityQuery}$`, 'i');
+  }
+  if (state || stateQuery) {
+    filter.state = new RegExp(`^${state || stateQuery}$`, 'i');
+  }
+  if (locality || localityQuery) {
+    filter.locality = new RegExp(`${locality || localityQuery}`, 'i');
+  }
+  
+  return Object.keys(filter).length > 0 ? filter : {};
+}
+
 exports.listProperties = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = 20;
     const skip = (page - 1) * limit;
 
-    const props = await Property.find()
+    const props = await Property.find(getLocationFilter(req))
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
