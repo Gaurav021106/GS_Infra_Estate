@@ -12,7 +12,7 @@ exports.homePage = async (req, res) => {
       .limit(12)
       .lean();
 
-    const [flats, plots, agri] = splitByCategory(props);
+    const {flats, plots, agri} = splitByCategory(props);
     const featured = props[0];
 
     let seo = {
