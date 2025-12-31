@@ -13,6 +13,7 @@ const { connectDB, mongoose } = require('./config/db');
 const publicRoutes = require('./routes/public.routes');
 const adminRoutes = require('./routes/admin.routes');
 const apiRoutes = require('./routes/api.routes');
+const alertsRoutes = require('./routes/alerts');
 
 // ======================= CONNECT DATABASE =======================
 connectDB();
@@ -193,6 +194,7 @@ app.use((req, res, next) => {
 app.use('/', publicRoutes);
 app.use('/api', apiRoutes);
 app.use('/admin', adminRoutes);
+app.use('/alerts', alertsRoutes);
 
 // ======================= 404 HANDLER =======================
 app.use((req, res) => {

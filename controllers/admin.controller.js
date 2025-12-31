@@ -1,7 +1,7 @@
 const Property = require('../models/property');
 const { Resend } = require('resend');
 const { generateOTP, splitByCategory } = require('../utils/propertyHelpers');
-
+const { notifyNewProperty } = require('../services/alertsService');
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Test Resend connection on startup
@@ -269,6 +269,11 @@ exports.createProperty = async (req, res) => {
     });
 
     console.log(`🏠 Property created: ${title} ID: ${property.id}`);
+
+    // Fire-and-forget: send alert emails to all subscribers
+    notifyNewProperty(property).catch(err =>
+      console.error('❌ Property alert send failed:', err.message)
+    );
     res.redirect('/admin/dashboard?status=created');
   } catch (err) {
     console.error('❌ Create property error:', err);
