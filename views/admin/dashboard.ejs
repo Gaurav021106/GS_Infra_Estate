@@ -86,6 +86,10 @@
         >
       </div>
 
+      <!-- City and State (extracted from location) -->
+      <input type="hidden" name="city" id="cityInput" />
+      <input type="hidden" name="state" id="stateInput" />
+
       <!-- Suitable For -->
       <div class="md:col-span-2">
         <label class="block text-sm font-medium mb-1">Suitable For</label>
@@ -393,6 +397,21 @@
   form.addEventListener('submit', function () {
     const submitBtn = form.querySelector('button[type="submit"]');
     if (submitBtn) {
+
+      // Extract city and state from location
+      const locationInput = form.querySelector('input[name="location"]');
+      const cityInput = form.querySelector('input[name="city"]');
+      const stateInput = form.querySelector('input[name="state"]');
+      
+      if (locationInput && locationInput.value) {
+        const parts = locationInput.value.split(',').map(p => p.trim());
+        if (parts.length >= 1) {
+          cityInput.value = parts[0]; // First part is city
+        }
+        if (parts.length >= 2) {
+          stateInput.value = parts[1]; // Second part is state
+        }
+      }
       submitBtn.disabled = true;
       submitBtn.textContent = 'Saving...';
     }

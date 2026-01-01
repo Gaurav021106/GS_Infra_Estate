@@ -348,12 +348,20 @@ exports.createProperty = async (req, res) => {
       suitableFor,
       status,
       sqft,
+          city,
+    state,
     } = req.body;
 
     if (!category || !title || !price || !location) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
+      // Fallback: Extract city and state from location if not provided
+  if ((!city || !state) && location) {
+    const parts = location.split(',').map(p => p.trim());
+    if (!city && parts.length >= 1) city = parts[0];
+    if (!state && parts.length >= 2) state = parts[1];
+  }
     const suitableArr = suitableFor
       ?.split(',')
       .map((s) => s.trim())
@@ -386,6 +394,8 @@ exports.createProperty = async (req, res) => {
       imageUrls: imageArr,
       videoUrls: videoArr,
       sqft,
+          city,
+    state,
     });
 
     console.log(`✅ Property created: ${title} (ID: ${property.id})`);
