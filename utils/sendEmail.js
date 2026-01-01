@@ -1,3 +1,4 @@
+// sendEmail.js
 const { Resend } = require('resend');
 
 if (!process.env.RESEND_API_KEY) {
@@ -7,17 +8,18 @@ if (!process.env.RESEND_API_KEY) {
 const resend = new Resend(process.env.RESEND_API_KEY || '');
 
 async function sendEmail({ to, subject, html, text }) {
+  // Normalize to array for Resend
   if (!Array.isArray(to)) {
     to = [to];
   }
 
   try {
     const { data, error } = await resend.emails.send({
-      from: process.env.MAIL_FROM || 'alerts@your-verified-domain.com',
+      from: process.env.FROM_EMAIL,              // verified custom domain sender
       to,
       subject,
       text: text || '',
-      html
+      html,
     });
 
     if (error) {
