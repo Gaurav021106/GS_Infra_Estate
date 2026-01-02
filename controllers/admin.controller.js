@@ -1,10 +1,20 @@
 // admin.controller.js
 const Property = require('../models/property');
+const { splitByCategory } = require('../utils/propertyHelpers');
 const { Resend } = require('resend');
-const { generateOTP, splitByCategory } = require('../utils/propertyHelpers');
 const { notifyNewProperty } = require('../services/alertsService');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Helper function to generate OTP
+const generateOTP = () => {
+  const digits = '0123456789';
+  let otp = '';
+  for (let i = 0; i < 6; i++) {
+    otp += digits[Math.floor(Math.random() * 10)];
+  }
+  return otp;
+};
 
 // Test Resend connection on startup
 resend.emails
@@ -307,6 +317,7 @@ exports.dashboard = async (req, res) => {
   try {
     const props = await Property.find().sort({ createdAt: -1 });
     const { flats, plots, agri } = splitByCategory(props);
+        const editingProperty = req.query.id ? await Property.findById(req.query.id) : null;
 
     res.render('admin/dashboard', {
       title: 'Admin Dashboard - GS Infra Estates',
@@ -317,7 +328,7 @@ exports.dashboard = async (req, res) => {
         req.session.adminEmail ||
         process.env.ADMINEMAIL ||
         'gauravsaklani021106@gmail.com',
-      editingProperty: null,
+      editingProperty: editingProperty,
       status: req.query.status || null,
     });
   } catch (err) {
@@ -401,7 +412,7 @@ exports.createProperty = async (req, res) => {
     console.log(`✅ Property created: ${title} (ID: ${property.id})`);
 
     // Fire-and-forget alert emails to all subscribers
-    notifyNewProperty(property).catch((err) => {
+    await notifyNewProperty(property).catch((err) => {
       console.error('❌ Property alert send failed:', err.message);
     });
 

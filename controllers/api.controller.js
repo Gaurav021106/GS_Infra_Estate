@@ -23,7 +23,7 @@ function getLocationFilter(req) {
 exports.listProperties = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = 20;
+    const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
 
     const props = await Property.find(getLocationFilter(req))

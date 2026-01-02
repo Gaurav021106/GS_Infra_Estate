@@ -6,7 +6,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // OPTIONAL: health check
 resend.emails.list().then(() => {
   console.log('\u2705 Resend API Connected Successfully (Alerts Service)');
-}).catch(err => {
+}).catch((err) => {
   console.error('\u274c Resend API Connection Failed (Alerts Service):', err.message);
 });
 
