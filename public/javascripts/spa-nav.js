@@ -1,4 +1,6 @@
 (function () {
+  'use strict';
+
   const root = document.documentElement;
 
   // ---------- Helpers ----------
@@ -28,139 +30,65 @@
     }
   }
 
-  // ---------- SPA fetch + swap ----------
+  // ---------- SPA Navigation ----------
   async function fetchAndSwap(url, pushState = true) {
     const main = document.querySelector('main');
-    if (!main) { location.href = url; return; }
-
-    const duration = toMs(getComputedStyle(root).getPropertyValue('--global-transition-duration'));
-    const delayMs = toMs(getComputedStyle(root).getPropertyValue('--global-transition-delay'));
-    const waitMs = duration + delayMs;
-
-    main.classList.add('page-exit');
-    await delay(waitMs);
-
-    try {
-      const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-      if (!res.ok) { location.href = url; return; }
-      const text = await res.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(text, 'text/html');
-      const newMain = doc.querySelector('main');
-      const newTitle = doc.querySelector('title');
-      if (!newMain) { location.href = url; return; }
-
-      main.innerHTML = newMain.innerHTML;
-      if (newTitle) document.title = newTitle.textContent;
-
-      newMain.querySelectorAll('script').forEach((s) => {
-        const sc = document.createElement('script');
-        if (s.src) sc.src = s.src;
-        else sc.textContent = s.textContent;
-        document.body.appendChild(sc);
-        sc.onload = () => sc.remove();
-      });
-    } catch (err) {
-      location.href = url;
-      return;
-    } finally {
-      main.classList.remove('page-exit');
-      main.classList.add('page-enter');
-      setTimeout(() => main.classList.remove('page-enter'), duration + 50);
+    if (!main) { 
+      location.href = url; 
+      return; 
     }
-  }
-
-  async function fetchAndAppendRelated(url, related = [], pushState = true) {
-    const main = document.querySelector('main');
-    if (!main) { location.href = url; return; }
-
-    const duration = toMs(getComputedStyle(root).getPropertyValue('--global-transition-duration'));
-    const delayMs = toMs(getComputedStyle(root).getPropertyValue('--global-transition-delay'));
-    const waitMs = duration + delayMs;
-
-    main.classList.add('page-exit');
-    await delay(waitMs);
 
     try {
-      const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-      if (!res.ok) { location.href = url; return; }
-      const text = await res.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(text, 'text/html');
-      const newMain = doc.querySelector('main');
-      const newTitle = doc.querySelector('title');
-      if (!newMain) { location.href = url; return; }
-
-      main.innerHTML = newMain.innerHTML;
-      if (newTitle) document.title = newTitle.textContent;
-      if (pushState) history.pushState({}, '', url);
-
-      newMain.querySelectorAll('script').forEach((s) => {
-        const sc = document.createElement('script');
-        if (s.src) sc.src = s.src;
-        else sc.textContent = s.textContent;
-        document.body.appendChild(sc);
-        sc.onload = () => sc.remove();
+      const res = await fetch(url, { 
+        headers: { 'X-Requested-With': 'XMLHttpRequest' } 
       });
-
-      for (const rel of related) {
-        try {
-          const r = await fetch(rel.trim(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-          if (!r.ok) continue;
-          const t = await r.text();
-          const d = parser.parseFromString(t, 'text/html');
-          const rm = d.querySelector('main');
-          const rt = d.querySelector('title');
-          if (!rm) continue;
-
-          const section = document.createElement('section');
-          section.className = 'related-section page-section mt-8 p-6 bg-white rounded-xl shadow-sm w-full';
-          if (rt && rt.textContent) {
-            const h = document.createElement('h3');
-            h.className = 'text-2xl font-semibold mb-4';
-            h.textContent = rt.textContent;
-            section.appendChild(h);
-          }
-          const wrapper = document.createElement('div');
-          wrapper.innerHTML = rm.innerHTML;
-          section.appendChild(wrapper);
-          main.appendChild(section);
-
-          rm.querySelectorAll('script').forEach((s) => {
-            const sc = document.createElement('script');
-            if (s.src) sc.src = s.src;
-            else sc.textContent = s.textContent;
-            document.body.appendChild(sc);
-            sc.onload = () => sc.remove();
-          });
-        } catch (ee) {
-          continue;
-        }
+      if (!res.ok) { 
+        location.href = url; 
+        return; 
       }
+      
+      const text = await res.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(text, 'text/html');
+      const newMain = doc.querySelector('main');
+      const newTitle = doc.querySelector('title');
+      
+      if (!newMain) { 
+        location.href = url; 
+        return; 
+      }
+
+      // Swap content
+      main.innerHTML = newMain.innerHTML;
+      if (newTitle) document.title = newTitle.textContent;
+
+      // Re-execute scripts
+      newMain.querySelectorAll('script').forEach((s) => {
+        const sc = document.createElement('script');
+        if (s.src) sc.src = s.src;
+        else sc.textContent = s.textContent;
+        document.body.appendChild(sc);
+        sc.onload = () => sc.remove();
+      });
+
+      if (pushState) history.pushState({}, '', url);
     } catch (err) {
       location.href = url;
-      return;
-    } finally {
-      main.classList.remove('page-exit');
-      main.classList.add('page-enter');
-      setTimeout(() => main.classList.remove('page-enter'), duration + 50);
     }
   }
 
-  // ---------- Nav active state ----------
+  // ---------- Nav Active State ----------
   function setActive() {
     const hash = location.hash || '';
     const path = location.pathname || '/';
     document.querySelectorAll('.nav-link').forEach((a) => {
       const href = a.getAttribute('href') || '';
       if (href.startsWith('#')) {
-        if (href === hash) a.classList.add('nav-active');
-        else a.classList.remove('nav-active');
+        a.classList.toggle('nav-active', href === hash);
       } else {
         try {
           const url = new URL(href, location.href);
-          if (url.pathname === path) a.classList.add('nav-active');
-          else a.classList.remove('nav-active');
+          a.classList.toggle('nav-active', url.pathname === path);
         } catch (e) {
           a.classList.remove('nav-active');
         }
@@ -168,7 +96,7 @@
     });
   }
 
-  // ---------- Unified click handler ----------
+  // ---------- Unified Click Handler ----------
   document.addEventListener('click', (ev) => {
     const a = ev.target.closest('a');
     if (!a) return;
@@ -178,80 +106,51 @@
 
     const main = document.querySelector('main');
 
-    // 0) Home link: scroll to top
+    // Home link (/)
     if (a.classList.contains('nav-link') && href === '/') {
       ev.preventDefault();
-
-      if (main) {
-        main.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-
-      document.querySelectorAll('.nav-link').forEach((x) =>
-        x.classList.remove('nav-active')
-      );
+      (main || window).scrollTo({ top: 0, behavior: 'smooth' });
+      document.querySelectorAll('.nav-link').forEach(x => x.classList.remove('nav-active'));
       a.classList.add('nav-active');
       history.replaceState({}, '', '/');
       return;
     }
 
-    // 1) Hash links: scroll to section
+    // Hash links (#section)
     if (href.startsWith('#')) {
       ev.preventDefault();
-
       const target = document.querySelector(href);
       if (!target) return;
 
       if (main) {
         const mainRect = main.getBoundingClientRect();
         const targetRect = target.getBoundingClientRect();
-        const offset = targetRect.top - mainRect.top;
-
         main.scrollTo({
-          top: main.scrollTop + offset - 80, // adjust for fixed navbar height
+          top: main.scrollTop + targetRect.top - mainRect.top - 80,
           behavior: 'smooth',
         });
       } else {
         target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
 
-      document.querySelectorAll('.nav-link').forEach((x) =>
-        x.classList.remove('nav-active')
-      );
-      if (a.classList.contains('nav-link')) {
-        a.classList.add('nav-active');
-      }
-
+      document.querySelectorAll('.nav-link').forEach(x => x.classList.remove('nav-active'));
+      if (a.classList.contains('nav-link')) a.classList.add('nav-active');
       history.replaceState({}, '', href);
       return;
     }
 
-    // 2) SPA internal links
+    // SPA internal links
     if (!isLocalAnchor(a)) return;
-
     ev.preventDefault();
     if (href === window.location.pathname + window.location.search) return;
 
-    const related = (a.dataset && a.dataset.related)
-      ? a.dataset.related.split(',').map((s) => s.trim()).filter(Boolean)
-      : null;
+    document.querySelectorAll('.nav-link').forEach(x => x.classList.remove('nav-active'));
+    if (a.classList.contains('nav-link')) a.classList.add('nav-active');
 
-    document.querySelectorAll('.nav-link').forEach((x) =>
-      x.classList.remove('nav-active')
-    );
-    if (a.classList.contains('nav-link')) {
-      a.classList.add('nav-active');
-    }
-
-    if (related && related.length) {
-      fetchAndAppendRelated(href, related, true);
-    } else {
-      fetchAndSwap(href, true);
-    }
+    fetchAndSwap(href, true);
   });
 
-  // ---------- History events ----------
+  // ---------- History API ----------
   window.addEventListener('popstate', () => {
     setActive();
     fetchAndSwap(location.href, false);
@@ -260,7 +159,7 @@
   window.addEventListener('hashchange', setActive);
   setActive();
 
-  // ---------- Dropdown (mobile) ----------
+  // ---------- Mobile Dropdown ----------
   const btn = document.getElementById('profileDropdownBtn');
   const menu = document.getElementById('profileDropdownMenu');
   const icon = document.getElementById('profileDropdownIcon');
@@ -279,4 +178,27 @@
       }
     });
   }
+
+  // ---------- Navbar Scroll Effect ----------
+  let ticking = false;
+  function updateNavbar() {
+    const nav = document.querySelector('nav');
+    if (window.scrollY > 30) {
+      nav?.classList.add('shadow-md', 'py-2.5', 'md:py-3');
+      nav?.classList.remove('py-3', 'md:py-3.5');
+    } else {
+      nav?.classList.remove('shadow-md', 'py-2.5', 'md:py-3');
+      nav?.classList.add('py-3', 'md:py-3.5');
+    }
+  }
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(updateNavbar);
+      ticking = true;
+    }
+    setTimeout(() => { ticking = false; }, 100);
+  });
+
+  console.log('✅ SPA-Nav loaded - Mobile dropdown, active states, smooth scroll, SPA ready!');
 })();
