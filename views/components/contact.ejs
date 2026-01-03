@@ -1,6 +1,6 @@
 <%- include('../components/header') %>
 
-<section class="mt-8 p-6 bg-black rounded-xl shadow-sm w-full animate-fadeInUp">
+<section class="relative mt-8 p-6 bg-black rounded-xl shadow-sm w-full animate-fadeInUp">
   <!-- Heading + intro -->
   <div class="max-w-5xl mx-auto px-2 md:px-4 text-center">
     <h1 class="text-white text-3xl md:text-4xl font-semibold animate-slideInDown">
@@ -176,7 +176,7 @@
              border border-white/10 rounded-2xl p-4 md:p-6"
     >
       <div class="flex flex-col gap-1">
-        <label class="text-xs text-gray-200 font-semibold">Name</label>
+        <label for="enq-name" class="text-xs text-gray-200 font-semibold">Name</label>
         <input
           type="text"
           name="name"
@@ -188,7 +188,7 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <label class="text-xs text-gray-200 font-semibold">Phone</label>
+        <label for="enq-phone" class="text-xs text-gray-200 font-semibold">Phone</label>
         <input
           type="tel"
           name="phone"
@@ -200,7 +200,9 @@
       </div>
 
       <div class="flex flex-col gap-1 md:col-span-2">
-        <label class="text-xs text-gray-200 font-semibold">Preferred Location / Property Location</label>
+        <label for="enq-location" class="text-xs text-gray-200 font-semibold">
+          Preferred Location / Property Location
+        </label>
         <input
           type="text"
           name="location"
@@ -212,7 +214,9 @@
       </div>
 
       <div class="flex flex-col gap-1 md:col-span-2">
-        <label class="text-xs text-gray-200 font-semibold">Requirement / Property Details &amp; Budget</label>
+        <label for="enq-requirement" class="text-xs text-gray-200 font-semibold">
+          Requirement / Property Details &amp; Budget
+        </label>
         <textarea
           name="requirement"
           id="enq-requirement"
@@ -243,6 +247,22 @@
       </div>
     </form>
   </div>
+
+  <!-- Admin login logo bottom-left inside this section -->
+  <a
+    href="/admin/login"
+    class="nav-link absolute left-4 bottom-4"
+  >
+    <div class="flex items-center gap-2.5">
+      <img
+        src="/images/logo.jpg"
+        alt="Logo"
+        loading="lazy"
+        class="w-12 h-12 md:w-14 md:h-14 rounded-xl shadow-sm
+               transform transition-all duration-300 hover:scale-105 hover:shadow-md"
+      />
+    </div>
+  </a>
 </section>
 
 <script src="/javascripts/enquiry.js"></script>
