@@ -111,13 +111,10 @@ exports.legacyPropertyRedirect = async (req, res) => {
       return res.redirect('/');
     }
 
-    const slug = makeSlug(property.title);
-    const location = property.location.toLowerCase().replace(' ', '-');
 
-    res.redirect(
-      301,
-      `/properties/${location}/${property.category}/${slug}-${property.id}`
-    );
+    // Render home page with property modal data
+    res.render('pages/home', { property, showPropertyModal: true });
+
   } catch (err) {
     console.error('❌ Legacy redirect error:', err);
     res.redirect('/');

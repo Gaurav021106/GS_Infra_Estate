@@ -22,7 +22,7 @@ async function notifyNewProperty(property) {
     const toList = subscribers.map(s => s.email);
 
     const baseUrl = (process.env.APP_BASE_URL || '').replace(/\/$/, '');  // Replace with your actual URL
-const detailsUrl = `${baseUrl}/properties/${property._id}`;
+const detailsUrl = `${baseUrl}/property/${property._id}`;
 
     const html = `
       <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5; border-radius: 10px; max-width: 600px; margin: 0 auto;">

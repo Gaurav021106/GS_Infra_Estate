@@ -325,3 +325,19 @@
 </style>
 
 <%- include('../components/footer') %>
+
+<!-- Property Modal Component -->
+<%- include('./components/propertyModal') %>
+
+<!-- Auto-open property modal if property details are being displayed -->
+<% if (showPropertyModal) { %>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const modal = new bootstrap.Modal(document.getElementById('propertyModal'), {
+        backdrop: 'static',
+        keyboard: false
+      });
+      modal.show();
+    });
+  </script>
+<% } %>
