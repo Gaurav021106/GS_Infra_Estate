@@ -1,4 +1,3 @@
-// admin.controller.js
 const Property = require('../models/property');
 const { splitByCategory } = require('../utils/propertyHelpers');
 const { Resend } = require('resend');
@@ -152,8 +151,8 @@ exports.loginStep1 = async (req, res) => {
     }
 
     const ADMINEMAIL =
-      process.env.ADMINEMAIL || 'gauravsaklani021106@gmail.com';
-    const ADMINPASS = process.env.ADMINPASS || 'SAKLANI@021106@';
+      process.env.ADMINEMAIL;
+    const ADMINPASS = process.env.ADMINPASS ;
 
     if (username !== ADMINEMAIL || password !== ADMINPASS) {
       return res.status(401).json({ ok: false, error: 'Invalid credentials' });
