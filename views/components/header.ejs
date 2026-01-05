@@ -1,97 +1,92 @@
 <!doctype html>
-<html lang="en">
+<html>
 
 <head>
-  <!-- Basic -->
+      <link rel="icon" type="image/jpeg" href="/images/logo.jpeg">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-
-  <!-- Title -->
-  <title>GS Infra & Estate | Buy Property in Dehradun & Rishikesh</title>
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/jpeg" href="/images/logo.jpeg">
-
-  <!-- Canonical -->
-  <link rel="canonical" href="https://www.gsinfraandestate.com" />
-
-  <!-- SEO Meta -->
+  <!-- SEO Meta Tags for Location-Based Search -->
   <meta name="description"
-    content="Buy residential flats, villas, plots & commercial properties in Dehradun, Rishikesh & Mussoorie. GS Infra & Estate – a trusted real estate advisor in Uttarakhand." />
+    content="Discover residential flats, commercial properties & plots in Rishikesh & Dehradun. GS Infra & Estates - Trusted real estate portal for property investment in Uttarakhand. properties online." />
+  <meta name="keywords"
+    content="property, real estate, Dehradun, Rishikesh, buy property, sell property, apartments, villas" />
   <meta name="author" content="GS Infra & Estate" />
-  <meta name="robots" content="index, follow" />
-
-  <!-- Open Graph (Social Sharing) -->
-  <meta property="og:title" content="GS Infra & Estate | Trusted Property Dealers in Uttarakhand" />
-  <meta property="og:description"
-    content="Explore verified property listings in Dehradun, Rishikesh & nearby areas with GS Infra & Estate." />
+  <meta property="og:title" content="GS Infra & Estate - Property Portal" />
+  <meta property="og:description" content="Find properties in Dehradun, Rishikesh & nearby locations" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://www.gsinfraandestate.com" />
-  <meta property="og:image" content="https://www.gsinfraandestate.com/images/logo.jpeg" />
+  <meta name="robots" content="index, follow" />
+  <meta name="canonical" href="https://gsinfraandestate.com" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "GS Infra & Estate",
+  "url": "https://www.gsinfraestates.com/",
+  "logo": "/images/logo.jpeg",
+  "sameAs": [
+    "https://www.facebook.com/your-page",
+    "https://www.instagram.com/your-page"
+  ]
+}
+</script>
 
-  <!-- Fonts -->
+  <script src="https://seo-fixer.writesonic.com/site-audit/fixer-script/index-godaddy.js" id="wsAiSeoMb"
+    type="application/javascript"></script>
+  <script id="wsAiSeoInitScript">
+    wsSEOfixer.configure({
+      hostURL: 'https://seo-fixer.writesonic.com',
+      siteID: '69595ed560b44b5aaa59ce97'
+    });
+  </script>
+  <title>GS Infra & Estate - Properties in Dehradun, Rishikesh</title>
+  <!-- Structured Data for Local Business SEO -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "GS Infra & Estate",
+      "url": "https://gsinfraestate.com",
+      "areaServed": ["Dehradun", "Rishikesh", "Mussorie", "Uttarakhand"],
+      "serviceType": "Real Estate Agent",
+      "description": "Property listing and real estate services in Dehradun, Rishikesh and nearby areas",
+      "geo": {
+        "@type": "GeoShape",
+        "areaServed": "Uttarakhand, India"
+      }
+    }
+    </script>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link href="https://fonts.cdnfonts.com/css/instrument-serif" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Italiana&display=swap" rel="stylesheet">
-
-  <!-- Tailwind (MVP OK – build version recommended later) -->
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-
-  <!-- Structured Data (Organization + RealEstateAgent) -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Organization",
-        "name": "GS Infra & Estate",
-        "url": "https://www.gsinfraandestate.com",
-        "logo": "https://www.gsinfraandestate.com/images/logo.jpeg",
-        "sameAs": [
-          "https://www.facebook.com/your-page",
-          "https://www.instagram.com/your-page"
-        ]
-      },
-      {
-        "@type": "RealEstateAgent",
-        "name": "GS Infra & Estate",
-        "url": "https://www.gsinfraandestate.com",
-        "image": "https://www.gsinfraandestate.com/images/logo.jpeg",
-        "areaServed": [
-          "Dehradun",
-          "Rishikesh",
-          "Mussoorie",
-          "Uttarakhand"
-        ],
-        "address": {
-          "@type": "PostalAddress",
-          "addressRegion": "Uttarakhand",
-          "addressCountry": "IN"
-        }
-      }
-    ]
-  }
-  </script>
-
-  <!-- Global Styles -->
   <style>
+    /*
+        Root-level CSS variables for global transition timing.
+        Adjust these to change how quickly page enter/exit animations run.
+        */
     :root {
       --global-transition-delay: 150ms;
+      /* delay before transition starts */
       --global-transition-duration: 150ms;
+      /* how long the transition takes */
     }
 
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      font-family: 'Instrument Serif', serif;
-    }
-
+    /* Heading font (Italiana) applied only to elements with the .heading class */
     .heading {
       font-family: 'Italiana', serif;
     }
 
+    /* Smooth scrolling for in-page anchors */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /*
+      Main content typography adjustments:
+      - Instrument Serif for body text
+      - increased word-spacing and letter-spacing for a more elegant look
+      */
+
+    /* Apply consistent transition timing to common interactive elements */
     a,
     button,
     input,
@@ -104,6 +99,7 @@
       transition-timing-function: ease;
     }
 
+    /* Page transition helper classes used by the client-side navigation script */
     .page-exit {
       opacity: 0;
       transform: translateY(6px);
@@ -112,25 +108,22 @@
     }
 
     .page-enter {
+      /* Enter uses no extra delay so it appears smooth after replacement */
       opacity: 1;
       transform: translateY(0);
       transition: opacity var(--global-transition-duration) ease,
         transform var(--global-transition-duration) ease;
     }
 
-    img {
-      will-change: transform, opacity;
-    }
-
+    /* Selection color for improved UX when users select text */
     ::selection {
       background-color: #fde68a;
+      /* amber-200 */
       color: #1f2937;
+      /* gray-800 */
     }
   </style>
-
-  <!-- SPA Navigation -->
-  <script src="/javascripts/spa-nav.js" defer></script>
-
+  <script src="/javascripts/spa-nav.js"></script>
 </head>
 
-<body class="bg-white text-gray-900">
+<body>
