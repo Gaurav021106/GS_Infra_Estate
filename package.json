@@ -6,7 +6,6 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-      
     "test": "echo \"Error: no test specified\" && exit 1",
     "setup-db": "node setupIndexes.js"
   },
@@ -27,7 +26,7 @@
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@sendgrid/mail": "^8.1.6",
     "compression": "^1.8.1",
-    "connect-mongo": "^6.0.0",
+    "connect-mongo": "^4.6.0",
     "connect-redis": "^9.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",

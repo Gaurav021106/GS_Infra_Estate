@@ -1,3 +1,4 @@
+// public/javascripts/enquiry.js
 (function () {
   const form = document.getElementById('enquiryForm');
   if (!form) return;
@@ -37,6 +38,12 @@
           subscribe,
         }),
       });
+
+      if (!res.ok) {
+        // Non-200 status (e.g. 400/500)
+        alert('Server error. Please try again.');
+        return;
+      }
 
       const data = await res.json();
 

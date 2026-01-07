@@ -1,0 +1,197 @@
+<%- include('../components/header') %>
+<%- include('../components/navbar') %>
+
+<main class="mt-[10vh] flex-1 overflow-y-auto gap-3">
+
+  <!-- Hero Section with Filters -->
+  <section class="w-full flex flex-col bg-gradient-to-r from-blue-50 to-indigo-50 py-8 px-4 md:px-8">
+    <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-2">
+      Verified Property Listings in <%= city %>
+    </h1>
+    <p class="text-lg text-gray-600 mb-6">
+      Find your ideal property in <%= city %> with GS Infra & Estate.
+    </p>
+
+    <!-- Filter Bar -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white p-4 rounded-lg shadow-md">
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2">Property Type</label>
+        <select id="propertyType"
+          class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          <option value="" <%= !filters || !filters.type ? 'selected' : '' %>>All Types</option>
+          <option value="flat" <%= filters && filters.type === 'flat' ? 'selected' : '' %>>Flat / House</option>
+          <option value="house" <%= filters && filters.type === 'house' ? 'selected' : '' %>>Independent House</option>
+          <option value="plot" <%= filters && filters.type === 'plot' ? 'selected' : '' %>>Plot</option>
+          <option value="commercial" <%= filters && filters.type === 'commercial' ? 'selected' : '' %>>Agricultural / Commercial</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2">Budget Range</label>
+        <select id="budget"
+          class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          <option value="" <%= !filters || !filters.budget ? 'selected' : '' %>>Any Budget</option>
+          <option value="0-30" <%= filters && filters.budget === '0-30' ? 'selected' : '' %>>Under 30L</option>
+          <option value="30-50" <%= filters && filters.type === '30-50' ? 'selected' : '' %>>30L - 50L</option>
+          <option value="50-100" <%= filters && filters.budget === '50-100' ? 'selected' : '' %>>50L - 1Cr</option>
+          <option value="100-plus" <%= filters && filters.budget === '100-plus' ? 'selected' : '' %>>Above 1Cr</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2">Locality</label>
+        <input type="text" id="locality" placeholder="Search locality..."
+          value="<%= filters && filters.locality ? filters.locality : '' %>"
+          class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+      <div class="flex items-end">
+        <button id="filterBtn"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+          Search
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Results Count & Sort -->
+  <section class="px-4 md:px-8 py-4 flex justify-between items-center bg-gray-50 border-b border-gray-200">
+    <div>
+      <p class="text-gray-700 font-semibold">
+        Showing <span id="resultCount"><%= properties.length %></span> properties
+      </p>
+    </div>
+    <div>
+      <label for="sortBy" class="text-sm font-semibold text-gray-700 mr-2">Sort by:</label>
+      <select id="sortBy"
+        class="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        <option value="newest" <%= !filters || filters.sort === 'newest' ? 'selected' : '' %>>Newest First</option>
+        <option value="price-low" <%= filters && filters.sort === 'price-low' ? 'selected' : '' %>>Price: Low to High</option>
+        <option value="price-high" <%= filters && filters.sort === 'price-high' ? 'selected' : '' %>>Price: High to Low</option>
+        <option value="featured" <%= filters && filters.sort === 'featured' ? 'selected' : '' %>>Featured First</option>
+      </select>
+    </div>
+  </section>
+
+  <!-- Properties Grid -->
+  <section class="px-4 md:px-8 py-8">
+    <% if (properties && properties.length > 0) { %>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="propertiesGrid">
+        <% properties.forEach(property => { %>
+          <%- include('../components/property', { property: property, cityName: city }) %>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="text-center py-12">
+        <h3 class="text-2xl font-bold text-gray-900 mb-4">No Properties Found</h3>
+        <p class="text-gray-600 mb-6">Try adjusting your filters or check back soon.</p>
+        <a href="/"
+          class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
+          Browse All Properties
+        </a>
+      </div>
+    <% } %>
+  </section>
+
+  <!-- Market Insights Section -->
+  <section class="px-4 md:px-8 py-12 bg-gray-50 border-t border-gray-200">
+    <h2 class="text-3xl font-bold text-gray-900 mb-6">
+      <%= city %> Real Estate Market <%= new Date().getFullYear() %>
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Average Price</h3>
+        <p class="text-3xl font-bold text-blue-600 mb-2">
+          <% if (city === 'Dehradun') { %>
+            45L - 75L
+          <% } else if (city === 'Rishikesh') { %>
+            40L - 70L
+          <% } else { %>
+            30L - 60L
+          <% } %>
+        </p>
+        <p class="text-gray-600 text-sm">Per 2BHK</p>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500">
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Popular Areas</h3>
+        <ul class="text-gray-600 text-sm space-y-1">
+          <% if (city === 'Dehradun') { %>
+            <li>Rajpur Road</li>
+            <li>Sector 7, Doon</li>
+            <li>Clement Town</li>
+          <% } else if (city === 'Rishikesh') { %>
+            <li>Muni Ki Reti</li>
+            <li>Ram Jhula</li>
+            <li>Laxman Jhula</li>
+          <% } else { %>
+            <li>Jwalapur</li>
+            <li>Kankhal</li>
+            <li>Har-ki-Pauri</li>
+          <% } %>
+        </ul>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-purple-500">
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Key Services</h3>
+        <ul class="text-gray-600 text-sm space-y-1">
+          <li>3D Virtual Tours</li>
+          <li>Verified Listings</li>
+          <li>Legal Assistance</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="px-4 md:px-8 py-12 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-center">
+    <h2 class="text-3xl md:text-4xl font-bold mb-4">Found Your Dream Property?</h2>
+    <p class="text-lg mb-6">Get in touch with our property experts for detailed information & 3D tours.</p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <button
+        class="bg-white text-blue-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-100 transition duration-300"
+        onclick="openWhatsApp()">
+        Chat on WhatsApp
+      </button>
+      <a href="/"
+        class="bg-transparent border-2 border-white text-white font-bold py-3 px-8 rounded-lg hover:bg-white hover:text-blue-600 transition duration-300">
+        View All Properties
+      </a>
+    </div>
+  </section>
+</main>
+
+<script>
+  function openWhatsApp() {
+    const message = `Hi, I'm interested in properties in <%= city %>. Can you help me find the right one?`;
+    const whatsappUrl = `https://wa.me/918279702969?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  }
+
+  function buildQuery() {
+    const type = document.getElementById('propertyType').value;
+    const budget = document.getElementById('budget').value;
+    const locality = document.getElementById('locality').value.trim();
+    const sortBy = document.getElementById('sortBy').value;
+
+    const params = new URLSearchParams();
+
+    if (type) params.set('type', type);
+    if (budget) params.set('budget', budget);
+    if (locality) params.set('locality', locality);
+    if (sortBy) params.set('sort', sortBy);
+
+    return params.toString();
+  }
+
+  document.getElementById('filterBtn').addEventListener('click', () => {
+    const query = buildQuery();
+    const base = window.location.pathname.split('/').slice(0, 3).join('/');
+    const url = query ? `${base}?${query}` : base;
+    window.location.href = url;
+  });
+
+  document.getElementById('sortBy').addEventListener('change', () => {
+    const query = buildQuery();
+    const base = window.location.pathname.split('/').slice(0, 3).join('/');
+    const url = query ? `${base}?${query}` : base;
+    window.location.href = url;
+  });
+</script>
+
+<%- include('../components/footer') %>

@@ -1,11 +1,9 @@
 <%- include('../components/header') %>
 
-
 <% const hasAnyProperty =
   (flats && flats.length > 0) ||
   (plots && plots.length > 0) ||
   (agri && agri.length > 0); %>
-
 
 <% if (hasAnyProperty) { %>
 <section
@@ -112,7 +110,7 @@
               <div class="relative overflow-hidden rounded-lg mb-3">
                 <img
                   src="<%= p.imageUrls[0] %>"
-                  alt="front image"
+                  alt="<%= p.title %> in <%= p.location %>, Uttarakhand real estate"
                   loading="lazy"
                   class="w-full h-40 object-cover rounded-lg transition-transform duration-300 ease-out group-hover:scale-105"
                 />
@@ -194,7 +192,7 @@
               <div class="relative overflow-hidden rounded-lg mb-3">
                 <img
                   src="<%= p.imageUrls[0] %>"
-                  alt="front image"
+                  alt="<%= p.title %> in <%= p.location %>, Uttarakhand real estate"
                   loading="lazy"
                   class="w-full h-40 object-cover rounded-lg transition-transform duration-300 ease-out group-hover:scale-105"
                 />
@@ -276,7 +274,7 @@
               <div class="relative overflow-hidden rounded-lg mb-3">
                 <img
                   src="<%= p.imageUrls[0] %>"
-                  alt="front image"
+                  alt="<%= p.title %> in <%= p.location %>, Uttarakhand real estate"
                   loading="lazy"
                   class="w-full h-40 object-cover rounded-lg transition-transform duration-300 ease-out group-hover:scale-105"
                 />
@@ -374,9 +372,7 @@
 </div>
 <% } %> <!-- end if hasAnyProperty -->
 
-
 <%- include('../components/footer') %>
-
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
@@ -515,7 +511,7 @@
       emailAlertSave.addEventListener('click', async function () {
         const email = (emailAlertInput?.value || '').trim();
         if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-          alert('Please enter a valid email address.');
+          alert('Please enter a unique email address.');
           return;
         }
 
@@ -527,7 +523,7 @@
           });
 
           if (res.ok) {
-            alert('Email alerts enabled successfully.');
+            alert('Email alerts enabled successfully!');
             closeEmailModal();
           } else {
             const data = await res.json().catch(() => ({}));
@@ -553,7 +549,7 @@
           const shareText =
             `${title} - ${location}\nPrice: ₹${Number(price).toLocaleString('en-IN')}\n\nCheck this property: ${url}`;
 
-          if (navigator.share) { // Web Share API supported [web:2]
+          if (navigator.share) { 
             navigator
               .share({
                 title: title,
@@ -561,11 +557,11 @@
                 url: url
               })
               .catch(function () {
-                const waUrl = 'https://wa.me/?text=' + encodeURIComponent(shareText); // [web:8][web:10]
+                const waUrl = 'https://wa.me/?text=' + encodeURIComponent(shareText);
                 window.open(waUrl, '_blank');
               });
           } else {
-            const waUrl = 'https://wa.me/?text=' + encodeURIComponent(shareText); // [web:8][web:10]
+            const waUrl = 'https://wa.me/?text=' + encodeURIComponent(shareText);
             window.open(waUrl, '_blank');
           }
         });

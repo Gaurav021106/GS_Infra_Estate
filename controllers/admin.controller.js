@@ -1,11 +1,12 @@
-const Property = require('../models/property');
+// controllers/admin.controller.js
+const Property = require('../models/Property');
 const { splitByCategory } = require('../utils/propertyHelpers');
 const { Resend } = require('resend');
 const { notifyNewProperty } = require('../services/alertsService');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Helper function to generate OTP
+// ======================= OTP HELPER ===================
 const generateOTP = () => {
   const digits = '0123456789';
   let otp = '';
@@ -15,7 +16,7 @@ const generateOTP = () => {
   return otp;
 };
 
-// Test Resend connection on startup
+// ======================= RESEND STARTUP TEST =======================
 resend.emails
   .list()
   .then((listResult) => {
@@ -31,7 +32,7 @@ resend.emails
     });
   });
 
-// Helper function - Admin OTP mail
+// ======================= SEND ADMIN OTP EMAIL =======================
 async function sendOtpEmail(adminEmail, code) {
   try {
     console.log('📤 Sending Admin OTP:', {
@@ -42,47 +43,46 @@ async function sendOtpEmail(adminEmail, code) {
     });
 
     const { data, error } = await resend.emails.send({
-      from: process.env.FROM_EMAIL,      // verified custom domain[web:3][web:9]
-      to: process.env.ADMINEMAIL,        // admin inbox
+      from: process.env.FROM_EMAIL,
+      to: process.env.ADMINEMAIL,
       subject: '🔐 GS Infra Estates - Admin Login Verification',
       html: `
-      <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5; border-radius: 10px; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #0066cc 0%, #0080ff 100%); padding: 20px; border-radius: 10px 10px 0 0; text-align: center;">
-          <h1 style="color: #ffffff; margin: 0; font-size: 24px;">GS Infra Estates</h1>
-        </div>
-        <div style="background-color: #ffffff; padding: 30px; border-radius: 0 0 10px 10px;">
-          <h2 style="color: #333333; margin-bottom: 20px;">Admin Login Verification</h2>
-          <p style="font-size: 16px; color: #666666; margin-bottom: 20px;">
-            Admin login request from GS Infra system to: <strong>${adminEmail}</strong>
-          </p>
+        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5; border-radius: 10px; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #0066cc 0%, #0080ff 100%); padding: 20px; border-radius: 10px 10px 0 0; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">GS Infra Estates</h1>
+          </div>
+          <div style="background-color: #ffffff; padding: 30px; border-radius: 0 0 10px 10px;">
+            <h2 style="color: #333333; margin-bottom: 20px;">Admin Login Verification</h2>
+            <p style="font-size: 16px; color: #666666; margin-bottom: 20px;">
+              Admin login request from GS Infra system to: <strong>${adminEmail}</strong>
+            </p>
 
-          <div style="background-color: #f8f9fa; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-            <p style="color: #555555; font-size: 14px; margin-bottom: 10px;">Your one-time verification code is:</p>
-            <h1 style="color: #0066cc; font-size: 48px; letter-spacing: 8px; margin: 0; font-weight: bold;">
-              ${code}
-            </h1>
-            <p style="color: #ff6b35; font-size: 14px; font-weight: bold; margin-bottom: 10px;">
-              Valid for 10 minutes only
+            <div style="background-color: #f8f9fa; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+              <p style="color: #555555; font-size: 14px; margin-bottom: 10px;">Your one-time verification code is:</p>
+              <h1 style="color: #0066cc; font-size: 48px; letter-spacing: 8px; margin: 0; font-weight: bold;">
+                ${code}
+              </h1>
+              <p style="color: #ff6b35; font-size: 14px; font-weight: bold; margin-bottom: 10px;">
+                Valid for 10 minutes only
+              </p>
+            </div>
+
+            <hr style="border: none; border-top: 1px solid #dddddd; margin: 20px 0;" />
+
+            <p style="color: #999999; font-size: 12px; line-height: 1.5;">
+              Sent from <strong>${process.env.FROM_EMAIL}</strong><br />
+              If you didn't request this code, please ignore this email and contact support immediately.
             </p>
           </div>
-
-          <hr style="border: none; border-top: 1px solid #dddddd; margin: 20px 0;" />
-
-          <p style="color: #999999; font-size: 12px; line-height: 1.5;">
-            Sent from <strong>${process.env.FROM_EMAIL}</strong><br />
-            If you didn't request this code, please ignore this email and contact support immediately.
-          </p>
+          <div style="text-align: center; padding: 15px; background-color: #f8f9fa; border-radius: 0 0 10px 10px; margin-top: -10px;">
+            <p style="color: #666666; font-size: 11px; margin: 0;">
+              © GS Infra Estates 2025
+            </p>
+          </div>
         </div>
-        <div style="text-align: center; padding: 15px; background-color: #f8f9fa; border-radius: 0 0 10px 10px; margin-top: -10px;">
-          <p style="color: #666666; font-size: 11px; margin: 0;">
-            © GS Infra Estates 2025
-          </p>
-        </div>
-      </div>
       `,
     });
 
-    // Resend SDK error (validation, domain, etc.)
     if (error) {
       console.error('❌ Resend send error:', {
         name: error.name,
@@ -94,7 +94,6 @@ async function sendOtpEmail(adminEmail, code) {
         to: process.env.ADMINEMAIL,
       });
 
-      // Build a rich error object for controller
       const e = new Error(error.message || 'Failed to send email via Resend');
       e.name = error.name || 'ResendError';
       e.statusCode = error.statusCode || 500;
@@ -120,12 +119,16 @@ async function sendOtpEmail(adminEmail, code) {
       resendError: err.resendError || null,
     });
 
-    // Re-throw to be handled in loginStep1 so client sees real reason
     throw err;
   }
 }
 
-// LOGIN VIEW
+// helper for JSON vs HTML
+const wantsJson = (req) =>
+  req.xhr ||
+  (req.headers.accept && req.headers.accept.includes('application/json'));
+
+// ======================= LOGIN VIEW =======================
 exports.showLogin = (req, res) => {
   try {
     res.render('admin/login', {
@@ -139,7 +142,7 @@ exports.showLogin = (req, res) => {
   }
 };
 
-// LOGIN STEP 1 - EMAIL + PASSWORD
+// ======================= LOGIN STEP 1 (EMAIL + PASSWORD) =======================
 exports.loginStep1 = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -150,18 +153,15 @@ exports.loginStep1 = async (req, res) => {
         .json({ ok: false, error: 'Email and password are required' });
     }
 
-    const ADMINEMAIL =
-      process.env.ADMINEMAIL;
-    const ADMINPASS = process.env.ADMINPASS ;
+    const ADMINEMAIL = process.env.ADMINEMAIL;
+    const ADMINPASS = process.env.ADMINPASS;
 
     if (username !== ADMINEMAIL || password !== ADMINPASS) {
       return res.status(401).json({ ok: false, error: 'Invalid credentials' });
     }
 
-    // Generate OTP
     const code = generateOTP();
 
-    // Store in session
     req.session.otp = {
       code,
       expiry: Date.now() + 10 * 60 * 1000,
@@ -176,7 +176,6 @@ exports.loginStep1 = async (req, res) => {
       });
     });
 
-    // Send OTP (now returns exact error if fail)
     await sendOtpEmail(ADMINEMAIL, code);
 
     console.log(`✅ OTP generated for Admin: ${ADMINEMAIL}`);
@@ -198,10 +197,7 @@ exports.loginStep1 = async (req, res) => {
       req.session.save(() => {});
     }
 
-    // Expose Resend error details to client so you know exact reason
-    const status = Number.isInteger(error.statusCode)
-      ? error.statusCode
-      : 503;
+    const status = Number.isInteger(error.statusCode) ? error.statusCode : 503;
 
     return res.status(status).json({
       ok: false,
@@ -216,7 +212,7 @@ exports.loginStep1 = async (req, res) => {
   }
 };
 
-// LOGIN STEP 2 - VERIFY OTP
+// ======================= LOGIN STEP 2 (VERIFY OTP) =======================
 exports.loginVerify = async (req, res) => {
   try {
     const { verificationCode } = req.body;
@@ -266,7 +262,6 @@ exports.loginVerify = async (req, res) => {
     const ADMINEMAIL =
       process.env.ADMINEMAIL || 'gauravsaklani021106@gmail.com';
 
-    // Success
     req.session.isAdmin = true;
     req.session.adminEmail = ADMINEMAIL;
 
@@ -289,7 +284,7 @@ exports.loginVerify = async (req, res) => {
   }
 };
 
-// LOGOUT
+// ======================= LOGOUT =======================
 exports.logoutAdmin = (req, res) => {
   try {
     const adminEmail =
@@ -311,12 +306,14 @@ exports.logoutAdmin = (req, res) => {
   }
 };
 
-// DASHBOARD
+// ======================= DASHBOARD VIEW =======================
 exports.dashboard = async (req, res) => {
   try {
     const props = await Property.find().sort({ createdAt: -1 });
     const { flats, plots, agri } = splitByCategory(props);
-        const editingProperty = req.query.id ? await Property.findById(req.query.id) : null;
+    const editingProperty = req.query.id
+      ? await Property.findById(req.query.id)
+      : null;
 
     res.render('admin/dashboard', {
       title: 'Admin Dashboard - GS Infra Estates',
@@ -327,7 +324,7 @@ exports.dashboard = async (req, res) => {
         req.session.adminEmail ||
         process.env.ADMINEMAIL ||
         'gauravsaklani021106@gmail.com',
-      editingProperty: editingProperty,
+      editingProperty,
       status: req.query.status || null,
     });
   } catch (err) {
@@ -346,10 +343,22 @@ exports.dashboard = async (req, res) => {
   }
 };
 
-// CREATE PROPERTY
+// ======================= LIST PROPERTIES AS JSON =======================
+exports.listPropertiesJson = async (req, res) => {
+  try {
+    const props = await Property.find().sort({ createdAt: -1 });
+    const { flats, plots, agri } = splitByCategory(props);
+    res.json({ ok: true, flats, plots, agri });
+  } catch (err) {
+    console.error('❌ List properties JSON error:', err);
+    res.status(500).json({ ok: false, error: 'Failed to load properties' });
+  }
+};
+
+// ======================= CREATE PROPERTY =======================
 exports.createProperty = async (req, res) => {
   try {
-    const {
+    let {
       category,
       title,
       description,
@@ -358,20 +367,23 @@ exports.createProperty = async (req, res) => {
       suitableFor,
       status,
       sqft,
-          city,
-    state,
+      city,
+      state,
     } = req.body;
 
     if (!category || !title || !price || !location) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      const msg = 'Missing required fields';
+      return wantsJson(req)
+        ? res.status(400).json({ ok: false, error: msg })
+        : res.status(400).send(msg);
     }
 
-      // Fallback: Extract city and state from location if not provided
-  if ((!city || !state) && location) {
-    const parts = location.split(',').map(p => p.trim());
-    if (!city && parts.length >= 1) city = parts[0];
-    if (!state && parts.length >= 2) state = parts[1];
-  }
+    if ((!city || !state) && location) {
+      const parts = location.split(',').map((p) => p.trim());
+      if (!city && parts.length >= 1) city = parts[0];
+      if (!state && parts.length >= 2) state = parts[1];
+    }
+
     const suitableArr = suitableFor
       ?.split(',')
       .map((s) => s.trim())
@@ -404,25 +416,29 @@ exports.createProperty = async (req, res) => {
       imageUrls: imageArr,
       videoUrls: videoArr,
       sqft,
-          city,
-    state,
+      city,
+      state,
     });
 
     console.log(`✅ Property created: ${title} (ID: ${property.id})`);
 
-    // Fire-and-forget alert emails to all subscribers
-    await notifyNewProperty(property).catch((err) => {
+    notifyNewProperty(property).catch((err) => {
       console.error('❌ Property alert send failed:', err.message);
     });
 
+    if (wantsJson(req)) {
+      return res.status(201).json({ ok: true, property });
+    }
     return res.redirect('/admin/dashboard?status=created');
   } catch (err) {
     console.error('❌ Create property error:', err);
-    return res.status(500).json({ error: 'Failed to create property' });
+    return wantsJson(req)
+      ? res.status(500).json({ ok: false, error: 'Failed to create property' })
+      : res.status(500).send('Failed to create property');
   }
 };
 
-// EDIT FORM
+// ======================= EDIT FORM (for URL-based edit) =======================
 exports.editForm = async (req, res) => {
   try {
     const property = await Property.findById(req.params.id);
@@ -452,7 +468,7 @@ exports.editForm = async (req, res) => {
   }
 };
 
-// UPDATE PROPERTY
+// ======================= UPDATE PROPERTY =======================
 exports.updateProperty = async (req, res) => {
   try {
     const updates = { ...req.body };
@@ -495,29 +511,48 @@ exports.updateProperty = async (req, res) => {
     );
 
     if (!property) {
-      return res.status(404).json({ error: 'Property not found' });
+      const msg = 'Property not found';
+      return wantsJson(req)
+        ? res.status(404).json({ ok: false, error: msg })
+        : res.status(404).send(msg);
     }
 
     console.log(`✅ Property updated: ${property.title}`);
-    res.redirect('/admin/dashboard?status=updated');
+
+    if (wantsJson(req)) {
+      return res.json({ ok: true, property });
+    }
+    return res.redirect('/admin/dashboard?status=updated');
   } catch (err) {
     console.error('❌ Update property error:', err);
-    res.status(500).json({ error: 'Update failed' });
+    return wantsJson(req)
+      ? res.status(500).json({ ok: false, error: 'Update failed' })
+      : res.status(500).send('Update failed');
   }
 };
 
-// DELETE PROPERTY
+// ======================= DELETE PROPERTY =======================
 exports.deleteProperty = async (req, res) => {
   try {
     const property = await Property.findByIdAndDelete(req.params.id);
 
-    if (property) {
-      console.log(`🗑️ Property deleted: ${property.title}`);
+    if (!property) {
+      const msg = 'Property not found';
+      return wantsJson(req)
+        ? res.status(404).json({ ok: false, error: msg })
+        : res.status(404).send(msg);
     }
 
-    res.redirect('/admin/dashboard?status=deleted');
+    console.log(`🗑️ Property deleted: ${property.title}`);
+
+    if (wantsJson(req)) {
+      return res.json({ ok: true, id: property._id });
+    }
+    return res.redirect('/admin/dashboard?status=deleted');
   } catch (err) {
     console.error('❌ Delete property error:', err);
-    res.status(500).json({ error: 'Delete failed' });
+    return wantsJson(req)
+      ? res.status(500).json({ ok: false, error: 'Delete failed' })
+      : res.status(500).send('Delete failed');
   }
 };

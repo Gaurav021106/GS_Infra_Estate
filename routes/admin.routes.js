@@ -1,53 +1,90 @@
+// routes/admin.routes.js
 const express = require('express');
 const router = express.Router();
 
-const upload = require('../middleware/upload');
-const {
-  showLogin,
-  loginStep1,
-  loginVerify,
-  logoutAdmin,
-  dashboard,
-  createProperty,
-  editForm,
-  updateProperty,
-  deleteProperty,
-} = require('../controllers/admin.controller');
+const adminController = require('../controllers/admin.controller');
 const authAdmin = require('../middleware/authAdmin');
+const multer = require('multer');
 
-router.get('/login', showLogin);
-router.post('/login', loginStep1);
-router.post('/login/verify', loginVerify);
-router.get('/logout', logoutAdmin);
+// ======================= MULTER CONFIG =======================
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    // adjust path if needed (ensure /public/uploads exists)
+    cb(null, 'public/uploads');
+  },
+  filename: (req, file, cb) => {
+    const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const ext = file.originalname.split('.').pop();
+    cb(null, `${unique}.${ext}`);
+  },
+});
 
-router.get('/dashboard', authAdmin, dashboard);
+const upload = multer({ storage });
 
+// Accept multiple named file fields from the form
+// name attributes must match your EJS: map3dFile, virtualTourFile, images, videos
+const uploadFields = upload.fields([
+  { name: 'map3dFile', maxCount: 1 },
+  { name: 'virtualTourFile', maxCount: 1 },
+  { name: 'images', maxCount: 10 },
+  { name: 'videos', maxCount: 10 },
+]);
+
+// ======================= PUBLIC ADMIN ROUTES =======================
+
+// Login page (GET)
+router.get('/login', adminController.showLogin);
+
+// Step 1: email + password (POST /admin/login)
+router.post('/login', adminController.loginStep1);
+
+// Step 2: verify OTP (POST /admin/login/verify)
+router.post('/login/verify', adminController.loginVerify);
+
+// Logout (clears session, then redirect to /)
+router.get('/logout', adminController.logoutAdmin);
+
+// ======================= PROTECTED ADMIN ROUTES =======================
+// All routes below require req.session.isAdmin === true
+
+// Dashboard (EJS view)
+router.get('/dashboard', authAdmin, adminController.dashboard);
+
+// JSON list for SPA dashboard (used by AJAX if you want)
+router.get(
+  '/properties/json',
+  authAdmin,
+  adminController.listPropertiesJson
+);
+
+// Create property (supports files, returns JSON or redirect)
 router.post(
   '/properties/new',
   authAdmin,
-  upload.fields([
-    { name: 'map3dFile', maxCount: 1 },
-    { name: 'virtualTourFile', maxCount: 1 },
-    { name: 'images', maxCount: 10 },
-    { name: 'videos', maxCount: 10 },
-  ]),
-  createProperty,
+  uploadFields,
+  adminController.createProperty
 );
 
-router.get('/properties/:id/edit', authAdmin, editForm);
+// Optional: Edit property view (if you still navigate by URL)
+router.get(
+  '/properties/:id/edit',
+  authAdmin,
+  adminController.editForm
+);
 
+// Update property (supports files, returns JSON or redirect)
 router.post(
   '/properties/:id/update',
   authAdmin,
-  upload.fields([
-    { name: 'map3dFile', maxCount: 1 },
-    { name: 'virtualTourFile', maxCount: 1 },
-    { name: 'images', maxCount: 10 },
-    { name: 'videos', maxCount: 10 },
-  ]),
-  updateProperty,
+  uploadFields,
+  adminController.updateProperty
 );
 
-router.post('/properties/:id/delete', authAdmin, deleteProperty);
+// Delete property (returns JSON or redirect)
+router.post(
+  '/properties/:id/delete',
+  authAdmin,
+  adminController.deleteProperty
+);
 
 module.exports = router;

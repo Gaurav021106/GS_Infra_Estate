@@ -28,6 +28,11 @@
     <%= editingProperty ? `Edit: ${editingProperty.title}` : 'Admin Dashboard' %>
   </h1>
 
+  <!-- Toast Notifications -->
+  <div id="toast"
+       class="fixed top-20 right-4 z-50 hidden px-4 py-2 rounded-lg shadow-lg text-sm font-medium text-white bg-gray-800/90">
+  </div>
+
   <!-- Add/Edit Property Form -->
   <section class="bg-white rounded-xl shadow p-5 md:p-6 mb-10 border border-gray-100">
     <h2 class="text-lg md:text-xl font-semibold mb-4">
@@ -214,7 +219,7 @@
             </thead>
             <tbody>
               <% flats.forEach(p => { %>
-                <tr class="even:bg-gray-50 hover:bg-gray-50">
+                <tr class="even:bg-gray-50 hover:bg-gray-50" data-id="<%= p._id %>" data-category="<%= p.category %>">
                   <td class="border px-2 py-1 text-center">
                     <% if (p.imageUrls && p.imageUrls.length) { %>
                       <img src="<%= p.imageUrls[0] %>" alt="front image"
@@ -231,17 +236,14 @@
                         ((p.suitableFor || []).join(', ').length > 20 ? '...' : '') %>
                   </td>
                   <td class="border px-2 py-1 space-x-2 whitespace-nowrap">
-                    <a href="/admin/properties/<%= p._id %>/edit"
-                       class="inline-block px-3 py-1 text-xs rounded bg-yellow-500 text-white hover:bg-yellow-600 transition">
-                       Edit
-                    </a>
-                    <form action="/admin/properties/<%= p._id %>/delete" method="POST" class="inline"
-                          onsubmit="return confirm('Delete this property? Are you sure?')">
-                      <button type="submit"
-                              class="px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition">
-                        Delete
-                      </button>
-                    </form>
+                    <button type="button"
+                            class="js-edit inline-block px-3 py-1 text-xs rounded bg-yellow-500 text-white hover:bg-yellow-600 transition">
+                      Edit
+                    </button>
+                    <button type="button"
+                            class="js-delete px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition">
+                      Delete
+                    </button>
                   </td>
                 </tr>
               <% }) %>
@@ -277,7 +279,7 @@
             </thead>
             <tbody>
               <% plots.forEach(p => { %>
-                <tr class="even:bg-gray-50 hover:bg-gray-50">
+                <tr class="even:bg-gray-50 hover:bg-gray-50" data-id="<%= p._id %>" data-category="<%= p.category %>">
                   <td class="border px-2 py-1 text-center">
                     <% if (p.imageUrls && p.imageUrls.length) { %>
                       <img src="<%= p.imageUrls[0] %>" alt="front image"
@@ -294,17 +296,14 @@
                         ((p.suitableFor || []).join(', ').length > 20 ? '...' : '') %>
                   </td>
                   <td class="border px-2 py-1 space-x-2 whitespace-nowrap">
-                    <a href="/admin/properties/<%= p._id %>/edit"
-                       class="inline-block px-3 py-1 text-xs rounded bg-yellow-500 text-white hover:bg-yellow-600 transition">
-                       Edit
-                    </a>
-                    <form action="/admin/properties/<%= p._id %>/delete" method="POST" class="inline"
-                          onsubmit="return confirm('Delete this property? Are you sure?')">
-                      <button type="submit"
-                              class="px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition">
-                        Delete
-                      </button>
-                    </form>
+                    <button type="button"
+                            class="js-edit inline-block px-3 py-1 text-xs rounded bg-yellow-500 text-white hover:bg-yellow-600 transition">
+                      Edit
+                    </button>
+                    <button type="button"
+                            class="js-delete px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition">
+                      Delete
+                    </button>
                   </td>
                 </tr>
               <% }) %>
@@ -340,7 +339,7 @@
             </thead>
             <tbody>
               <% agri.forEach(p => { %>
-                <tr class="even:bg-gray-50 hover:bg-gray-50">
+                <tr class="even:bg-gray-50 hover:bg-gray-50" data-id="<%= p._id %>" data-category="<%= p.category %>">
                   <td class="border px-2 py-1 text-center">
                     <% if (p.imageUrls && p.imageUrls.length) { %>
                       <img src="<%= p.imageUrls[0] %>" alt="front image"
@@ -357,17 +356,14 @@
                         ((p.suitableFor || []).join(', ').length > 20 ? '...' : '') %>
                   </td>
                   <td class="border px-2 py-1 space-x-2 whitespace-nowrap">
-                    <a href="/admin/properties/<%= p._id %>/edit"
-                       class="inline-block px-3 py-1 text-xs rounded bg-yellow-500 text-white hover:bg-yellow-600 transition">
-                       Edit
-                    </a>
-                    <form action="/admin/properties/<%= p._id %>/delete" method="POST" class="inline"
-                          onsubmit="return confirm('Delete this property? Are you sure?')">
-                      <button type="submit"
-                              class="px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition">
-                        Delete
-                      </button>
-                    </form>
+                    <button type="button"
+                            class="js-edit inline-block px-3 py-1 text-xs rounded bg-yellow-500 text-white hover:bg-yellow-600 transition">
+                      Edit
+                    </button>
+                    <button type="button"
+                            class="js-delete px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition">
+                      Delete
+                    </button>
                   </td>
                 </tr>
               <% }) %>
@@ -394,28 +390,255 @@
   const form = document.getElementById('propertyForm');
   if (!form) return;
 
-  form.addEventListener('submit', function () {
-    const submitBtn = form.querySelector('button[type="submit"]');
-    if (submitBtn) {
+  let mode = 'create';
+  let editingId = null;
 
-      // Extract city and state from location
-      const locationInput = form.querySelector('input[name="location"]');
-      const cityInput = form.querySelector('input[name="city"]');
-      const stateInput = form.querySelector('input[name="state"]');
-      
-      if (locationInput && locationInput.value) {
-        const parts = locationInput.value.split(',').map(p => p.trim());
-        if (parts.length >= 1) {
-          cityInput.value = parts[0]; // First part is city
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const locationInput = form.querySelector('input[name="location"]');
+  const cityInput = form.querySelector('input[name="city"]');
+  const stateInput = form.querySelector('input[name="state"]');
+  const toastEl = document.getElementById('toast');
+
+  const tables = document.querySelectorAll('section.space-y-8 table');
+  const flatsTbody = tables[0]?.querySelector('tbody');
+  const plotsTbody = tables[1]?.querySelector('tbody');
+  const agriTbody = tables[2]?.querySelector('tbody');
+
+  const getBodyByCategory = (cat) => {
+    if (cat === 'flat_house') return flatsTbody;
+    if (cat === 'plot') return plotsTbody;
+    if (cat === 'agri') return agriTbody;
+    return flatsTbody;
+  };
+
+  function showToast(message, type = 'success') {
+    if (!toastEl) return;
+    toastEl.textContent = message;
+    toastEl.classList.remove('hidden', 'bg-red-600', 'bg-green-600');
+    toastEl.classList.add(type === 'error' ? 'bg-red-600' : 'bg-green-600');
+    setTimeout(() => {
+      toastEl.classList.add('hidden');
+    }, 2500);
+  }
+
+  function fillCityState() {
+    if (!locationInput || !cityInput || !stateInput) return;
+    if (locationInput.value) {
+      const parts = locationInput.value.split(',').map(p => p.trim());
+      if (parts.length >= 1) cityInput.value = parts[0];
+      if (parts.length >= 2) stateInput.value = parts[1];
+    }
+  }
+
+  function createRow(p) {
+    const tr = document.createElement('tr');
+    tr.className = 'even:bg-gray-50 hover:bg-gray-50';
+    tr.dataset.id = p._id;
+    tr.dataset.category = p.category;
+
+    const firstImage = (p.imageUrls && p.imageUrls.length) ? p.imageUrls[0] : null;
+    const suitableStr = (p.suitableFor || []).join(', ');
+    const suitableShort = suitableStr.substring(0, 20) + (suitableStr.length > 20 ? '...' : '');
+
+    tr.innerHTML = `
+      <td class="border px-2 py-1 text-center">
+        ${firstImage
+          ? `<img src="${firstImage}" alt="front image"
+                 class="w-20 h-16 object-cover rounded mx-auto border" />`
+          : `<span class="text-xs text-gray-400">No image</span>`}
+      </td>
+      <td class="border px-2 py-1 font-medium">${p.title}</td>
+      <td class="border px-2 py-1">${p.location}</td>
+      <td class="border px-2 py-1">₹ ${Number(p.price).toLocaleString('en-IN')}</td>
+      <td class="border px-2 py-1">${suitableShort}</td>
+      <td class="border px-2 py-1 space-x-2 whitespace-nowrap">
+        <button type="button"
+                class="js-edit inline-block px-3 py-1 text-xs rounded bg-yellow-500 text-white hover:bg-yellow-600 transition">
+          Edit
+        </button>
+        <button type="button"
+                class="js-delete px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition">
+          Delete
+        </button>
+      </td>
+    `;
+    return tr;
+  }
+
+  function resetForm() {
+    form.reset();
+    mode = 'create';
+    editingId = null;
+    if (submitBtn) {
+      submitBtn.textContent = 'Add Property';
+      submitBtn.disabled = false;
+    }
+  }
+
+  function populateFormFromRow(p) {
+    form.querySelector('select[name="category"]').value = p.category || 'flat_house';
+    form.querySelector('input[name="title"]').value = p.title || '';
+    form.querySelector('input[name="price"]').value = p.price || '';
+    form.querySelector('input[name="location"]').value = p.location || '';
+    form.querySelector('input[name="suitableFor"]').value = (p.suitableFor || []).join(', ');
+    form.querySelector('textarea[name="description"]').value = p.description || '';
+    if (locationInput) {
+      fillCityState();
+    }
+  }
+
+  function readPropertyFromRow(tr) {
+    const tds = tr.querySelectorAll('td');
+    const title = tds[1]?.textContent.trim();
+    const location = tds[2]?.textContent.trim();
+    const priceText = (tds[3]?.textContent || '').replace(/[₹ ,]/g, '');
+    const suitableFor = (tds[4]?.textContent || '').replace('...', '').split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    return {
+      _id: tr.dataset.id,
+      category: tr.dataset.category,
+      title,
+      location,
+      price: priceText || '',
+      suitableFor,
+      description: ''
+    };
+  }
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    if (!submitBtn) return;
+
+    fillCityState();
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = mode === 'edit' ? 'Updating...' : 'Saving...';
+
+    const formData = new FormData(form);
+    const url = mode === 'edit'
+      ? `/admin/properties/${editingId}/update`
+      : '/admin/properties/new';
+
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          Accept: 'application/json'
         }
-        if (parts.length >= 2) {
-          stateInput.value = parts[1]; // Second part is state
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data || data.ok === false || data.error) {
+        throw new Error((data && data.error) || 'Save failed');
+      }
+
+      const p = data.property || data;
+
+      const body = getBodyByCategory(p.category);
+      if (!body) {
+        showToast('Saved but table not found', 'error');
+      } else if (mode === 'create') {
+        if (body.children.length === 1 && body.children[0].querySelector('p')) {
+          body.innerHTML = '';
+        }
+        body.prepend(createRow(p));
+      } else {
+        const existingRow = body.querySelector(`tr[data-id="${editingId}"]`);
+        if (existingRow) {
+          const newTr = createRow(p);
+          body.replaceChild(newTr, existingRow);
+        } else {
+          body.prepend(createRow(p));
         }
       }
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Saving...';
+
+      showToast(mode === 'edit' ? 'Property updated' : 'Property created', 'success');
+      resetForm();
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || 'Save failed', 'error');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = mode === 'edit' ? 'Update Property' : 'Add Property';
+      }
     }
   });
+
+  document.addEventListener('click', async function (e) {
+    const editBtn = e.target.closest('.js-edit');
+    const deleteBtn = e.target.closest('.js-delete');
+
+    if (editBtn) {
+      const tr = editBtn.closest('tr');
+      if (!tr) return;
+
+      const p = readPropertyFromRow(tr);
+      populateFormFromRow(p);
+      mode = 'edit';
+      editingId = p._id;
+
+      if (submitBtn) {
+        submitBtn.textContent = 'Update Property';
+        submitBtn.disabled = false;
+      }
+
+      window.scrollTo({
+        top: form.getBoundingClientRect().top + window.scrollY - 100,
+        behavior: 'smooth'
+      });
+    }
+
+    if (deleteBtn) {
+      const tr = deleteBtn.closest('tr');
+      if (!tr) return;
+      const id = tr.dataset.id;
+      const cat = tr.dataset.category;
+
+      if (!confirm('Delete this property? Are you sure?')) return;
+
+      try {
+        const res = await fetch(`/admin/properties/${id}/delete`, {
+          method: 'POST',
+          headers: { Accept: 'application/json' }
+        });
+        const data = await res.json().catch(() => null);
+        if (!res.ok || (data && data.ok === false)) {
+          throw new Error((data && data.error) || 'Delete failed');
+        }
+
+        tr.remove();
+        showToast('Property deleted', 'success');
+
+        const body = getBodyByCategory(cat);
+        if (body && !body.children.length) {
+          body.innerHTML = `
+            <tr>
+              <td colspan="6" class="border px-2 py-8 text-center text-gray-500">
+                <div class="py-8">
+                  <p class="text-lg font-medium mb-2">No properties yet</p>
+                  <p class="text-sm">Add your first property above</p>
+                </div>
+              </td>
+            </tr>
+          `;
+        }
+      } catch (err) {
+        console.error(err);
+        showToast(err.message || 'Delete failed', 'error');
+      }
+    }
+  });
+
+  // Optional: auto-sync with server on load
+  // You can enable this if multiple admins edit at once.
+  // fetch('/admin/properties/json', { headers: { Accept: 'application/json' } })
+  //   .then(r => r.json())
+  //   .then(d => { /* re-render from JSON if you want */ });
+
 })();
 </script>
 
