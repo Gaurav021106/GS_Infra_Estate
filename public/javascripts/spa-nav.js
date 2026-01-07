@@ -18,6 +18,19 @@
     }
   }
 
+  // Send GA4 page_view for SPA navigation
+  function trackPageView(urlLike) {
+    if (typeof gtag !== 'function') return;
+
+    const url = new URL(urlLike, window.location.origin);
+
+    gtag('event', 'page_view', {
+      page_location: url.toString(),
+      page_path: url.pathname + url.search + url.hash,
+      page_title: document.title,
+    });
+  }
+
   // ---------- SPA Navigation ----------
   async function fetchAndSwap(url, pushState = true) {
     const main = document.querySelector('main');
@@ -66,7 +79,13 @@
         sc.onload = () => sc.remove();
       });
 
-      if (pushState) history.pushState({}, '', url);
+      if (pushState) {
+        history.pushState({}, '', url);
+      }
+
+      // Track virtual page view for SPA navigation
+      trackPageView(url);
+
     } catch (err) {
       location.href = url;
     }
@@ -116,6 +135,10 @@
       document.querySelectorAll('.nav-link').forEach(x => x.classList.remove('nav-active'));
       a.classList.add('nav-active');
       history.replaceState({}, '', '/');
+
+      // Track home as page view
+      trackPageView('/');
+
       return;
     }
 
@@ -145,6 +168,9 @@
       document.querySelectorAll('.nav-link').forEach(x => x.classList.remove('nav-active'));
       if (a.classList.contains('nav-link')) a.classList.add('nav-active');
       history.replaceState({}, '', href);
+
+      // Optional: treat hash changes as same page, usually no extra page_view
+
       return;
     }
 
@@ -166,6 +192,8 @@
   window.addEventListener('popstate', () => {
     setActive();
     fetchAndSwap(location.href, false);
+    // Track page view for back/forward navigation
+    trackPageView(location.href);
   });
 
   window.addEventListener('hashchange', setActive);
