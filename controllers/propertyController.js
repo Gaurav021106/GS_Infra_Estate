@@ -1,4 +1,4 @@
-const Property = require('../models/Property');
+const Property = require('../models/property');
 const {
   generatePropertySchema,
   generateLocalBusinessSchema,

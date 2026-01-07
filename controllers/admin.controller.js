@@ -1,5 +1,5 @@
 // controllers/admin.controller.js
-const Property = require('../models/Property');
+const Property = require('../models/property');
 const { splitByCategory } = require('../utils/propertyHelpers');
 const { Resend } = require('resend');
 const { notifyNewProperty } = require('../services/alertsService');
