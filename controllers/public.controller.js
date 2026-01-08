@@ -112,7 +112,7 @@ exports.legacyPropertyRedirect = async (req, res) => {
   try {
     const property = await Property.findById(req.params.id).lean();
     if (!property) {
-      return res.redirect('/');
+      return res.redirect(`/property/${property.slug}-${property._id}`);
     }
 
     res.render('pages/home', {
