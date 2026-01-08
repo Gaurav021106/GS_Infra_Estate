@@ -13,6 +13,7 @@ const {
 const propertyController = require('../controllers/propertyController');
 
 // ======================= ROOT =======================
+// Home page: shows latest properties (split by category in controller)
 router.get('/', homePage);
 
 // ======================= CITY LISTING PAGES (STATIC SEO) =======================
@@ -55,13 +56,13 @@ router.get('/commercial-properties-in-:city', (req, res, next) => {
 });
 
 // ======================= PROPERTY DETAIL PAGES =======================
-// Old short SEO URL
+// Old short SEO URL (used by new cards: /property/:slug-:id)
 router.get('/property/:slug-:id', propertyController.getPropertyDetail);
 
-// New structured SEO URL
+// New structured SEO URL (location/category in path, used by public.controller)
 router.get('/properties/:location/:category/:slug-:id', propertyDetailPage);
 
-// Legacy short link used in alerts
+// Legacy short link used in alerts (just /property/:id, opens modal on home)
 router.get('/property/:id', legacyPropertyRedirect);
 
 // ======================= SITEMAP / ROBOTS =======================

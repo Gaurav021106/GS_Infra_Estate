@@ -1,49 +1,56 @@
-<!-- Property Detail Modal -->
 <% if (typeof property !== 'undefined' && property) { %>
-<div class="modal fade" id="propertyModal" tabindex="-1" role="dialog" aria-labelledby="propertyModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
+<div class="modal fade" id="propertyModal" tabindex="-1" aria-labelledby="propertyModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="propertyModalLabel"><%= property.title %></h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
+
       <div class="modal-body">
-        <!-- Property Image -->
-        <% if (property.images && property.images.length > 0) { %>
-          <img src="<%= property.images[0] %>" alt="<%= property.title %>" class="img-fluid rounded mb-4" style="max-height: 400px; object-fit: cover; width: 100%;">
+        <% if (property.imageUrls && property.imageUrls.length > 0) { %>
+          <img
+            src="<%= property.imageUrls[0] %>"
+            alt="<%= property.title %>"
+            class="img-fluid rounded mb-4"
+            style="max-height: 400px; object-fit: cover; width: 100%;"
+          />
         <% } %>
 
-        <!-- Property Details -->
         <div class="property-details">
           <div class="row mb-3">
             <div class="col-md-6">
               <h6 class="text-muted">Location</h6>
-              <p class="fs-5"><%= property.location %></p>
+              <p class="fs-5 mb-0"><%= property.location %></p>
             </div>
             <div class="col-md-6">
               <h6 class="text-muted">Category</h6>
-              <p class="fs-5"><span class="badge bg-primary"><%= property.category %></span></p>
+              <p class="fs-5 mb-0">
+                <span class="badge bg-primary"><%= property.category %></span>
+              </p>
             </div>
           </div>
 
           <div class="row mb-3">
             <div class="col-md-6">
               <h6 class="text-muted">Price</h6>
-              <p class="fs-5 fw-bold text-success">₹ <%= property.price ? property.price.toLocaleString('en-IN') : 'N/A' %></p>
+              <p class="fs-5 fw-bold text-success mb-0">
+                ₹ <%= property.price ? property.price.toLocaleString('en-IN') : 'N/A' %>
+              </p>
             </div>
             <div class="col-md-6">
               <h6 class="text-muted">Area</h6>
-              <p class="fs-5"><%= property.area %> sq ft</p>
+              <p class="fs-5 mb-0"><%= property.area || 'N/A' %> sq ft</p>
             </div>
           </div>
 
-          <!-- Description -->
-          <div class="mb-3">
-            <h6 class="text-muted">Description</h6>
-            <p><%= property.description %></p>
-          </div>
+          <% if (property.description) { %>
+            <div class="mb-3">
+              <h6 class="text-muted">Description</h6>
+              <p class="mb-0"><%= property.description %></p>
+            </div>
+          <% } %>
 
-          <!-- Amenities -->
           <% if (property.amenities && property.amenities.length > 0) { %>
             <div class="mb-3">
               <h6 class="text-muted">Amenities</h6>
@@ -55,21 +62,29 @@
             </div>
           <% } %>
 
-          <!-- Contact Information -->
           <div class="mt-4 pt-4 border-top">
             <h6 class="text-muted mb-3">Contact Us</h6>
             <% if (property.contactPerson) { %>
-              <p class="mb-2"><strong>Contact Person:</strong> <%= property.contactPerson %></p>
+              <p class="mb-2">
+                <strong>Contact Person:</strong> <%= property.contactPerson %>
+              </p>
             <% } %>
             <% if (property.phone) { %>
-              <p class="mb-2"><strong>Phone:</strong> <a href="tel:<%= property.phone %>"><%= property.phone %></a></p>
+              <p class="mb-2">
+                <strong>Phone:</strong>
+                <a href="tel:<%= property.phone %>"><%= property.phone %></a>
+              </p>
             <% } %>
             <% if (property.email) { %>
-              <p><strong>Email:</strong> <a href="mailto:<%= property.email %>"><%= property.email %></a></p>
+              <p class="mb-0">
+                <strong>Email:</strong>
+                <a href="mailto:<%= property.email %>"><%= property.email %></a>
+              </p>
             <% } %>
           </div>
         </div>
       </div>
+
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         <% if (property.contactUrl) { %>

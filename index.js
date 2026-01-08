@@ -431,6 +431,17 @@ const gracefulShutdown = (signal) => {
 const PORT = process.env.PORT || 4000;
 const HOST = process.env.HOST || '0.0.0.0';
 
+app.use((err, req, res, next) => {
+  const status = err.status || 500;
+  res.status(status);
+  res.render('pages/error', {
+    status,
+    message: err.message,
+    error: err,
+    referrer: req.get('Referrer') || null
+  });
+});
+
 const server = app.listen(PORT, HOST, () => {
   console.log('\n' + '='.repeat(70));
   console.log(`🚀 GS Infra Estates LIVE`);
@@ -439,16 +450,16 @@ const server = app.listen(PORT, HOST, () => {
   console.log(
     `🗄️  Database: ${
       mongoose.connection.readyState === 1 ? '✅ Connected' : '⏳ Connecting...'
-    }`
-  );
+    }`  
+  );  
   console.log(
     `💾 Session Store: ${
       sessionConfig.store ? '✅ MongoDB' : '⚠️  Memory (dev only)'
-    }`
-  );
+    }`  
+  );  
   console.log(`🔒 Security: ✅ Helmet, Rate Limiting, Sanitization`);
   console.log('='.repeat(70) + '\n');
-});
+});  
 
 // Handle shutdown signals
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
@@ -460,9 +471,10 @@ process.on('uncaughtException', (err) => {
   console.error(err.name, err.message);
   console.error(err.stack);
   process.exit(1);
-});
+});  
 
 // Handle unhandled promise rejections
+
 process.on('unhandledRejection', (err) => {
   console.error('❌ UNHANDLED REJECTION! Shutting down...');
   console.error(err.name, err.message);
