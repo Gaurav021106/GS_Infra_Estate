@@ -190,7 +190,7 @@ app.use(
 // ======================= INPUT SANITIZATION =======================
 const sanitizeData = (obj) => {
   if (typeof obj !== 'object' || obj === null) return obj;
-
+  
   const sanitized = Array.isArray(obj) ? [] : {};
 
   for (const key in obj) {
@@ -408,6 +408,31 @@ app.use((err, req, res, next) => {
   }
 });
 
+// Error handling middleware
+  app.use((err, req, res, next) => {
+    const status = err.status || 500;
+    const message = process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong on our server.';
+    
+    console.error(err.stack); // Log full error server-side
+    
+    res.status(status).render('error', {
+      status,
+      message,
+      error: process.env.NODE_ENV === 'development' ? err : undefined,
+      referrer: req.get('Referrer')
+    });
+  });
+  
+  // 404 handler before error middleware
+  app.use((req, res) => {
+    res.status(404).render('error', {
+      status: 404,
+      message: 'The page you\'re looking for doesn\'t exist.',
+      referrer: req.get('Referrer')
+    });
+  });
+
+
 // ======================= GRACEFUL SHUTDOWN =======================
 const gracefulShutdown = (signal) => {
   console.log(`\n⚠️  ${signal} signal received: closing HTTP server`);
@@ -431,16 +456,6 @@ const gracefulShutdown = (signal) => {
 const PORT = process.env.PORT || 4000;
 const HOST = process.env.HOST || '0.0.0.0';
 
-app.use((err, req, res, next) => {
-  const status = err.status || 500;
-  res.status(status);
-  res.render('pages/error', {
-    status,
-    message: err.message,
-    error: err,
-    referrer: req.get('Referrer') || null
-  });
-});
 
 const server = app.listen(PORT, HOST, () => {
   console.log('\n' + '='.repeat(70));
