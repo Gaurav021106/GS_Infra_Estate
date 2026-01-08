@@ -286,7 +286,10 @@ exports.getPropertiesByTypeAndCity = async (req, res) => {
 // /property/:slug-:id
 exports.getPropertyDetail = async (req, res) => {
   try {
-    const { slug, id } = req.params;
+    let { slug } = req.params;
+        // Extract ID (last 24 chars - MongoDB ObjectId)
+            const id = slug.slice(-24);
+                slug = slug.slice(0, -25); // Remove ID and dash separator
 
     // 🚀 OPTIMIZED DETAIL: .select() + .lean()
     const property = await Property.findById(id)
