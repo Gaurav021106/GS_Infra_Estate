@@ -35,7 +35,6 @@
   async function fetchAndSwap(url, pushState = true) {
     const main = document.querySelector('main');
     if (!main) {
-      // Fallback if layout doesn't match SPA expectations
       location.href = url;
       return;
     }
@@ -83,7 +82,6 @@
         history.pushState({}, '', url);
       }
 
-      // Track virtual page view for SPA navigation
       trackPageView(url);
 
     } catch (err) {
@@ -135,10 +133,7 @@
       document.querySelectorAll('.nav-link').forEach(x => x.classList.remove('nav-active'));
       a.classList.add('nav-active');
       history.replaceState({}, '', '/');
-
-      // Track home as page view
       trackPageView('/');
-
       return;
     }
 
@@ -168,20 +163,29 @@
       document.querySelectorAll('.nav-link').forEach(x => x.classList.remove('nav-active'));
       if (a.classList.contains('nav-link')) a.classList.add('nav-active');
       history.replaceState({}, '', href);
-
-      // Optional: treat hash changes as same page, usually no extra page_view
-
       return;
     }
 
     // SPA internal links (same origin, not hash)
     if (!isLocalAnchor(a)) return;
+
+    // ============================================================
+    // [FIX] FORCE RELOAD FOR CATEGORY PAGES
+    // We explicitly check if the link is for a category.
+    // If it is, we use 'return' to skip the SPA logic below.
+    // This allows the browser to perform a standard page reload.
+    // ============================================================
+    if (a.pathname.startsWith('/category/') || a.pathname.includes('/property')) {
+      return; 
+    }
+    // ============================================================
+
+    // Otherwise, prevent reload and use SPA transition
     ev.preventDefault();
 
     const currentPathAndQuery = window.location.pathname + window.location.search;
     if (href === currentPathAndQuery) return;
 
-    // update nav active state
     document.querySelectorAll('.nav-link').forEach(x => x.classList.remove('nav-active'));
     if (a.classList.contains('nav-link')) a.classList.add('nav-active');
 
@@ -192,7 +196,6 @@
   window.addEventListener('popstate', () => {
     setActive();
     fetchAndSwap(location.href, false);
-    // Track page view for back/forward navigation
     trackPageView(location.href);
   });
 
@@ -245,5 +248,5 @@
     }
   });
 
-  console.log('✅ SPA-Nav loaded - Mobile dropdown, active states, smooth scroll, SPA ready!');
+  console.log('✅ SPA-Nav loaded - Category links will now trigger reload.');
 })();

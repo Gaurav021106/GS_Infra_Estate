@@ -108,6 +108,7 @@ const getPropertiesByCity = async (req, res) => {
         .select(LISTING_FIELDS)
         .sort(sortObj)
         .skip(skip)
+
         .limit(PROPERTIES_PER_PAGE)
         .lean()
         .exec(),
@@ -138,7 +139,15 @@ const getPropertiesByCity = async (req, res) => {
     const baseUrl =
       process.env.BASE_URL || 'https://gsinfraandestates.com';
 
-    res.render('pages/property-listing', {
+    // Add cache headers for better performance
+    res.set({
+      'Cache-Control': 'public, max-age=300, must-revalidate',
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'Vary': 'Accept-Encoding'
+    });
+
+      res.render('pages/property-listing', {
       pageTitle,
       metaDescription,
       properties,

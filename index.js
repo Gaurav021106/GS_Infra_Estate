@@ -29,6 +29,35 @@ if (isProd) {
   app.enable('view cache');
 }
 
+// 3. RESPONSE COMPRESSION - Reduces payload size by 50-70%
+app.use(compression({
+  level: 6,
+  threshold: 1024
+}));
+
+
+// 4. RESPONSE CACHING - Simple in-memory cache for better performance
+app.locals.cache = {};
+const CACHE_DURATION = 300; // 5 minutes in seconds
+
+// Simple cache middleware
+app.use((req, res, next) => {
+  const isCacheable = req.method === 'GET' && !req.url.includes('admin');
+  if (!isCacheable) return next();
+  
+  const cacheKey = req.originalUrl || req.url;
+  const cachedData = app.locals.cache[cacheKey];
+  
+  if (cachedData && Date.now() - cachedData.timestamp < CACHE_DURATION * 1000) {
+    res.set('X-Cache', 'HIT');
+    return res.json(cachedData.data);
+  }
+  
+  res.set('X-Cache', 'MISS');
+  next();
+});
+
+
 // Disable X-Powered-By header for security
 app.disable('x-powered-by');
 

@@ -58,6 +58,7 @@ propertySchema.index({
 propertySchema.index({ city: 1, category: 1, createdAt: -1 });
 propertySchema.index({ category: 1, price: 1 });
 propertySchema.index({ status: 1 });
+
 propertySchema.index({ city: 1, status: 1, createdAt: -1 });
 propertySchema.index({ city: 1, category: 1, price: 1 });
 propertySchema.index({ city: 1, locality: 1, createdAt: -1 });
