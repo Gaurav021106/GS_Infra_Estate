@@ -1,136 +1,72 @@
 <%
-  function makeSlug(str) {
-    return String(str || '')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-  }
+  const p = property;
+  const firstImage = (p.imageUrls && p.imageUrls.length) ? p.imageUrls[0] : null;
+  const priceText = typeof p.price === 'number'
+    ? p.price.toLocaleString('en-IN')
+    : (p.price || '');
+  const suitable = (p.suitableFor || []).join(', ');
 
-  const slug = makeSlug(p.title);
+  const rawTitle = p.title || String(p._id || '');
+  const slugTitle = rawTitle
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+  const slug = `${slugTitle}-${p._id}`;
 %>
 
-<div
-  class="property-card group bg-white rounded-2xl shadow-md overflow-hidden flex flex-col cursor-pointer
-         border border-gray-100 transform transition-all duration-200 ease-out
-         hover:-translate-y-1 hover:shadow-2xl hover:border-indigo-200"
-  data-id="<%= p._id %>"
-  data-location="<%= p.location %>"
-  data-price="<%= p.price %>"
-  data-type="<%= type %>"
->
-  <% if (p.imageUrls && p.imageUrls.length) { %>
-    <div class="relative overflow-hidden">
-      <img
-        src="<%= p.imageUrls[0] %>"
-        alt="<%= p.title %> in <%= p.location %>, Uttarakhand real estate"
-        loading="lazy"
-        class="w-full h-64 md:h-72 object-cover transition-transform duration-500 ease-out group-hover:scale-110"
-      />
-      <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-black/0 to-black/40"></div>
+<a href="/property/<%= slug %>" class="block h-full">
+  <div class="flex flex-col h-full">
+    <!-- Image -->
+    <div class="relative w-full h-48 overflow-hidden rounded-t-lg bg-gray-100">
+      <% if (firstImage) { %>
+        <img src="<%= firstImage %>"
+             alt="<%= p.title %>"
+             loading="lazy"
+             class="w-full h-full object-cover" />
+      <% } else { %>
+        <div class="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+          No image
+        </div>
+      <% } %>
 
-      <!-- Image top badges -->
-      <div class="absolute top-2 left-2 flex flex-wrap gap-1">
-        <% if (p.category) { %>
-          <span class="px-2 py-1 text-[10px] font-semibold rounded-full bg-white/90 text-gray-800">
-            <%= (p.category || '').toUpperCase() %>
-          </span>
-        <% } %>
-        <span class="px-2 py-1 text-[10px] font-semibold rounded-full bg-emerald-500 text-white">
-          For Sale
-        </span>
+      <div class="absolute top-2 left-2 bg-white/90 text-xs font-semibold px-2 py-1 rounded-full text-gray-800 shadow">
+        ₹ <%= priceText %>
       </div>
 
-      <!-- Title + Price overlay -->
-      <div class="absolute bottom-2 left-2 right-2 flex justify-between items-end">
-        <div class="max-w-[75%]">
-          <p class="text-sm font-semibold text-white line-clamp-1"><%= p.title %></p>
-          <p class="text-[11px] text-gray-200 line-clamp-1"><%= p.location %></p>
-        </div>
-        <div class="text-right">
-          <p class="text-sm font-bold text-amber-300">
-            ₹ <%= p.price.toLocaleString('en-IN') %>
-          </p>
-        </div>
-      </div>
-    </div>
-  <% } else { %>
-    <div class="w-full h-64 md:h-72 bg-gray-200 flex items-center justify-center text-xs text-gray-500">
-      No image
-    </div>
-  <% } %>
-
-  <div class="p-3 md:p-4 flex flex-col gap-2">
-    <p class="text-xs text-gray-500 line-clamp-2">
-      Suitable for: <%= (p.suitableFor || []).join(', ') || 'N/A' %>
-    </p>
-
-    <div class="flex flex-wrap gap-2 text-[11px] text-gray-600">
       <% if (p.city) { %>
-        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-          <%= p.city %>
-        </span>
-      <% } %>
-      <% if (p.locality) { %>
-        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100">
-          <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-          <%= p.locality %>
-        </span>
+        <div class="absolute bottom-2 left-2 bg-black/60 text-[11px] text-white px-2 py-1 rounded-full">
+          <%= p.city %>, <%= p.state || 'Uttarakhand' %>
+        </div>
       <% } %>
     </div>
 
-    <div class="mt-2 flex flex-wrap gap-2">
-      <button
-        type="button"
-        class="view-image-btn px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold
-               bg-white text-gray-800 border border-gray-200 hover:bg-gray-50
-               shadow-sm transition-transform duration-200 hover:-translate-y-0.5"
-        data-image="<%= p.imageUrls && p.imageUrls[0] ? p.imageUrls[0] : '' %>"
-        data-title="<%= p.title %>"
-      >
-        View Photo
-      </button>
+    <!-- Content -->
+    <div class="flex-1 p-4 flex flex-col">
+      <h3 class="font-semibold text-gray-900 text-base mb-1 line-clamp-2">
+        <%= p.title %>
+      </h3>
+      <p class="text-xs text-gray-500 mb-2 line-clamp-1">
+        <%= p.location %>
+      </p>
 
-      <a
-        href="https://wa.me/918279702969?text=<%= encodeURIComponent('I am interested in ' + p.title + ' at ' + p.location) %>"
-        target="_blank"
-        rel="noopener"
-        class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold
-               bg-emerald-600 text-white hover:bg-emerald-700
-               shadow-sm hover:shadow-md transition-transform duration-200 hover:-translate-y-0.5"
-      >
-        WhatsApp
-      </a>
+      <% if (suitable) { %>
+        <p class="text-xs text-gray-600 mb-3 line-clamp-1">
+          Suitable for: <span class="font-medium"><%= suitable %></span>
+        </p>
+      <% } %>
 
-      <a
-        href="tel:+918279702969"
-        class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold
-               bg-blue-600 text-white hover:bg-blue-700
-               shadow-sm hover:shadow-md transition-transform duration-200 hover:-translate-y-0.5"
-      >
-        Call
-      </a>
-
-      <a
-        href="/property/<%= slug %>-<%= p._id %>"
-        class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold
-               bg-white text-gray-900 border border-gray-300 hover:bg-gray-100
-               shadow-sm transition-transform duration-200 hover:-translate-y-0.5"
-      >
-        View Details
-      </a>
-
-      <button
-        type="button"
-        class="share-btn px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold
-               bg-gray-900 text-white hover:bg-black
-               shadow-sm hover:shadow-md transition-transform duration-200 hover:-translate-y-0.5"
-        data-title="<%= p.title %>"
-        data-location="<%= p.location %>"
-        data-price="<%= p.price %>"
-      >
-        Share
-      </button>
+      <div class="mt-auto flex items-center justify-between text-xs text-gray-500">
+        <span>Added: <%= new Date(p.createdAt).toLocaleDateString('en-IN') %></span>
+        <span class="inline-flex items-center gap-1 text-blue-600">
+          View details
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 5l7 7-7 7" />
+          </svg>
+        </span>
+      </div>
     </div>
   </div>
-</div>
+</a>
+  

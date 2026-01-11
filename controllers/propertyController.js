@@ -1,3 +1,5 @@
+// controllers/propertyController.js
+const mongoose = require('mongoose');
 const Property = require('../models/property');
 const {
   generatePropertySchema,
@@ -9,40 +11,41 @@ const {
 const PROPERTIES_PER_PAGE = 12;
 const VALID_CITIES = ['dehradun', 'rishikesh', 'haridwar'];
 
-// Map UI type to category enum in schema
+// Map UI filters (query ?type=) to NEW schema categories
 const UI_TYPE_TO_CATEGORY = {
-  flat: 'flat_house',
-  house: 'flat_house',
-  plot: 'plot',
-  commercial: 'agri', // adjust if you later split commercial
+  residential: 'residential_properties',
+  commercial: 'commercial_plots',
+  plot: 'land_plots',
+  land: 'land_plots',
+  premium: 'premium_investment',
+  investment: 'premium_investment',
 };
 
-// Map route slug to category enum
+// Map URL slugs (/residential-in-dehradun) to NEW schema categories
 const SLUG_TYPE_TO_CATEGORY = {
-  flats: 'flat_house',
-  houses: 'flat_house',
-  plots: 'plot',
-  'commercial-properties': 'agri',
+  residential: 'residential_properties',
+  'commercial-plots': 'commercial_plots',
+  'land-plots': 'land_plots',
+  'premium-investment': 'premium_investment',
 };
 
-// **🚀 OPTIMIZED LISTING FIELDS** - Only what listing needs (40% less data)
-const LISTING_FIELDS = 'title price city locality imageUrls category status createdAt seoMetaDescription location pincode';
-
-// **🚀 OPTIMIZED DETAIL FIELDS** - Rich detail view
-const DETAIL_FIELDS = 'title description price location city state locality pincode category suitableFor status imageUrls videoUrls map3dUrl virtualTourUrl searchTags seoMetaDescription createdAt';
+// Listing and detail field sets
+const LISTING_FIELDS =
+  'title price city locality imageUrls category status createdAt seoMetaDescription location pincode';
+const DETAIL_FIELDS =
+  'title description price location city state locality pincode category suitableFor status imageUrls videoUrls map3dUrl virtualTourUrl searchTags seoMetaDescription createdAt contactName contactPhone contactEmail features amenities landmarks plotSize builtupArea dimensions facing roadWidth ownership priceNote mapEmbed';
 
 // Build filter + sort from query params
 const buildFilterAndSort = (req, extraFilter = {}) => {
   const { type, budget, locality, sort } = req.query;
-
   const filter = { ...extraFilter };
 
-  // TYPE (from query, not from route slug)
+  // type → category
   if (type && UI_TYPE_TO_CATEGORY[type]) {
     filter.category = UI_TYPE_TO_CATEGORY[type];
   }
 
-  // BUDGET RANGE (rupees)
+  // budget → price range
   if (budget) {
     const priceCond = {};
     if (budget === '0-30') {
@@ -56,32 +59,27 @@ const buildFilterAndSort = (req, extraFilter = {}) => {
     } else if (budget === '100-plus') {
       priceCond.$gte = 10000000;
     }
-    if (Object.keys(priceCond).length) {
-      filter.price = priceCond;
-    }
+    if (Object.keys(priceCond).length) filter.price = priceCond;
   }
 
-  // LOCALITY
+  // locality (partial, case-insensitive)
   if (locality) {
     filter.locality = new RegExp(locality, 'i');
   }
 
-  // SORT
-  let sortObj = { createdAt: -1 }; // newest
-  if (sort === 'price-low') {
-    sortObj = { price: 1 };
-  } else if (sort === 'price-high') {
-    sortObj = { price: -1 };
-  } else if (sort === 'featured') {
-    // use when you add `featured` field
-    sortObj = { featured: -1, createdAt: -1 };
-  }
+  // sort
+  let sortObj = { createdAt: -1 };
+  if (sort === 'price-low') sortObj = { price: 1 };
+  else if (sort === 'price-high') sortObj = { price: -1 };
+  else if (sort === 'featured') sortObj = { featured: -1, createdAt: -1 };
 
   return { filter, sortObj };
 };
 
-// /properties-in-<city>/:page?
-exports.getPropertiesByCity = async (req, res) => {
+// =======================
+// /properties-in-:city/:page?
+// =======================
+const getPropertiesByCity = async (req, res) => {
   try {
     const slugCity =
       (req.params.city || '').toLowerCase() ||
@@ -89,7 +87,7 @@ exports.getPropertiesByCity = async (req, res) => {
 
     if (!slugCity || !VALID_CITIES.includes(slugCity)) {
       return res.status(404).render('pages/404', {
-        title: '404 - City Not Found',
+        pageTitle: '404 - City Not Found',
         message: 'City not found',
       });
     }
@@ -105,14 +103,13 @@ exports.getPropertiesByCity = async (req, res) => {
 
     const { filter, sortObj } = buildFilterAndSort(req, baseFilter);
 
-    // 🚀 OPTIMIZED: .select() + .lean() + .exec() = 60% faster!
     const [properties, totalCount] = await Promise.all([
       Property.find(filter)
-        .select(LISTING_FIELDS)  // Only 11 essential fields
+        .select(LISTING_FIELDS)
         .sort(sortObj)
         .skip(skip)
         .limit(PROPERTIES_PER_PAGE)
-        .lean()  // Plain JS objects (2x faster)
+        .lean()
         .exec(),
       Property.countDocuments(filter),
     ]);
@@ -121,11 +118,11 @@ exports.getPropertiesByCity = async (req, res) => {
     const capitalizedCity =
       slugCity.charAt(0).toUpperCase() + slugCity.slice(1);
 
-    const title = `Properties for Sale in ${capitalizedCity} | GS Infra & Estate`;
-    const description =
+    const pageTitle = `Properties for Sale in ${capitalizedCity} | GS Infra & Estate`;
+    const metaDescription =
       properties.length && properties[0]?.seoMetaDescription
         ? properties[0].seoMetaDescription
-        : `Explore ${totalCount}+ verified properties in ${capitalizedCity}. Find flats, houses, plots & agricultural land in Uttarakhand.`;
+        : `Explore ${totalCount}+ verified properties in ${capitalizedCity}. Find flats, houses, plots & land in Uttarakhand.`;
 
     const breadcrumbs = [
       { name: 'Home', url: '/' },
@@ -138,11 +135,12 @@ exports.getPropertiesByCity = async (req, res) => {
       generateCollectionPageSchema(capitalizedCity, null, totalCount),
     ];
 
-    const baseUrl = process.env.BASE_URL || 'https://gsinfraandestates.com';
+    const baseUrl =
+      process.env.BASE_URL || 'https://gsinfraandestates.com';
 
     res.render('pages/property-listing', {
-      title,
-      description,
+      pageTitle,
+      metaDescription,
       properties,
       city: capitalizedCity,
       citySlug: slugCity,
@@ -159,7 +157,9 @@ exports.getPropertiesByCity = async (req, res) => {
           ? `/properties-in-${slugCity}${page === 2 ? '' : `/${page - 1}`}`
           : null,
       nextPage:
-        page < totalPages ? `/properties-in-${slugCity}/${page + 1}` : null,
+        page < totalPages
+          ? `/properties-in-${slugCity}/${page + 1}`
+          : null,
       filters: {
         type: req.query.type || '',
         budget: req.query.budget || '',
@@ -170,14 +170,16 @@ exports.getPropertiesByCity = async (req, res) => {
   } catch (err) {
     console.error('getPropertiesByCity error:', err);
     res.status(500).render('pages/500', {
-      title: '500 - Server Error',
+      pageTitle: '500 - Server Error',
       message: 'Error loading properties',
     });
   }
 };
 
+// =======================
 // /<type>-in-:city/:page?
-exports.getPropertiesByTypeAndCity = async (req, res) => {
+// =======================
+const getPropertiesByTypeAndCity = async (req, res) => {
   try {
     const typeParam = (req.params.type || '').toLowerCase();
     const slugCity = (req.params.city || '').toLowerCase();
@@ -186,7 +188,7 @@ exports.getPropertiesByTypeAndCity = async (req, res) => {
 
     if (!VALID_TYPES.includes(typeParam) || !VALID_CITIES.includes(slugCity)) {
       return res.status(404).render('pages/404', {
-        title: '404 - Not Found',
+        pageTitle: '404 - Not Found',
         message: 'Invalid property type or city',
       });
     }
@@ -204,28 +206,26 @@ exports.getPropertiesByTypeAndCity = async (req, res) => {
 
     const { filter, sortObj } = buildFilterAndSort(req, baseFilter);
 
-    // 🚀 OPTIMIZED: .select() + .lean() + .exec() = 60% faster!
     const [properties, totalCount] = await Promise.all([
       Property.find(filter)
-        .select(LISTING_FIELDS)  // Only 11 essential fields
+        .select(LISTING_FIELDS)
         .sort(sortObj)
         .skip(skip)
         .limit(PROPERTIES_PER_PAGE)
-        .lean()  // Plain JS objects (2x faster)
+        .lean()
         .exec(),
       Property.countDocuments(filter),
     ]);
 
     const totalPages = Math.max(1, Math.ceil(totalCount / PROPERTIES_PER_PAGE));
-
     const capitalizedCity =
       slugCity.charAt(0).toUpperCase() + slugCity.slice(1);
-    const prettyType = typeParam.replace('-', ' ');
+    const prettyType = typeParam.replace(/-/g, ' ');
     const capitalizedType =
       prettyType.charAt(0).toUpperCase() + prettyType.slice(1);
 
-    const title = `${capitalizedType} in ${capitalizedCity} | GS Infra & Estate`;
-    const description =
+    const pageTitle = `${capitalizedType} in ${capitalizedCity} | GS Infra & Estate`;
+    const metaDescription =
       properties.length && properties[0]?.seoMetaDescription
         ? properties[0].seoMetaDescription
         : `Browse ${totalCount}+ ${prettyType} in ${capitalizedCity}. Verified listings with photos, prices & details.`;
@@ -239,14 +239,19 @@ exports.getPropertiesByTypeAndCity = async (req, res) => {
     const schemas = [
       generateLocalBusinessSchema(slugCity),
       generateBreadcrumbSchema(breadcrumbs),
-      generateCollectionPageSchema(capitalizedCity, capitalizedType, totalCount),
+      generateCollectionPageSchema(
+        capitalizedCity,
+        capitalizedType,
+        totalCount
+      ),
     ];
 
-    const baseUrl = process.env.BASE_URL || 'https://gsinfraandestates.com';
+    const baseUrl =
+      process.env.BASE_URL || 'https://gsinfraandestates.com';
 
     res.render('pages/property-listing', {
-      title,
-      description,
+      pageTitle,
+      metaDescription,
       properties,
       city: capitalizedCity,
       citySlug: slugCity,
@@ -261,7 +266,9 @@ exports.getPropertiesByTypeAndCity = async (req, res) => {
       }`,
       prevPage:
         page > 1
-          ? `/${typeParam}-in-${slugCity}${page === 2 ? '' : `/${page - 1}`}`
+          ? `/${typeParam}-in-${slugCity}${
+              page === 2 ? '' : `/${page - 1}`
+            }`
           : null,
       nextPage:
         page < totalPages
@@ -277,21 +284,28 @@ exports.getPropertiesByTypeAndCity = async (req, res) => {
   } catch (err) {
     console.error('getPropertiesByTypeAndCity error:', err);
     res.status(500).render('pages/500', {
-      title: '500 - Server Error',
+      pageTitle: '500 - Server Error',
       message: 'Error loading properties',
     });
   }
 };
 
+// =======================
 // /property/:slug-:id
-exports.getPropertyDetail = async (req, res) => {
+// =======================
+const getPropertyDetail = async (req, res) => {
   try {
-    let { slug } = req.params;
-        // Extract ID (last 24 chars - MongoDB ObjectId)
-            const id = slug.slice(-24);
-                slug = slug.slice(0, -25); // Remove ID and dash separator
+    let { slug, id } = req.params; // /property/:slug-:id
 
-    // 🚀 OPTIMIZED DETAIL: .select() + .lean()
+    // Validate ObjectId to avoid CastError
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      console.warn('Invalid property id in URL:', id);
+      return res.status(404).render('pages/404', {
+        pageTitle: '404 - Property Not Found',
+        message: 'Property not found',
+      });
+    }
+
     const property = await Property.findById(id)
       .select(DETAIL_FIELDS)
       .lean()
@@ -299,11 +313,12 @@ exports.getPropertyDetail = async (req, res) => {
 
     if (!property || property.status !== 'available') {
       return res.status(404).render('pages/404', {
-        title: '404 - Property Not Found',
+        pageTitle: '404 - Property Not Found',
         message: 'Property not found',
       });
     }
 
+    // Slug normalisation
     const correctSlug = String(property.title || '')
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
@@ -313,7 +328,6 @@ exports.getPropertyDetail = async (req, res) => {
       return res.redirect(301, `/property/${correctSlug}-${id}`);
     }
 
-    // 🚀 OPTIMIZED RELATED: .select() + .lean()
     const relatedProperties = await Property.find({
       _id: { $ne: property._id },
       city: property.city,
@@ -339,24 +353,36 @@ exports.getPropertyDetail = async (req, res) => {
       generateBreadcrumbSchema(breadcrumbs),
     ];
 
-    const baseUrl = process.env.BASE_URL || 'https://gsinfraandestates.com';
+    const baseUrl =
+      process.env.BASE_URL || 'https://gsinfraandestates.com';
 
+    const pageTitle = `${property.title} | ${property.city} | GS Infra & Estate`;
+    const metaDescription = (
+      property.seoMetaDescription || property.description || ''
+    ).substring(0, 155);
+
+    // [FIX] Added 'referrer' to the passed object
     res.render('pages/property-detail', {
-      title: `${property.title} | ${property.city} | GS Infra & Estate`,
-      description: (property.seoMetaDescription ||
-        property.description ||
-        '').substring(0, 155),
+      pageTitle,
+      metaDescription,
       property,
       relatedProperties,
       schemas,
       breadcrumbs,
       canonical: `${baseUrl}/property/${correctSlug}-${id}`,
+      referrer: req.headers.referer || '/' 
     });
   } catch (err) {
     console.error('getPropertyDetail error:', err);
     res.status(500).render('pages/500', {
-      title: '500 - Server Error',
+      pageTitle: '500 - Server Error',
       message: 'Error loading property',
     });
   }
+};
+
+module.exports = {
+  getPropertiesByCity,
+  getPropertiesByTypeAndCity,
+  getPropertyDetail,
 };

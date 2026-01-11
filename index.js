@@ -35,7 +35,6 @@ app.disable('x-powered-by');
 // ======================= SECURITY HEADERS (HELMET) =======================
 app.use(
   helmet({
-    // Strict CSP in production, disabled in dev to avoid blocking tools
     contentSecurityPolicy: isProd
       ? {
           useDefaults: true,
@@ -97,7 +96,11 @@ app.use(
 // ======================= CACHING HEADERS =======================
 app.use((req, res, next) => {
   if (req.method === 'GET') {
-    if (req.path.match(/\.(jpg|jpeg|png|gif|ico|svg|webp|css|js|woff|woff2|ttf|eot)$/)) {
+    if (
+      req.path.match(
+        /\.(jpg|jpeg|png|gif|ico|svg|webp|css|js|woff|woff2|ttf|eot)$/
+      )
+    ) {
       res.set('Cache-Control', 'public, max-age=31536000, immutable');
     } else if (req.path === '/') {
       res.set(
@@ -190,7 +193,7 @@ app.use(
 // ======================= INPUT SANITIZATION =======================
 const sanitizeData = (obj) => {
   if (typeof obj !== 'object' || obj === null) return obj;
-  
+
   const sanitized = Array.isArray(obj) ? [] : {};
 
   for (const key in obj) {
@@ -199,7 +202,9 @@ const sanitizeData = (obj) => {
       const value = obj[key];
 
       sanitized[sanitizedKey] =
-        typeof value === 'object' && value !== null ? sanitizeData(value) : value;
+        typeof value === 'object' && value !== null
+          ? sanitizeData(value)
+          : value;
     }
   }
 
@@ -209,9 +214,6 @@ const sanitizeData = (obj) => {
 app.use((req, res, next) => {
   if (req.body && Object.keys(req.body).length > 0) {
     req.body = sanitizeData(req.body);
-  }
-  if (req.params && Object.keys(req.params).length > 0) {
-    req.params = sanitizeData(req.params);
   }
   if (req.query && Object.keys(req.query).length > 0) {
     req.query = sanitizeData(req.query);
@@ -250,15 +252,13 @@ const sessionConfig = {
   cookie: {
     maxAge: 24 * 60 * 60 * 1000,
     httpOnly: true,
-    secure: isProd,          // HTTPS only on Render
-    sameSite: 'lax',         // good for same-origin app
-    // domain removed to avoid misconfig for now
+    secure: isProd,
+    sameSite: 'lax',
   },
   rolling: true,
   proxy: isProd,
 };
 
-// Configure MongoDB session store (connect-mongo v4)
 if (process.env.MONGODB_URI) {
   try {
     sessionConfig.store = MongoStore.create({
@@ -274,7 +274,9 @@ if (process.env.MONGODB_URI) {
     console.log('✅ MongoDB session store configured successfully');
   } catch (err) {
     console.error('❌ Session store error:', err.message);
-    console.warn('⚠️  Falling back to memory store (not recommended for production)');
+    console.warn(
+      '⚠️  Falling back to memory store (not recommended for production)'
+    );
   }
 } else {
   console.warn('⚠️  MONGODB_URI not found - using memory store');
@@ -305,11 +307,16 @@ app.use((req, res, next) => {
   next();
 });
 
-// ======================= ROUTES =======================
-app.use('/', publicRoutes);
-app.use('/api', apiRoutes);
+// ======================= ROUTES (FIXED ORDER) =======================
+// 1. Admin Routes (Must come BEFORE public routes to capture /admin requests)
 app.use('/admin', adminRoutes);
+
+// 2. API & Alert Routes (Must come BEFORE public routes)
+app.use('/api', apiRoutes);
 app.use('/alerts', alertsRoutes);
+
+// 3. Public Routes (Must come LAST because it has a catch-all 404 handler)
+app.use('/', publicRoutes);
 
 // ======================= HEALTH CHECK ENDPOINT =======================
 app.get('/health', (req, res) => {
@@ -318,7 +325,8 @@ app.get('/health', (req, res) => {
     message: 'OK',
     timestamp: Date.now(),
     environment: process.env.NODE_ENV || 'development',
-    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    database:
+      mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
   };
 
   try {
@@ -340,29 +348,20 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
 });
 
 // ======================= 404 HANDLER =======================
+// Use single error view, not pages/404
 app.use((req, res) => {
   console.log(`⚠️  404 Not Found: ${req.method} ${req.originalUrl}`);
 
-  res.status(404);
-
-  if (req.accepts('html')) {
-    res.render('pages/404', {
-      seo: {
-        title: '404 - Page Not Found | GS Infra Estates',
-        desc: 'The page you are looking for does not exist.',
-        keywords: res.locals.seo.keywords,
-      },
-      requestedUrl: req.originalUrl,
-    });
-  } else if (req.accepts('json')) {
-    res.json({
-      success: false,
-      message: 'Page not found',
-      requestedUrl: req.originalUrl,
-    });
-  } else {
-    res.type('txt').send('404 - Not Found');
-  }
+  res.status(404).render('error', {
+    statusCode: 404,
+    message: 'Page not found',
+    stack: null,
+    seo: {
+      title: '404 - Page Not Found | GS Infra Estates',
+      desc: 'The page you are looking for does not exist.',
+      keywords: res.locals.seo?.keywords || '',
+    },
+  });
 });
 
 // ======================= GLOBAL ERROR HANDLER =======================
@@ -383,55 +382,17 @@ app.use((err, req, res, next) => {
       ? 'Internal server error. Please try again later.'
       : err.message;
 
-  res.status(statusCode);
-
-  if (req.accepts('html')) {
-    res.render('pages/error', {
-      message: errorMessage,
-      statusCode,
-      seo: {
-        title: `Error ${statusCode} | GS Infra Estates`,
-        desc: errorMessage,
-        keywords: res.locals.seo?.keywords || '',
-      },
-      stack: !isProd ? err.stack : null,
-    });
-  } else if (req.accepts('json')) {
-    res.json({
-      success: false,
-      message: errorMessage,
-      statusCode,
-      ...(!isProd && { stack: err.stack }),
-    });
-  } else {
-    res.type('txt').send(errorMessage);
-  }
+  res.status(statusCode).render('error', {
+    statusCode,
+    message: errorMessage,
+    seo: {
+      title: `Error ${statusCode} | GS Infra Estates`,
+      desc: errorMessage,
+      keywords: res.locals.seo?.keywords || '',
+    },
+    stack: !isProd ? err.stack : null,
+  });
 });
-
-// Error handling middleware
-  app.use((err, req, res, next) => {
-    const status = err.status || 500;
-    const message = process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong on our server.';
-    
-    console.error(err.stack); // Log full error server-side
-    
-    res.status(status).render('error', {
-      status,
-      message,
-      error: process.env.NODE_ENV === 'development' ? err : undefined,
-      referrer: req.get('Referrer')
-    });
-  });
-  
-  // 404 handler before error middleware
-  app.use((req, res) => {
-    res.status(404).render('error', {
-      status: 404,
-      message: 'The page you\'re looking for doesn\'t exist.',
-      referrer: req.get('Referrer')
-    });
-  });
-
 
 // ======================= GRACEFUL SHUTDOWN =======================
 const gracefulShutdown = (signal) => {
@@ -456,7 +417,6 @@ const gracefulShutdown = (signal) => {
 const PORT = process.env.PORT || 4000;
 const HOST = process.env.HOST || '0.0.0.0';
 
-
 const server = app.listen(PORT, HOST, () => {
   console.log('\n' + '='.repeat(70));
   console.log(`🚀 GS Infra Estates LIVE`);
@@ -465,16 +425,16 @@ const server = app.listen(PORT, HOST, () => {
   console.log(
     `🗄️  Database: ${
       mongoose.connection.readyState === 1 ? '✅ Connected' : '⏳ Connecting...'
-    }`  
-  );  
+    }`
+  );
   console.log(
     `💾 Session Store: ${
       sessionConfig.store ? '✅ MongoDB' : '⚠️  Memory (dev only)'
-    }`  
-  );  
+    }`
+  );
   console.log(`🔒 Security: ✅ Helmet, Rate Limiting, Sanitization`);
   console.log('='.repeat(70) + '\n');
-});  
+});
 
 // Handle shutdown signals
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
@@ -486,10 +446,9 @@ process.on('uncaughtException', (err) => {
   console.error(err.name, err.message);
   console.error(err.stack);
   process.exit(1);
-});  
+});
 
 // Handle unhandled promise rejections
-
 process.on('unhandledRejection', (err) => {
   console.error('❌ UNHANDLED REJECTION! Shutting down...');
   console.error(err.name, err.message);

@@ -1,5 +1,4 @@
 <%- include('../components/header') %>
-
 <% const hasAnyProperty =
   (flats && flats.length > 0) ||
   (plots && plots.length > 0) ||
@@ -9,14 +8,19 @@
 <section
   class="flex flex-col items-center justify-center mt-4 p-6 bg-gray-50 rounded-xl shadow-sm w-full animate-fadeInUp animation-delay-200"
 >
-  <!-- Filter + Heading same section -->
+  <!-- Heading + Filters -->
   <div class="w-full mb-4">
     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+      <!-- Heading -->
       <div>
-        <h1 class="mb-1 text-3xl font-bold animate-slideInDown">Available Properties</h1>
-        <a href="/" style="color:blue;">Back to Home</a>
-        <p class="text-sm text-gray-500">
-          Filter properties by location and budget across Uttarakhand.
+        <h1 class="mb-1 text-3xl font-bold animate-slideInDown">
+          Available Properties
+        </h1>
+        <a href="/" class="text-sm text-indigo-600 hover:text-indigo-800 underline">
+          Back to Home
+        </a>
+        <p class="text-sm text-gray-500 mt-1">
+          Filter properties by type, location and budget across Uttarakhand.
         </p>
         <p id="resultsCount" class="mt-1 text-xs text-gray-600 font-medium hidden">
           Showing <span id="countNum">0</span> properties
@@ -24,59 +28,99 @@
       </div>
 
       <!-- Filters -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full md:w-auto">
-        <!-- Location Filter -->
-        <div>
-          <label class="block text-xs font-semibold text-gray-700 mb-1">Location</label>
-          <select
-            id="locationFilter"
-            class="w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#A1824C] focus:border-[#A1824C] text-xs md:text-sm transition-all duration-200"
-          >
-            <option value="">All Locations</option>
-          </select>
-        </div>
-
-        <!-- Price Range Filter -->
-        <div>
-          <label class="block text-xs font-semibold text-gray-700 mb-1">Price Range</label>
-          <select
-            id="priceFilter"
-            class="w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#A1824C] focus:border-[#A1824C] text-xs md:text-sm transition-all duration-200"
-          >
-            <option value="">All Prices</option>
-            <option value="100000-500000">₹1L - ₹5L</option>
-            <option value="500000-10000000">₹5L - ₹1Cr</option>
-            <option value="10000000+">₹1Cr+</option>
-          </select>
-        </div>
-
-        <!-- Clear Filters -->
-        <div class="flex items-end">
+      <div class="w-full md:w-[420px]">
+        <!-- Property Type chips -->
+        <div class="flex flex-wrap items-center gap-2 mb-3">
+          <span class="text-xs font-semibold text-gray-700 mr-2">
+            Property Type:
+          </span>
           <button
-            id="clearFilters"
-            type="button"
-            class="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs md:text-sm font-semibold rounded-lg shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
+            class="type-chip px-3 py-1.5 text-xs md:text-sm rounded-full border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 transition-all duration-200"
+            data-type=""
           >
-            Clear Filters
+            All
           </button>
+          <button
+            class="type-chip px-3 py-1.5 text-xs md:text-sm rounded-full border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 transition-all duration-200"
+            data-type="flat"
+          >
+            Flats & Houses
+          </button>
+          <button
+            class="type-chip px-3 py-1.5 text-xs md:text-sm rounded-full border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 transition-all duration-200"
+            data-type="plot"
+          >
+            Plots
+          </button>
+          <button
+            class="type-chip px-3 py-1.5 text-xs md:text-sm rounded-full border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 transition-all duration-200"
+            data-type="agri"
+          >
+            Agricultural
+          </button>
+        </div>
+
+        <!-- Location + Price + Clear -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <!-- Location Filter -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">
+              Location
+            </label>
+            <select
+              id="locationFilter"
+              class="w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#A1824C] focus:border-[#A1824C] text-xs md:text-sm transition-all duration-200 bg-white"
+            >
+              <option value="">All Locations</option>
+            </select>
+          </div>
+
+          <!-- Price Range Filter -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">
+              Price Range
+            </label>
+            <select
+              id="priceFilter"
+              class="w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#A1824C] focus:border-[#A1824C] text-xs md:text-sm transition-all duration-200 bg-white"
+            >
+              <option value="">All Prices</option>
+              <option value="100000-500000">₹1L - ₹5L</option>
+              <option value="500000-10000000">₹5L - ₹1Cr</option>
+              <option value="10000000+">₹1Cr+</option>
+            </select>
+          </div>
+
+          <!-- Clear Filters -->
+          <div class="flex items-end">
+            <button
+              id="clearFilters"
+              type="button"
+              class="w-full px-4 py-2.5 bg-gray-900 hover:bg-black text-white text-xs md:text-sm font-semibold rounded-lg shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
+            >
+              Clear Filters
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Email Alerts Button -->
-    <div class="mt-3">
-      <button
-        id="emailAlertBtn"
-        type="button"
-        class="px-4 py-2.5 bg-[#A1824C] hover:bg-[#8b6f3f]
-               text-white text-xs md:text-sm font-semibold rounded-lg
-               shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
-      >
-        Enable Email Alerts
-      </button>
-      <p class="mt-1 text-[11px] text-gray-500">
-        Get an email whenever a new property is listed in any location.
-      </p>
+    <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div>
+        <button
+          id="emailAlertBtn"
+          type="button"
+          class="px-4 py-2.5 bg-[#A1824C] hover:bg-[#8b6f3f]
+                 text-white text-xs md:text-sm font-semibold rounded-lg
+                 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
+        >
+          Enable Email Alerts
+        </button>
+        <p class="mt-1 text-[11px] text-gray-500">
+          Get an email whenever a new property is listed in any location.
+        </p>
+      </div>
     </div>
   </div>
 
@@ -87,14 +131,18 @@
   >
     <div class="bg-white p-6 rounded-2xl shadow-2xl animate-pulse">
       <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#A1824C] mx-auto mb-3"></div>
-      <p class="text-sm md:text-lg font-semibold text-gray-800">Filtering properties...</p>
+      <p class="text-sm md:text-lg font-semibold text-gray-800">
+        Filtering properties...
+      </p>
     </div>
   </div>
 
   <!-- Flats & Houses -->
   <% if (flats && flats.length > 0) { %>
     <div class="w-full mb-6" data-section="flats">
-      <h2 class="text-xl font-semibold mb-3">Flats &amp; Houses in Uttarakhand</h2>
+      <h2 class="text-xl font-semibold mb-3">
+        Flats &amp; Houses in Uttarakhand
+      </h2>
       <div class="grid md:grid-cols-3 gap-4" id="flatsContainer">
         <% flats.forEach(function(p){ %>
           <div
@@ -107,16 +155,21 @@
             data-type="flat"
           >
             <% if (p.imageUrls && p.imageUrls.length) { %>
-              <div class="relative overflow-hidden rounded-lg mb-3">
+              <div class="relative overflow-hidden rounded-lg mb-3 h-40">
                 <img
                   src="<%= p.imageUrls[0] %>"
                   alt="<%= p.title %> in <%= p.location %>, Uttarakhand real estate"
                   loading="lazy"
-                  class="w-full h-40 object-cover rounded-lg transition-transform duration-300 ease-out group-hover:scale-105"
+                  class="w-full h-full object-cover rounded-lg transition-transform duration-300 ease-out group-hover:scale-105"
                 />
                 <div
-                  class="pointer-events-none absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"
+                  class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-black/0"
                 ></div>
+                <span
+                  class="absolute bottom-2 left-2 text-[11px] px-2 py-1 rounded-full bg-black/70 text-white"
+                >
+                  Verified Listing
+                </span>
               </div>
             <% } else { %>
               <div
@@ -126,8 +179,12 @@
               </div>
             <% } %>
 
-            <h3 class="font-semibold text-lg mb-1 line-clamp-1"><%= p.title %></h3>
-            <p class="text-sm text-gray-600 mb-1 line-clamp-1"><%= p.location %></p>
+            <h3 class="font-semibold text-lg mb-1 line-clamp-1">
+              <%= p.title %>
+            </h3>
+            <p class="text-sm text-gray-600 mb-1 line-clamp-1">
+              <%= p.location %>
+            </p>
             <p class="text-sm font-semibold text-[#A1824C] mb-1">
               ₹ <%= p.price.toLocaleString('en-IN') %>
             </p>
@@ -154,7 +211,6 @@
               >
                 Call Now
               </a>
-              <!-- Share Button -->
               <button
                 type="button"
                 class="share-btn px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold
@@ -176,7 +232,9 @@
   <!-- Plots -->
   <% if (plots && plots.length > 0) { %>
     <div class="w-full mb-6" data-section="plots">
-      <h2 class="text-xl font-semibold mb-3">Plots in Uttarakhand</h2>
+      <h2 class="text-xl font-semibold mb-3">
+        Plots in Uttarakhand
+      </h2>
       <div class="grid md:grid-cols-3 gap-4" id="plotsContainer">
         <% plots.forEach(function(p){ %>
           <div
@@ -189,16 +247,21 @@
             data-type="plot"
           >
             <% if (p.imageUrls && p.imageUrls.length) { %>
-              <div class="relative overflow-hidden rounded-lg mb-3">
+              <div class="relative overflow-hidden rounded-lg mb-3 h-40">
                 <img
                   src="<%= p.imageUrls[0] %>"
                   alt="<%= p.title %> in <%= p.location %>, Uttarakhand real estate"
                   loading="lazy"
-                  class="w-full h-40 object-cover rounded-lg transition-transform duration-300 ease-out group-hover:scale-105"
+                  class="w-full h-full object-cover rounded-lg transition-transform duration-300 ease-out group-hover:scale-105"
                 />
                 <div
-                  class="pointer-events-none absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"
+                  class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-black/0"
                 ></div>
+                <span
+                  class="absolute bottom-2 left-2 text-[11px] px-2 py-1 rounded-full bg-black/70 text-white"
+                >
+                  Investment Plot
+                </span>
               </div>
             <% } else { %>
               <div
@@ -208,8 +271,12 @@
               </div>
             <% } %>
 
-            <h3 class="font-semibold text-lg mb-1 line-clamp-1"><%= p.title %></h3>
-            <p class="text-sm text-gray-600 mb-1 line-clamp-1"><%= p.location %></p>
+            <h3 class="font-semibold text-lg mb-1 line-clamp-1">
+              <%= p.title %>
+            </h3>
+            <p class="text-sm text-gray-600 mb-1 line-clamp-1">
+              <%= p.location %>
+            </p>
             <p class="text-sm font-semibold text-[#A1824C] mb-1">
               ₹ <%= p.price.toLocaleString('en-IN') %>
             </p>
@@ -236,7 +303,6 @@
               >
                 Call Now
               </a>
-              <!-- Share Button -->
               <button
                 type="button"
                 class="share-btn px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold
@@ -258,7 +324,9 @@
   <!-- Agricultural Land -->
   <% if (agri && agri.length > 0) { %>
     <div class="w-full" data-section="agri">
-      <h2 class="text-xl font-semibold mb-3">Agricultural Land in Uttarakhand</h2>
+      <h2 class="text-xl font-semibold mb-3">
+        Agricultural Land in Uttarakhand
+      </h2>
       <div class="grid md:grid-cols-3 gap-4" id="agriContainer">
         <% agri.forEach(function(p){ %>
           <div
@@ -271,16 +339,21 @@
             data-type="agri"
           >
             <% if (p.imageUrls && p.imageUrls.length) { %>
-              <div class="relative overflow-hidden rounded-lg mb-3">
+              <div class="relative overflow-hidden rounded-lg mb-3 h-40">
                 <img
                   src="<%= p.imageUrls[0] %>"
                   alt="<%= p.title %> in <%= p.location %>, Uttarakhand real estate"
                   loading="lazy"
-                  class="w-full h-40 object-cover rounded-lg transition-transform duration-300 ease-out group-hover:scale-105"
+                  class="w-full h-full object-cover rounded-lg transition-transform duration-300 ease-out group-hover:scale-105"
                 />
                 <div
-                  class="pointer-events-none absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"
+                  class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-black/0"
                 ></div>
+                <span
+                  class="absolute bottom-2 left-2 text-[11px] px-2 py-1 rounded-full bg-black/70 text-white"
+                >
+                  Agri / Farm Land
+                </span>
               </div>
             <% } else { %>
               <div
@@ -290,8 +363,12 @@
               </div>
             <% } %>
 
-            <h3 class="font-semibold text-lg mb-1 line-clamp-1"><%= p.title %></h3>
-            <p class="text-sm text-gray-600 mb-1 line-clamp-1"><%= p.location %></p>
+            <h3 class="font-semibold text-lg mb-1 line-clamp-1">
+              <%= p.title %>
+            </h3>
+            <p class="text-sm text-gray-600 mb-1 line-clamp-1">
+              <%= p.location %>
+            </p>
             <p class="text-sm font-semibold text-[#A1824C] mb-1">
               ₹ <%= p.price.toLocaleString('en-IN') %>
             </p>
@@ -318,7 +395,6 @@
               >
                 Call Now
               </a>
-              <!-- Share Button -->
               <button
                 type="button"
                 class="share-btn px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold
@@ -339,10 +415,14 @@
 </section>
 
 <!-- Email Alert Modal -->
-<div id="emailAlertModal"
-     class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center">
+<div
+  id="emailAlertModal"
+  class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center"
+>
   <div class="bg-white rounded-xl p-5 w-80 shadow-2xl">
-    <h3 class="text-lg font-semibold mb-2">Get New Property Alerts</h3>
+    <h3 class="text-lg font-semibold mb-2">
+      Get New Property Alerts
+    </h3>
     <p class="text-xs text-gray-500 mb-3">
       Get an email whenever a new property is listed in any location.
     </p>
@@ -370,6 +450,55 @@
     </div>
   </div>
 </div>
+<% } else { %>
+  <!-- Empty state when no properties -->
+  <section
+    class="flex flex-col items-center justify-center mt-10 px-4 py-12
+           bg-gray-50 rounded-xl shadow-sm w-full animate-fadeInUp"
+  >
+    <div class="max-w-md text-center">
+      <!-- Illustration / Icon -->
+      <div
+        class="mx-auto mb-4 w-20 h-20 rounded-full bg-gradient-to-br from-[#A1824C]/10 via-gray-100 to-white
+               flex items-center justify-center shadow-sm"
+      >
+        <span class="text-3xl">🏡</span>
+      </div>
+
+      <h1 class="text-2xl md:text-3xl font-semibold text-gray-900 mb-2">
+        No properties listed right now
+      </h1>
+      <p class="text-sm md:text-base text-gray-600 mb-4">
+        New properties in Rishikesh, Dehradun & Uttarakhand are added regularly.
+        Please check back soon or contact us for upcoming options.
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <a
+          href="/"
+          class="px-4 py-2.5 rounded-lg text-sm font-semibold
+                 bg-black text-white hover:bg-gray-900
+                 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
+        >
+          Back to Home
+        </a>
+        <a
+          href="tel:+918279702969"
+          class="px-4 py-2.5 rounded-lg text-sm font-semibold
+                 bg-white text-gray-800 border border-gray-200
+                 hover:bg-gray-100 shadow-sm hover:shadow-md
+                 transition-all duration-200 hover:-translate-y-0.5"
+        >
+          Call for Upcoming Listings
+        </a>
+      </div>
+
+      <p class="mt-4 text-[11px] text-gray-500">
+        Tip: You can also enable email alerts on the homepage to get notified
+        whenever a new property goes live.
+      </p>
+    </div>
+  </section>
 <% } %> <!-- end if hasAnyProperty -->
 
 <%- include('../components/footer') %>
@@ -389,6 +518,7 @@
     const resultsCount     = document.getElementById('resultsCount');
     const countNum         = document.getElementById('countNum');
     const loadingSpinner   = document.getElementById('loadingSpinner');
+    const typeChips        = document.querySelectorAll('.type-chip');
 
     // Build unique locations
     const locationsSet = new Set();
@@ -406,6 +536,25 @@
       locationFilter.appendChild(option);
     });
 
+    // Read category from query string
+    const params = new URLSearchParams(window.location.search);
+    const initialCategory = params.get('category') || '';
+
+    let currentType = initialCategory; // flat | plot | agri | ''
+
+    function updateActiveChip() {
+      typeChips.forEach(chip => {
+        const t = chip.getAttribute('data-type') || '';
+        if (t === currentType) {
+          chip.classList.add('bg-black', 'text-white', 'border-black');
+          chip.classList.remove('bg-white', 'text-gray-700');
+        } else {
+          chip.classList.remove('bg-black', 'text-white', 'border-black');
+          chip.classList.add('bg-white', 'text-gray-700');
+        }
+      });
+    }
+
     function applyFilters() {
       if (!locationFilter || !priceFilter) return;
 
@@ -422,11 +571,18 @@
         cards.forEach(function (card) {
           const cardLocation = (card.dataset.location || '').toLowerCase();
           const cardPrice    = parseInt(card.dataset.price || '0', 10);
+          const cardType     = card.dataset.type || '';
 
-          let matchesLocation = !selectedLocation ||
-                                cardLocation.includes(selectedLocation) ||
-                                selectedLocation.includes(cardLocation);
+          // Type filter
+          const matchesType = !currentType || currentType === cardType;
 
+          // Location filter
+          let matchesLocation =
+            !selectedLocation ||
+            cardLocation.includes(selectedLocation) ||
+            selectedLocation.includes(cardLocation);
+
+          // Price filter
           let matchesPrice = true;
           if (selectedPriceRange) {
             const parts   = selectedPriceRange.split('-');
@@ -436,7 +592,7 @@
             matchesPrice  = cardPrice >= min && cardPrice <= max;
           }
 
-          if (matchesLocation && matchesPrice) {
+          if (matchesType && matchesLocation && matchesPrice) {
             card.style.display = 'flex';
             card.classList.remove('animate-fadeInUp');
             void card.offsetWidth;
@@ -456,20 +612,46 @@
       }, 250);
     }
 
+    // Chip click handlers
+    typeChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        currentType = chip.getAttribute('data-type') || '';
+        updateActiveChip();
+        applyFilters();
+
+        // Update URL query param without reload
+        const url = new URL(window.location.href);
+        if (currentType) url.searchParams.set('category', currentType);
+        else url.searchParams.delete('category');
+        window.history.replaceState({}, '', url.toString());
+      });
+    });
+
+    // Location & Price listeners
     if (locationFilter) locationFilter.addEventListener('change', applyFilters);
     if (priceFilter)    priceFilter.addEventListener('change', applyFilters);
 
+    // Clear filters
     if (clearFiltersBtn) {
       clearFiltersBtn.addEventListener('click', function () {
         if (locationFilter) locationFilter.value = '';
         if (priceFilter)    priceFilter.value = '';
+        currentType = '';
+        updateActiveChip();
+
         document.querySelectorAll('.property-card').forEach(function (card) {
           card.style.display = 'flex';
         });
         if (resultsCount) resultsCount.classList.add('hidden');
+
+        const url = new URL(window.location.href);
+        url.searchParams.delete('category');
+        window.history.replaceState({}, '', url.toString());
       });
     }
 
+    // Initial state
+    updateActiveChip();
     applyFilters();
 
     // Email alert subscription
@@ -511,7 +693,7 @@
       emailAlertSave.addEventListener('click', async function () {
         const email = (emailAlertInput?.value || '').trim();
         if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-          alert('Please enter a unique email address.');
+          alert('Please enter a valid email address.');
           return;
         }
 
@@ -549,7 +731,7 @@
           const shareText =
             `${title} - ${location}\nPrice: ₹${Number(price).toLocaleString('en-IN')}\n\nCheck this property: ${url}`;
 
-          if (navigator.share) { 
+          if (navigator.share) {
             navigator
               .share({
                 title: title,
@@ -581,10 +763,15 @@
     from { opacity: 0; transform: translateY(-30px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-  .animate-fadeInUp { animation: fadeInUp 0.6s ease-out forwards; }
-  .animate-slideInDown { animation: slideInDown 0.6s ease-out forwards; }
+
+  .animate-fadeInUp {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+  .animate-slideInDown {
+    animation: slideInDown 0.6s ease-out forwards;
+  }
   .animation-delay-200 { animation-delay: 0.2s; }
-  .animation-delay-300 { animation-delay: 0.3s; }
+
   .line-clamp-1 {
     display: -webkit-box;
     -webkit-line-clamp: 1;
@@ -596,5 +783,20 @@
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+
+  /* Premium background for section */
+  section.flex.flex-col.items-center {
+    background: linear-gradient(135deg, #f9fafb 0%, #fdfaf4 40%, #ffffff 100%);
+  }
+
+  /* Card styling */
+  .property-card {
+    background: radial-gradient(circle at top left, #fdfaf4 0, #ffffff 40%, #ffffff 100%);
+    box-shadow: 0 10px 25px -15px rgba(15, 23, 42, 0.3);
+    border-radius: 1rem;
+  }
+  .property-card:hover {
+    box-shadow: 0 18px 40px -22px rgba(15, 23, 42, 0.5);
   }
 </style>

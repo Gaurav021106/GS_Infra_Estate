@@ -16,6 +16,10 @@ function getLocationFilter(req) {
   if (locality || localityQuery) {
     filter.locality = new RegExp(`${locality || localityQuery}`, 'i');
   }
+
+  if (req.query.category) {
+    filter.category = req.query.category;
+  }
   
   return Object.keys(filter).length > 0 ? filter : {};
 }

@@ -1,8 +1,9 @@
 document.addEventListener('DOMContentLoaded', function () {
   const allProperties = {
-    flats: window.flats || [],
-    plots: window.plots || [],
-    agri:  window.agri  || []
+    residential: window.residential || [],
+    commercialPlots: window.commercialPlots || [],
+    landPlots: window.landPlots || [],
+    premiumInvestment: window.premiumInvestment || [],
   };
 
   const locationFilter  = document.getElementById('locationFilter');
@@ -18,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const emailAlertSave   = document.getElementById('emailAlertSave');
   const emailAlertCancel = document.getElementById('emailAlertCancel');
 
-  // Build unique locations
+  // ===================== LOCATION OPTIONS =====================
   const locationsSet = new Set();
   Object.values(allProperties).forEach(list => {
     list.forEach(p => {
@@ -26,14 +27,16 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  Array.from(locationsSet).sort().forEach(loc => {
-    if (!locationFilter) return;
-    const option = document.createElement('option');
-    option.value = loc;
-    option.textContent = loc;
-    locationFilter.appendChild(option);
-  });
+  if (locationFilter) {
+    Array.from(locationsSet).sort().forEach(loc => {
+      const option = document.createElement('option');
+      option.value = loc;
+      option.textContent = loc;
+      locationFilter.appendChild(option);
+    });
+  }
 
+  // ===================== FILTER LOGIC =========================
   function applyFilters() {
     if (!locationFilter || !priceFilter) return;
 
@@ -67,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (matchesLocation && matchesPrice) {
           card.style.display = 'flex';
           card.classList.remove('animate-fadeInUp');
-          void card.offsetWidth;
+          void card.offsetWidth; // restart animation
           card.classList.add('animate-fadeInUp');
           totalVisible++;
         } else {
@@ -98,9 +101,10 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  // Initial filter run
   applyFilters();
 
-  // Email alert modal
+  // ===================== EMAIL ALERT MODAL ====================
   function openEmailModal() {
     if (!emailAlertModal) return;
     emailAlertModal.classList.remove('hidden');
@@ -115,13 +119,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (emailAlertInput) emailAlertInput.value = '';
   }
 
-  if (emailAlertBtn) {
-    emailAlertBtn.addEventListener('click', openEmailModal);
-  }
-
-  if (emailAlertCancel) {
-    emailAlertCancel.addEventListener('click', closeEmailModal);
-  }
+  if (emailAlertBtn)    emailAlertBtn.addEventListener('click', openEmailModal);
+  if (emailAlertCancel) emailAlertCancel.addEventListener('click', closeEmailModal);
 
   if (emailAlertModal) {
     emailAlertModal.addEventListener('click', e => {
@@ -141,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const res = await fetch('/alerts/subscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email })
+          body: JSON.stringify({ email }),
         });
 
         if (res.ok) {

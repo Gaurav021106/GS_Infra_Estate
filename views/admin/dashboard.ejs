@@ -50,9 +50,10 @@
       <div>
         <label class="block text-sm font-medium mb-1">Category</label>
         <select name="category" class="border rounded-lg px-3 py-2 w-full text-sm md:text-base" required>
-          <option value="flat_house" <%= editingProperty?.category === 'flat_house' ? 'selected' : '' %>>Flats & Houses</option>
-          <option value="plot" <%= editingProperty?.category === 'plot' ? 'selected' : '' %>>Plot</option>
-          <option value="agri" <%= editingProperty?.category === 'agri' ? 'selected' : '' %>>Agricultural Land</option>
+          <option value="residential_properties" <%= editingProperty?.category === 'residential_properties' ? 'selected' : '' %>>Residential Properties</option>
+          <option value="commercial_plots" <%= editingProperty?.category === 'commercial_plots' ? 'selected' : '' %>>Commercial Plots</option>
+          <option value="land_plots" <%= editingProperty?.category === 'land_plots' ? 'selected' : '' %>>Land & Plots</option>
+          <option value="premium_investment" <%= editingProperty?.category === 'premium_investment' ? 'selected' : '' %>>Premium & Investment</option>
         </select>
       </div>
 
@@ -202,9 +203,9 @@
   <!-- Property Lists (only show when not editing) -->
   <% if (!editingProperty) { %>
     <section class="space-y-8">
-      <!-- Flats & Houses -->
+      <!-- Residential Properties -->
       <div>
-        <h2 class="text-lg md:text-xl font-semibold mb-2">Flats & Houses</h2>
+        <h2 class="text-lg md:text-xl font-semibold mb-2">Residential Properties</h2>
         <div class="overflow-x-auto bg-white rounded-xl shadow border border-gray-200">
           <table class="w-full text-xs md:text-sm">
             <thead class="bg-gray-100">
@@ -218,7 +219,7 @@
               </tr>
             </thead>
             <tbody>
-              <% flats.forEach(p => { %>
+              <% residential.forEach(p => { %>
                 <tr class="even:bg-gray-50 hover:bg-gray-50" data-id="<%= p._id %>" data-category="<%= p.category %>">
                   <td class="border px-2 py-1 text-center">
                     <% if (p.imageUrls && p.imageUrls.length) { %>
@@ -247,11 +248,11 @@
                   </td>
                 </tr>
               <% }) %>
-              <% if (!flats.length) { %>
+              <% if (!residential.length) { %>
                 <tr>
                   <td colspan="6" class="border px-2 py-8 text-center text-gray-500">
                     <div class="py-8">
-                      <p class="text-lg font-medium mb-2">No flats or houses yet</p>
+                      <p class="text-lg font-medium mb-2">No residential properties yet</p>
                       <p class="text-sm">Add your first residential property above</p>
                     </div>
                   </td>
@@ -262,9 +263,9 @@
         </div>
       </div>
 
-      <!-- Plots -->
+      <!-- Commercial Plots -->
       <div>
-        <h2 class="text-lg md:text-xl font-semibold mb-2">Plots</h2>
+        <h2 class="text-lg md:text-xl font-semibold mb-2">Commercial Plots</h2>
         <div class="overflow-x-auto bg-white rounded-xl shadow border border-gray-200">
           <table class="w-full text-xs md:text-sm">
             <thead class="bg-gray-100">
@@ -278,7 +279,7 @@
               </tr>
             </thead>
             <tbody>
-              <% plots.forEach(p => { %>
+              <% commercialPlots.forEach(p => { %>
                 <tr class="even:bg-gray-50 hover:bg-gray-50" data-id="<%= p._id %>" data-category="<%= p.category %>">
                   <td class="border px-2 py-1 text-center">
                     <% if (p.imageUrls && p.imageUrls.length) { %>
@@ -307,12 +308,12 @@
                   </td>
                 </tr>
               <% }) %>
-              <% if (!plots.length) { %>
+              <% if (!commercialPlots.length) { %>
                 <tr>
                   <td colspan="6" class="border px-2 py-8 text-center text-gray-500">
                     <div class="py-8">
-                      <p class="text-lg font-medium mb-2">No plots yet</p>
-                      <p class="text-sm">Add your first plot above</p>
+                      <p class="text-lg font-medium mb-2">No commercial plots yet</p>
+                      <p class="text-sm">Add your first commercial property above</p>
                     </div>
                   </td>
                 </tr>
@@ -322,9 +323,9 @@
         </div>
       </div>
 
-      <!-- Agricultural Land -->
+      <!-- Land & Plots -->
       <div>
-        <h2 class="text-lg md:text-xl font-semibold mb-2">Agricultural Land</h2>
+        <h2 class="text-lg md:text-xl font-semibold mb-2">Land & Plots</h2>
         <div class="overflow-x-auto bg-white rounded-xl shadow border border-gray-200">
           <table class="w-full text-xs md:text-sm">
             <thead class="bg-gray-100">
@@ -338,7 +339,7 @@
               </tr>
             </thead>
             <tbody>
-              <% agri.forEach(p => { %>
+              <% landPlots.forEach(p => { %>
                 <tr class="even:bg-gray-50 hover:bg-gray-50" data-id="<%= p._id %>" data-category="<%= p.category %>">
                   <td class="border px-2 py-1 text-center">
                     <% if (p.imageUrls && p.imageUrls.length) { %>
@@ -367,12 +368,72 @@
                   </td>
                 </tr>
               <% }) %>
-              <% if (!agri.length) { %>
+              <% if (!landPlots.length) { %>
                 <tr>
                   <td colspan="6" class="border px-2 py-8 text-center text-gray-500">
                     <div class="py-8">
-                      <p class="text-lg font-medium mb-2">No agricultural land yet</p>
-                      <p class="text-sm">Add your first agricultural property above</p>
+                      <p class="text-lg font-medium mb-2">No land or plots yet</p>
+                      <p class="text-sm">Add your first land / plot above</p>
+                    </div>
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Premium & Investment -->
+      <div>
+        <h2 class="text-lg md:text-xl font-semibold mb-2">Premium & Investment</h2>
+        <div class="overflow-x-auto bg-white rounded-xl shadow border border-gray-200">
+          <table class="w-full text-xs md:text-sm">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="border px-2 py-2">Image</th>
+                <th class="border px-2 py-2">Title</th>
+                <th class="border px-2 py-2">Location</th>
+                <th class="border px-2 py-2">Price</th>
+                <th class="border px-2 py-2">Suitable For</th>
+                <th class="border px-2 py-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% premiumInvestment.forEach(p => { %>
+                <tr class="even:bg-gray-50 hover:bg-gray-50" data-id="<%= p._id %>" data-category="<%= p.category %>">
+                  <td class="border px-2 py-1 text-center">
+                    <% if (p.imageUrls && p.imageUrls.length) { %>
+                      <img src="<%= p.imageUrls[0] %>" alt="front image"
+                           class="w-20 h-16 object-cover rounded mx-auto border" />
+                    <% } else { %>
+                      <span class="text-xs text-gray-400">No image</span>
+                    <% } %>
+                  </td>
+                  <td class="border px-2 py-1 font-medium"><%= p.title %></td>
+                  <td class="border px-2 py-1"><%= p.location %></td>
+                  <td class="border px-2 py-1">₹ <%= p.price.toLocaleString('en-IN') %></td>
+                  <td class="border px-2 py-1">
+                    <%= (p.suitableFor || []).join(', ').substring(0,20) +
+                        ((p.suitableFor || []).join(', ').length > 20 ? '...' : '') %>
+                  </td>
+                  <td class="border px-2 py-1 space-x-2 whitespace-nowrap">
+                    <button type="button"
+                            class="js-edit inline-block px-3 py-1 text-xs rounded bg-yellow-500 text-white hover:bg-yellow-600 transition">
+                      Edit
+                    </button>
+                    <button type="button"
+                            class="js-delete px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition">
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              <% }) %>
+              <% if (!premiumInvestment.length) { %>
+                <tr>
+                  <td colspan="6" class="border px-2 py-8 text-center text-gray-500">
+                    <div class="py-8">
+                      <p class="text-lg font-medium mb-2">No premium / investment properties yet</p>
+                      <p class="text-sm">Add your first premium property above</p>
                     </div>
                   </td>
                 </tr>
@@ -400,15 +461,17 @@
   const toastEl = document.getElementById('toast');
 
   const tables = document.querySelectorAll('section.space-y-8 table');
-  const flatsTbody = tables[0]?.querySelector('tbody');
-  const plotsTbody = tables[1]?.querySelector('tbody');
-  const agriTbody = tables[2]?.querySelector('tbody');
+  const residentialTbody    = tables[0]?.querySelector('tbody');
+  const commercialTbody     = tables[1]?.querySelector('tbody');
+  const landTbody           = tables[2]?.querySelector('tbody');
+  const premiumTbody        = tables[3]?.querySelector('tbody');
 
   const getBodyByCategory = (cat) => {
-    if (cat === 'flat_house') return flatsTbody;
-    if (cat === 'plot') return plotsTbody;
-    if (cat === 'agri') return agriTbody;
-    return flatsTbody;
+    if (cat === 'residential_properties') return residentialTbody;
+    if (cat === 'commercial_plots')       return commercialTbody;
+    if (cat === 'land_plots')            return landTbody;
+    if (cat === 'premium_investment')    return premiumTbody;
+    return residentialTbody;
   };
 
   function showToast(message, type = 'success') {
@@ -476,7 +539,7 @@
   }
 
   function populateFormFromRow(p) {
-    form.querySelector('select[name="category"]').value = p.category || 'flat_house';
+    form.querySelector('select[name="category"]').value = p.category || 'residential_properties';
     form.querySelector('input[name="title"]').value = p.title || '';
     form.querySelector('input[name="price"]').value = p.price || '';
     form.querySelector('input[name="location"]').value = p.location || '';
@@ -632,13 +695,6 @@
       }
     }
   });
-
-  // Optional: auto-sync with server on load
-  // You can enable this if multiple admins edit at once.
-  // fetch('/admin/properties/json', { headers: { Accept: 'application/json' } })
-  //   .then(r => r.json())
-  //   .then(d => { /* re-render from JSON if you want */ });
-
 })();
 </script>
 

@@ -72,6 +72,7 @@ loginForm.addEventListener('submit', async (e) => {
   }
 });
 
+
 // ======================= STEP 2: VERIFY OTP =======================
 verifyForm.addEventListener('submit', async (e) => {
   e.preventDefault();

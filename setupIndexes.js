@@ -1,5 +1,3 @@
-// setupIndexes.js - MongoDB Performance Indexes
-
 const mongoose = require('mongoose');
 require('dotenv').config();
 

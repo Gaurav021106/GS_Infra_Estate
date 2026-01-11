@@ -1,0 +1,744 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <% 
+    // NORMALIZE DATA
+    const prop = property || p || {};
+    const images = prop.imageUrls || [];
+    const videos = prop.videoUrls || [];
+    const pageTitleSafe = typeof pageTitle !== 'undefined'
+      ? pageTitle
+      : (prop.title || 'GS Infra & Estate');
+    const metaDescriptionSafe = typeof metaDescription !== 'undefined'
+      ? metaDescription
+      : (prop.description || 'Residential, commercial, industrial & agricultural properties in Dehradun, Rishikesh & Haridwar.');
+  %>
+
+  <!-- Google Tag Manager (gtag.js) - Primary GA4 Property -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KKDNYYE9YY"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-KKDNYYE9YY');
+  </script>
+
+  <!-- Writesonic SEO Fixer -->
+  <script src="https://seo-fixer.writesonic.com/site-audit/fixer-script/index-godaddy.js" id="wsAiSeoMb" type="application/javascript"></script>
+  <script id="wsAiSeoInitScript">
+    wsSEOfixer.configure({
+      hostURL: 'https://seo-fixer.writesonic.com',
+      siteID: '69595ed560b44b5aaa59ce97'
+    });
+  </script>
+
+  <!-- Essential Meta Tags -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/jpeg" href="/images/logo.jpeg" />
+
+  <!-- Primary SEO Meta Tags -->
+  <title><%= pageTitleSafe %></title>
+  <meta name="description" content="<%= metaDescriptionSafe %>" />
+  <meta name="keywords" content="real estate Dehradun, real estate Rishikesh, real estate Haridwar, buy property Dehradun, buy property Rishikesh, buy property Haridwar, residential flats, commercial property, industrial property, agricultural land, plots, houses" />
+  <meta name="author" content="GS Infra & Estate" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://www.gsinfraandestate.com/property/<%= prop.slug || prop._id || '' %>" />
+
+  <!-- Open Graph / Social Meta -->
+  <meta property="og:title" content="<%= pageTitleSafe %>" />
+  <meta property="og:description" content="<%= metaDescriptionSafe %>" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://www.gsinfraandestate.com/property/<%= prop.slug || prop._id || '' %>" />
+  <% if (images.length) { %>
+    <meta property="og:image" content="<%= images[0] %>" />
+  <% } %>
+
+  <!-- Organization / RealEstateAgent Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "RealEstateAgent",
+    "name": "GS Infra & Estate",
+    "url": "https://www.gsinfraandestate.com/",
+    "image": "https://www.gsinfraandestate.com/images/logo.jpeg",
+    "description": "Real estate agent dealing in residential, commercial, industrial and agricultural properties in Dehradun, Rishikesh and Haridwar.",
+    "areaServed": [
+      "Dehradun, Uttarakhand, India",
+      "Rishikesh, Uttarakhand, India",
+      "Haridwar, Uttarakhand, India"
+    ],
+    "serviceType": "Real estate buying, selling, renting and investment services",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Rishikesh",
+      "addressRegion": "Uttarakhand",
+      "addressCountry": "IN"
+    },
+    "telephone": "+91-XXXXXXXXXX"
+  }
+  </script>
+
+  <!-- Tailwind CSS & Fonts (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> <!-- Tailwind v4 Play CDN --> [web:19]
+  <link href="https://fonts.cdnfonts.com/css/instrument-serif" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Italiana&display=swap" rel="stylesheet">
+
+  <!-- Global Styles -->
+  <style>
+    :root {
+      --global-transition-delay: 150ms;
+      --global-transition-duration: 150ms;
+    }
+    .heading {
+      font-family: 'Italiana', serif;
+    }
+    html {
+      scroll-behavior: smooth;
+    }
+    a, button, input, textarea, select, img, .heading {
+      transition-delay: var(--global-transition-delay);
+      transition-duration: var(--global-transition-duration);
+      transition-timing-function: ease;
+    }
+    .page-exit {
+      opacity: 0;
+      transform: translateY(6px);
+      transition:
+        opacity var(--global-transition-duration) ease var(--global-transition-delay),
+        transform var(--global-transition-duration) ease var(--global-transition-delay);
+    }
+    .page-enter {
+      opacity: 1;
+      transform: translateY(0);
+      transition:
+        opacity var(--global-transition-duration) ease,
+        transform var(--global-transition-duration) ease;
+    }
+    ::selection {
+      background-color: #fde68a;
+      color: #1f2937;
+    }
+  </style>
+
+  <!-- SPA Navigation Script (GA4 Compatible) -->
+  <script src="/javascripts/spa-nav.js" defer></script>
+</head>
+
+<body class="bg-gray-50 text-gray-900">
+
+  <%
+    const priceText = typeof prop.price === 'number'
+      ? prop.price.toLocaleString('en-IN')
+      : (prop.price || '');
+    const suitable = (prop.suitableFor || []).join(', ');
+  %>
+
+  <main class="min-h-screen">
+    <!-- LIGHT PROPERTY PAGE WRAPPER -->
+    <div class="bg-gradient-to-b from-gray-50 to-white">
+      <!-- Hero + breadcrumb -->
+      <section class="relative overflow-hidden">
+        <div class="pointer-events-none absolute inset-x-0 -top-40 h-80 bg-[radial-gradient(circle_at_top,_rgba(79,70,229,0.15),_transparent_60%)]"></div>
+
+        <div class="relative mx-auto max-w-6xl px-4 pt-6 pb-8 lg:pt-8 lg:pb-10">
+          <nav class="mb-4 flex items-center justify-between text-[11px] text-gray-500">
+            <div class="flex items-center gap-1">
+              <a href="/" class="hover:text-indigo-600 transition">Home</a>
+              <span>/</span>
+
+              <span class="text-gray-500"><%= prop.city || 'Location' %></span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span class="uppercase tracking-[0.18em] text-[10px] text-emerald-600">
+                Verified listing
+              </span>
+            </div>
+          </nav>
+
+          <!-- Title + price row -->
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">
+                <%= prop.title || 'Property details' %>
+              </h1>
+              <p class="mt-1 text-sm text-gray-600 flex flex-wrap items-center gap-2">
+                <span class="inline-flex items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                          d="M12 21s-6.5-4.33-6.5-10A6.5 6.5 0 0112 4.5 6.5 6.5 0 0118.5 11c0 5.67-6.5 10-6.5 10z" />
+                    <circle cx="12" cy="11" r="2.5" stroke-width="1.5"></circle>
+                  </svg>
+                  <span>
+                    <%= prop.location || 'Location' %>, 
+                    <%= prop.city || 'City' %>, 
+                    <%= prop.state || 'Uttarakhand' %>
+                  </span>
+                </span>
+              </p>
+              <% if (prop.createdAt) { %>
+                <p class="mt-1 text-[11px] text-gray-500">
+                  Added on <%= new Date(prop.createdAt).toLocaleDateString('en-IN') %> • GS Infra Estate listing
+                </p>
+              <% } %>
+            </div>
+
+            <!-- Price & CTAs -->
+            <div class="flex flex-col items-stretch gap-3 rounded-2xl bg-white px-4 py-3 border border-gray-200 shadow-sm">
+              <div>
+                <p class="text-[11px] uppercase tracking-[0.18em] text-gray-500">
+                  Asking price
+                </p>
+                <p class="mt-1 text-2xl font-semibold text-emerald-600">
+                  <% if (priceText) { %>
+                    ₹ <%= priceText %>
+                  <% } else { %>
+                    Contact for price
+                  <% } %>
+                </p>
+                <% if (prop.priceNote) { %>
+                  <p class="mt-0.5 text-[11px] text-gray-500"><%= prop.priceNote %></p>
+                <% } %>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <a
+                  href="tel:<%= prop.contactPhone || '+919999999999' %>"
+                  class="group inline-flex flex-1 items-center justify-center rounded-full bg-indigo-600 px-4 py-2 text-xs font-medium text-white
+                         hover:bg-indigo-700 transition transform hover:-translate-y-0.5 hover:shadow-md">
+                  Call for details
+                  <svg xmlns="http://www.w3.org/2000/svg"
+                       class="ml-2 h-3 w-3 transition-transform group-hover:translate-x-0.5"
+                       fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 5l7 7-7 7" />
+                  </svg>
+                </a>
+                <button
+                  type="button"
+                  class="inline-flex items-center justify-center rounded-full border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700
+                         hover:border-indigo-500 hover:text-indigo-600 transition">
+                  Schedule site visit
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Share row -->
+          <div class="mt-4 flex flex-wrap items-center gap-3 text-xs text-gray-600">
+            <button
+              type="button"
+              id="share-button"
+              class="inline-flex items-center gap-2 rounded-full border border-gray-300 px-3 py-1.5
+                     text-xs font-medium text-gray-700 hover:border-indigo-500 hover:text-indigo-600 transition"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M15 8.5l-6 3m0 0l6 3m-6-3V5m0 6v6" />
+              </svg>
+              Share this property
+            </button>
+
+            <button
+              type="button"
+              id="copy-link-button"
+              class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs text-gray-500 hover:text-gray-800 transition"
+            >
+              Copy link
+            </button>
+
+            <span id="share-status" class="text-[11px] text-emerald-600 hidden">
+              Link copied!
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Main body -->
+      <section class="relative mx-auto max-w-6xl px-4 pb-10 lg:pb-14">
+        <div class="grid gap-8 lg:grid-cols-[minmax(0,_1.6fr)_minmax(0,_1fr)]">
+          <!-- Gallery -->
+          <div class="space-y-4">
+            <div
+              class="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition
+                     duration-500 hover:-translate-y-1 hover:shadow-lg cursor-zoom-in"
+              data-main-image
+            >
+              <% if (images.length) { %>
+                <img
+                  src="<%= images[0] %>"
+                  alt="<%= prop.title || 'Property image' %>"
+                  class="h-72 w-full object-cover sm:h-80 lg:h-96 transition duration-700 group-hover:scale-105"
+                  data-zoom-src="<%= images[0] %>"
+                />
+              <% } else { %>
+                <div class="flex h-72 w-full items-center justify-center text-sm text-gray-500 sm:h-80 lg:h-96">
+                  No image available
+                </div>
+              <% } %>
+
+              <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
+
+              <div class="absolute left-4 top-4 flex flex-wrap gap-2">
+                <% if (prop.category) { %>
+                  <span class="rounded-full bg-white/90 px-3 py-1 text-[11px] font-medium text-gray-800 border border-gray-200">
+                    <%= prop.category %>
+                  </span>
+                <% } %>
+                <% if (prop.status) { %>
+                  <span class="rounded-full bg-emerald-500 px-3 py-1 text-[11px] font-medium text-white shadow">
+                    <%= prop.status %>
+                  </span>
+                <% } %>
+              </div>
+
+              <% if (images.length > 1) { %>
+                <div class="absolute bottom-3 right-3 rounded-full bg-white/90 px-3 py-1 text-[11px] text-gray-800 border border-gray-200">
+                  <%= images.length %> photos
+                </div>
+              <% } %>
+            </div>
+
+            <% if (images.length > 1) { %>
+              <div class="grid grid-cols-3 gap-3 sm:grid-cols-4">
+                <% images.slice(1, 7).forEach(function(img, idx) { %>
+                  <button
+                    type="button"
+                    class="group relative overflow-hidden rounded-xl border border-gray-200 bg-white transition duration-300 hover:border-indigo-400 cursor-zoom-in"
+                    data-thumb
+                    data-zoom-src="<%= img %>"
+                  >
+                    <img
+                      src="<%= img %>"
+                      alt="Photo <%= idx + 2 %>"
+                      class="h-20 w-full object-cover sm:h-24 group-hover:scale-105 transition duration-500"
+                    />
+                    <div class="pointer-events-none absolute inset-0 bg-black/0 group-hover:bg-black/20 transition"></div>
+                    <% if (idx === 5 && images.length > 7) { %>
+                      <span class="pointer-events-none absolute inset-0 flex items-center justify-center text-xs font-medium text-white">
+                        +<%= images.length - 7 %> more
+                      </span>
+                    <% } %>
+                  </button>
+                <% }); %>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- Right side info panel -->
+          <aside class="space-y-4">
+            <!-- Key details -->
+            <section class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+              <h2 class="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 text-[11px]">
+                  i
+                </span>
+                Key details
+              </h2>
+              <dl class="grid grid-cols-2 gap-3 text-xs text-gray-700">
+                <% if (prop.plotSize) { %>
+                  <div>
+                    <dt class="text-[11px] uppercase tracking-wide text-gray-500">Plot size</dt>
+                    <dd class="mt-0.5 font-medium"><%= prop.plotSize %></dd>
+                  </div>
+                <% } %>
+                <% if (prop.builtupArea) { %>
+                  <div>
+                    <dt class="text-[11px] uppercase tracking-wide text-gray-500">Built-up area</dt>
+                    <dd class="mt-0.5 font-medium"><%= prop.builtupArea %></dd>
+                  </div>
+                <% } %>
+                <% if (prop.dimensions) { %>
+                  <div>
+                    <dt class="text-[11px] uppercase tracking-wide text-gray-500">Dimensions</dt>
+                    <dd class="mt-0.5 font-medium"><%= prop.dimensions %></dd>
+                  </div>
+                <% } %>
+                <% if (prop.facing) { %>
+                  <div>
+                    <dt class="text-[11px] uppercase tracking-wide text-gray-500">Facing</dt>
+                    <dd class="mt-0.5 font-medium"><%= prop.facing %></dd>
+                  </div>
+                <% } %>
+                <% if (prop.roadWidth) { %>
+                  <div>
+                    <dt class="text-[11px] uppercase tracking-wide text-gray-500">Road width</dt>
+                    <dd class="mt-0.5 font-medium"><%= prop.roadWidth %></dd>
+                  </div>
+                <% } %>
+                <% if (prop.ownership) { %>
+                  <div>
+                    <dt class="text-[11px] uppercase tracking-wide text-gray-500">Ownership</dt>
+                    <dd class="mt-0.5 font-medium"><%= prop.ownership %></dd>
+                  </div>
+                <% } %>
+              </dl>
+            </section>
+
+            <% if (suitable) { %>
+              <section class="rounded-2xl border border-gray-200 bg-white p-4">
+                <h2 class="text-sm font-semibold text-gray-900 mb-2">Suitable for</h2>
+                <p class="text-xs text-gray-700"><%= suitable %></p>
+              </section>
+            <% } %>
+
+            <!-- Contact card -->
+            <section class="relative overflow-hidden rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4">
+              <div class="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full bg-indigo-200/40 blur-3xl"></div>
+              <h3 class="text-sm font-semibold text-gray-900 mb-1">Talk to our expert</h3>
+              <p class="text-xs text-gray-700 mb-3">
+                Get complete guidance, site visit, and documentation support for this property in <%= prop.city || 'Uttarakhand' %>.
+              </p>
+              <div class="space-y-1 text-xs text-gray-800">
+                <% if (prop.contactName) { %>
+                  <p class="font-medium"><%= prop.contactName %></p>
+                <% } %>
+                <% if (prop.contactPhone) { %>
+                  <p>📞 <a href="tel:<%= prop.contactPhone %>" class="hover:text-indigo-600 transition"><%= prop.contactPhone %></a></p>
+                <% } %>
+                <% if (prop.contactEmail) { %>
+                  <p>✉️ <a href="mailto:<%= prop.contactEmail %>" class="hover:text-indigo-600 transition"><%= prop.contactEmail %></a></p>
+                <% } %>
+              </div>
+            </section>
+          </aside>
+        </div>
+
+        <!-- Lower section -->
+        <div class="mt-10 grid gap-8 lg:grid-cols-[minmax(0,_1.6fr)_minmax(0,_1fr)]">
+          <!-- LEFT COLUMN: Overview, features, media -->
+          <div class="space-y-6">
+            <% if (prop.description) { %>
+              <section class="rounded-2xl border border-gray-200 bg-white p-5">
+                <h2 class="text-sm font-semibold text-gray-900 mb-2">Property overview</h2>
+                <p class="text-sm leading-relaxed text-gray-700 whitespace-pre-line">
+                  <%= prop.description %>
+                </p>
+              </section>
+            <% } %>
+
+            <% if (prop.features && prop.features.length) { %>
+              <section class="rounded-2xl border border-gray-200 bg-white p-5">
+                <h2 class="text-sm font-semibold text-gray-900 mb-3">Key features</h2>
+                <ul class="grid gap-2 text-sm text-gray-700 sm:grid-cols-2">
+                  <% prop.features.forEach(function(feat) { %>
+                    <li class="flex items-start gap-2">
+                      <span class="mt-1 h-1.5 w-1.5 rounded-full bg-indigo-500"></span>
+                      <span><%= feat %></span>
+                    </li>
+                  <% }); %>
+                </ul>
+              </section>
+            <% } %>
+
+            <!-- Virtual tour -->
+            <% if (prop.virtualTourUrl) { %>
+              <section class="rounded-2xl border border-gray-200 bg-white p-5">
+                <h2 class="text-sm font-semibold text-gray-900 mb-3">Virtual tour</h2>
+                <div class="aspect-video w-full overflow-hidden rounded-xl border border-gray-200 bg-black/5">
+                  <iframe
+                    src="<%= prop.virtualTourUrl %>"
+                    class="h-full w-full"
+                    style="border:0;"
+                    allowfullscreen
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                  ></iframe>
+                </div>
+              </section>
+            <% } %>
+
+            <!-- 3D map / 3D view -->
+            <% if (prop.map3dUrl) { %>
+              <section class="rounded-2xl border border-gray-200 bg-white p-5">
+                <h2 class="text-sm font-semibold text-gray-900 mb-3">3D view / floor plan</h2>
+                <div class="aspect-video w-full overflow-hidden rounded-xl border border-gray-200 bg-black/5">
+                  <iframe
+                    src="<%= prop.map3dUrl %>"
+                    class="h-full w-full"
+                    style="border:0;"
+                    allowfullscreen
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                  ></iframe>
+                </div>
+              </section>
+            <% } %>
+
+            <!-- Property videos -->
+            <% if (videos && videos.length) { %>
+              <section class="rounded-2xl border border-gray-200 bg-white p-5">
+                <h2 class="text-sm font-semibold text-gray-900 mb-3">Property videos</h2>
+                <div class="space-y-4">
+                  <% videos.slice(0, 3).forEach(function(vUrl, idx) { %>
+                    <div class="aspect-video w-full overflow-hidden rounded-xl border border-gray-200 bg-black/5">
+                      <% if (vUrl.includes('youtube.com') || vUrl.includes('youtu.be')) { %>
+                        <iframe
+                          src="<%= vUrl %>"
+                          class="h-full w-full"
+                          style="border:0;"
+                          allowfullscreen
+                          loading="lazy"
+                        ></iframe>
+                      <% } else { %>
+                        <video
+                          src="<%= vUrl %>"
+                          controls
+                          class="h-full w-full object-cover"
+                        ></video>
+                      <% } %>
+                    </div>
+                  <% }); %>
+                </div>
+              </section>
+            <% } %>
+          </div>
+
+          <!-- RIGHT COLUMN: Landmarks + map -->
+          <div class="space-y-6">
+            <% if (prop.landmarks && prop.landmarks.length) { %>
+              <section class="rounded-2xl border border-gray-200 bg-white p-5">
+                <h2 class="text-sm font-semibold text-gray-900 mb-3">Nearby landmarks</h2>
+                <ul class="space-y-1 text-xs text-gray-700">
+                  <% prop.landmarks.forEach(function(l) { %>
+                    <li>• <%= l %></li>
+                  <% }); %>
+                </ul>
+              </section>
+            <% } %>
+
+            <% if (prop.mapEmbed) { %>
+              <section class="rounded-2xl border border-gray-200 bg-white p-2">
+                <div class="overflow-hidden rounded-xl">
+                  <%- prop.mapEmbed %>
+                </div>
+              </section>
+            <% } %>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- IMAGE ZOOM MODAL -->
+  <div
+    id="image-zoom-modal"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm"
+  >
+    <div class="relative max-h-[90vh] max-w-5xl w-full px-4">
+      <button
+        type="button"
+        id="zoom-close"
+        class="absolute -top-10 right-4 text-gray-200 hover:text-white text-sm"
+      >
+        Close ✕
+      </button>
+
+      <div class="mb-3 flex items-center justify-between text-xs text-gray-200">
+        <div>Scroll / pinch to zoom, drag to pan</div>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            id="zoom-out"
+            class="rounded-full bg_white/10 px-2 py-1 hover:bg-white/20"
+          >
+            −
+          </button>
+          <button
+            type="button"
+            id="zoom-reset"
+            class="rounded-full bg-white/10 px-2 py-1 hover:bg-white/20"
+          >
+            Reset
+          </button>
+          <button
+            type="button"
+            id="zoom-in"
+            class="rounded-full bg-white/10 px-2 py-1 hover:bg-white/20"
+          >
+            +
+          </button>
+        </div>
+      </div>
+
+      <div
+        id="zoom-container"
+        class="relative overflow-hidden rounded-2xl bg-black flex items-center justify-center cursor-grab active:cursor-grabbing"
+        style="height: min(80vh, 600px);"
+      >
+        <img
+          id="zoom-image"
+          src=""
+          alt="Zoomed property image"
+          class="select-none"
+          draggable="false"
+        />
+      </div>
+    </div>
+  </div>
+
+  <%- include('../components/footer') %>
+
+  <!-- Share + Zoom scripts -->
+  <script>
+    (function() {
+      // SHARE LOGIC
+      const shareBtn = document.getElementById('share-button');
+      const copyBtn = document.getElementById('copy-link-button');
+      const statusEl = document.getElementById('share-status');
+
+      const shareUrl = window.location.href;
+      const shareTitle = "<%= (prop.title || 'GS Infra & Estate property').replace(/\"/g, '&quot;') %>";
+      const shareText = "Check out this property listed on GS Infra & Estate.";
+
+      function showStatus(message) {
+        if (!statusEl) return;
+        statusEl.textContent = message;
+        statusEl.classList.remove('hidden');
+        clearTimeout(statusEl._timer);
+        statusEl._timer = setTimeout(() => statusEl.classList.add('hidden'), 2500);
+      }
+
+      if (shareBtn) {
+        shareBtn.addEventListener('click', async () => {
+          try {
+            if (navigator.share) {
+              await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
+            } else if (navigator.clipboard && navigator.clipboard.writeText) {
+              await navigator.clipboard.writeText(shareUrl);
+              showStatus('Link copied!');
+            }
+          } catch (err) {
+            // ignore cancel
+          }
+        });
+      }
+
+      if (copyBtn) {
+        copyBtn.addEventListener('click', async () => {
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              await navigator.clipboard.writeText(shareUrl);
+              showStatus('Link copied!');
+            }
+          } catch (err) {
+            showStatus('Could not copy link');
+          }
+        });
+      }
+
+      // IMAGE ZOOM LOGIC
+      const modal = document.getElementById('image-zoom-modal');
+      const zoomImg = document.getElementById('zoom-image');
+      const zoomContainer = document.getElementById('zoom-container');
+      const closeBtn = document.getElementById('zoom-close');
+      const zoomInBtn = document.getElementById('zoom-in');
+      const zoomOutBtn = document.getElementById('zoom-out');
+      const zoomResetBtn = document.getElementById('zoom-reset');
+
+      if (!modal || !zoomImg || !zoomContainer) return;
+
+      let scale = 1;
+      let posX = 0;
+      let posY = 0;
+      let isDragging = false;
+      let startX = 0;
+      let startY = 0;
+
+      function applyTransform() {
+        zoomImg.style.transform =
+          'translate(' + posX + 'px,' + posY + 'px) scale(' + scale + ')';
+      }
+
+      function openZoom(src) {
+        if (!src) return;
+        zoomImg.src = src;
+        scale = 1;
+        posX = 0;
+        posY = 0;
+        applyTransform();
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeZoom() {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+      }
+
+      // Open zoom on main image / thumbnails
+      document.querySelectorAll('[data-main-image] img[data-zoom-src], button[data-thumb]').forEach(el => {
+        el.addEventListener('click', () => {
+          const src = el.getAttribute('data-zoom-src') || el.querySelector('img')?.src;
+          openZoom(src);
+        });
+      });
+
+      // Drag to pan
+      zoomContainer.addEventListener('mousedown', e => {
+        isDragging = true;
+        startX = e.clientX - posX;
+        startY = e.clientY - posY;
+      });
+
+      window.addEventListener('mousemove', e => {
+        if (!isDragging) return;
+        posX = e.clientX - startX;
+        posY = e.clientY - startY;
+        applyTransform();
+      });
+
+      window.addEventListener('mouseup', () => {
+        isDragging = false;
+      });
+
+      // Wheel to zoom
+      zoomContainer.addEventListener('wheel', e => {
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 0.1 : -0.1;
+        scale = Math.min(4, Math.max(1, scale + delta));
+        applyTransform();
+      }, { passive: false });
+
+      // Buttons zoom
+      if (zoomInBtn) {
+        zoomInBtn.addEventListener('click', () => {
+          scale = Math.min(4, scale + 0.2);
+          applyTransform();
+        });
+      }
+      if (zoomOutBtn) {
+        zoomOutBtn.addEventListener('click', () => {
+          scale = Math.max(1, scale - 0.2);
+          applyTransform();
+        });
+      }
+      if (zoomResetBtn) {
+        zoomResetBtn.addEventListener('click', () => {
+          scale = 1;
+          posX = 0;
+          posY = 0;
+          applyTransform();
+        });
+      }
+
+      // Close handlers
+      if (closeBtn) {
+        closeBtn.addEventListener('click', closeZoom);
+      }
+      modal.addEventListener('click', e => {
+        if (e.target === modal) closeZoom();
+      });
+      window.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+          closeZoom();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

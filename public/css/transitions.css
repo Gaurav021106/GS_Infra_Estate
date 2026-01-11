@@ -1,0 +1,113 @@
+/**
+ * Smooth Page Transitions & Navigation Effects
+ * Created: January 10, 2026
+ * Purpose: Make navigation between pages smooth and visually appealing
+ */
+
+/* Page fade-in animation */
+.page-content {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Navigation link effects */
+.nav-link {
+  transition: all 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+}
+
+.nav-link:hover {
+  transform: translateY(-2px);
+  color: #007bff;
+}
+
+.nav-link.active {
+  color: #007bff;
+  font-weight: 600;
+  border-bottom: 2px solid #007bff;
+}
+
+/* Button transitions */
+button, .btn {
+  transition: all 0.3s ease;
+}
+
+button:hover, .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Link transitions */
+a {
+  transition: color 0.2s ease;
+}
+
+/* Page transition on navigation */
+.container {
+  animation: slideInUp 0.4s ease;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Loading state animation */
+.loading {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Breadcrumb styling */
+.breadcrumb {
+  animation: fadeIn 0.3s ease;
+}
+
+.breadcrumb-item {
+  transition: color 0.2s ease;
+}
+
+.breadcrumb-item:hover {
+  color: #007bff;
+}
+
+/* Mobile responsive transitions */
+@media (max-width: 768px) {
+  .page-content {
+    animation: fadeIn 0.2s ease-in;
+  }
+  
+  .nav-link:hover {
+    transform: scale(1.05);
+  }
+}

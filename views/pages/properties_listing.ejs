@@ -1,199 +1,278 @@
 <%- include('../components/header') %>
 
-<% const hasAnyProperty =
-  (flats && flats.length) ||
-  (plots && plots.length) ||
-  (agri && agri.length); %>
+<main class="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-10 pb-12">
 
-<% if (hasAnyProperty) { %>
-<section
-  class="flex flex-col items-center justify-center mt-4 p-6 bg-gray-50 rounded-xl shadow-sm w-full animate-fadeInUp animation-delay-200"
->
-  <!-- Top: Heading + Filters -->
-  <div class="w-full mb-4">
-    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-      <div>
-        <h1 class="mb-1 text-3xl font-bold animate-slideInDown">Available Properties</h1>
-        <a href="/" class="text-blue-600 hover:underline">Back to Home</a>
-        <p class="text-sm text-gray-500">
-          Filter properties by location and budget across Uttarakhand.
+  <section class="w-full border-b border-gray-200 bg-white/70 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-4 py-5 space-y-4">
+
+      <div class="space-y-2">
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+            <%= categoryName || 'Available Properties' %>
+          </span>
+        </h1>
+        <% if (seo && seo.desc) { %>
+        <p class="text-sm md:text-base text-gray-600 max-w-2xl">
+          <%= seo.desc %>
         </p>
-        <p id="resultsCount" class="mt-1 text-xs text-gray-600 font-medium hidden">
-          Showing <span id="countNum">0</span> properties
+        <% } else { %>
+        <p class="text-sm md:text-base text-gray-600 max-w-2xl">
+          Explore curated properties across Dehradun, Rishikesh and Haridwar – from plots and flats to houses and commercial spaces.
+        </p>
+        <% } %>
+        <p class="text-[11px] text-gray-500 flex items-center gap-1">
+          <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+          Verified & updated listings
         </p>
       </div>
 
-      <!-- Filters -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full md:w-auto bg-white/70 p-3 rounded-xl shadow-sm">
-        <!-- Location Filter -->
-        <div>
-          <label class="block text-xs font-semibold text-gray-700 mb-1">Location</label>
-          <select
-            id="locationFilter"
-            class="w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#A1824C] focus:border-[#A1824C] text-xs md:text-sm transition-all duration-200"
-          >
-            <option value="">All Locations</option>
-          </select>
-        </div>
+      <div class="space-y-3">
 
-        <!-- Price Range Filter -->
-        <div>
-          <label class="block text-xs font-semibold text-gray-700 mb-1">Price Range</label>
-          <select
-            id="priceFilter"
-            class="w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#A1824C] focus:border-[#A1824C] text-xs md:text-sm transition-all duration-200"
-          >
-            <option value="">All Prices</option>
-            <option value="100000-500000">₹1L - ₹5L</option>
-            <option value="500000-10000000">₹5L - ₹1Cr</option>
-            <option value="10000000+">₹1Cr+</option>
-          </select>
-        </div>
+        <div class="flex flex-col lg:flex-row gap-3 lg:items-center">
+          <div class="relative flex-1">
+            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M5 11a6 6 0 1112 0 6 6 0 01-12 0z" />
+              </svg>
+            </span>
+            <input
+              id="searchInput"
+              placeholder="Search by title, city, location or keyword..."
+              class="w-full pl-9 pr-4 py-2.5 rounded-2xl border border-gray-200 bg-white text-sm text-gray-900 placeholder:text-gray-400 shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+            />
+          </div>
 
-        <!-- Clear Filters -->
-        <div class="flex items-end">
           <button
-            id="clearFilters"
-            type="button"
-            class="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs md:text-sm font-semibold rounded-lg shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
+            id="searchBtn"
+            class="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-sm font-medium text-white shadow-sm hover:shadow-md transition-transform duration-150 hover:-translate-y-0.5 active:scale-95 flex items-center justify-center gap-2"
           >
-            Clear Filters
+            <span>Search</span>
+            <span class="hidden sm:inline-flex px-2 py-0.5 rounded-full bg-white/10 border border-white/30 text-[10px]">
+              Enter ↵
+            </span>
+          </button>
+        </div>
+
+        <div class="flex flex-wrap gap-2 text-xs">
+          <div class="relative">
+            <select
+              id="priceFilter"
+              class="border border-gray-200 bg-white rounded-full px-4 pr-7 py-2 text-[11px] md:text-xs text-gray-700 shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+            >
+              <option value="">Price Range</option>
+              <option value="0-20">0–20 Lakh</option>
+              <option value="20-50">20–50 Lakh</option>
+              <option value="50-100">50 Lakh–1 Cr</option>
+              <option value="100+">Above 1 Cr</option>
+            </select>
+            <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400">
+              ▼
+            </span>
+          </div>
+
+          <div class="relative">
+            <select
+              id="typeFilter"
+              class="border border-gray-200 bg-white rounded-full px-4 pr-7 py-2 text-[11px] md:text-xs text-gray-700 shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+            >
+              <option value="">Property Type</option>
+              <option value="flat">Flat</option>
+              <option value="plot">Plot</option>
+              <option value="house">House</option>
+              <option value="farmhouse">Farmhouse</option>
+              <option value="commercial">Commercial</option>
+            </select>
+            <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400">
+              ▼
+            </span>
+          </div>
+
+          <button class="px-3 py-1.5 rounded-full border border-gray-200 bg-white text-[11px] text-gray-700 hover:border-indigo-500 hover:text-indigo-600 transition-all">
+            Near highway
+          </button>
+          <button class="px-3 py-1.5 rounded-full border border-gray-200 bg-white text-[11px] text-gray-700 hover:border-indigo-500 hover:text-indigo-600 transition-all">
+            Ready to move
+          </button>
+
+          <button
+            id="resetFilters"
+            class="ml-auto px-4 py-1.5 rounded-full border border-gray-200 bg-transparent text-[11px] md:text-xs text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all"
+          >
+            Reset
           </button>
         </div>
       </div>
     </div>
+  </section>
 
-    <!-- Email Alerts Button -->
-    <div class="mt-3">
-      <button
-        id="emailAlertBtn"
-        type="button"
-        class="px-4 py-2.5 bg-[#A1824C] hover:bg-[#8b6f3f]
-               text-white text-xs md:text-sm font-semibold rounded-lg
-               shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
-      >
-        Enable Email Alerts
-      </button>
-      <p class="mt-1 text-[11px] text-gray-500">
-        Get an email whenever a new property is listed in any location.
-      </p>
-    </div>
-  </div>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-  <!-- Loading Overlay -->
-  <div
-    id="loadingSpinner"
-    class="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 hidden items-center justify-center"
-  >
-    <div class="bg-white p-6 rounded-2xl shadow-2xl animate-pulse">
-      <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#A1824C] mx-auto mb-3"></div>
-      <p class="text-sm md:text-lg font-semibold text-gray-800">Filtering properties...</p>
-    </div>
-  </div>
-
-  <!-- Flats & Houses -->
-  <% if (flats && flats.length) { %>
-    <div class="w-full mb-6" data-section="flats">
-      <h2 class="text-xl font-semibold mb-3">Flats &amp; Houses in Uttarakhand</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6" id="flatsContainer">
-        <% flats.forEach(p => { %>
-          <%- include('../components/property-card', { p, type: 'flat' }) %>
-        <% }) %>
+    <div id="skeleton" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <% for(let i=0;i<6;i++){ %>
+      <div class="overflow-hidden rounded-2xl bg-white border border-gray-100 shadow-sm">
+        <div class="h-40 bg-gray-100 animate-pulse"></div>
+        <div class="p-4 space-y-3">
+          <div class="h-4 w-3/4 rounded-full bg-gray-100 animate-pulse"></div>
+          <div class="h-3 w-1/2 rounded-full bg-gray-100 animate-pulse"></div>
+          <div class="flex gap-2">
+            <div class="h-6 w-16 rounded-full bg-gray-100 animate-pulse"></div>
+            <div class="h-6 w-16 rounded-full bg-gray-100 animate-pulse"></div>
+          </div>
+          <div class="h-8 w-full rounded-xl bg-gray-100 animate-pulse"></div>
+        </div>
       </div>
+      <% } %>
     </div>
-  <% } %>
 
-  <!-- Plots -->
-  <% if (plots && plots.length) { %>
-    <div class="w-full mb-6" data-section="plots">
-      <h2 class="text-xl font-semibold mb-3">Plots in Uttarakhand</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6" id="plotsContainer">
-        <% plots.forEach(p => { %>
-          <%- include('../components/property-card', { p, type: 'plot' }) %>
-        <% }) %>
-      </div>
-    </div>
-  <% } %>
+    <% if(properties && properties.length>0){ %>
 
-  <!-- Agricultural Land -->
-  <% if (agri && agri.length) { %>
-    <div class="w-full" data-section="agri">
-      <h2 class="text-xl font-semibold mb-3">Agricultural Land in Uttarakhand</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6" id="agriContainer">
-        <% agri.forEach(p => { %>
-          <%- include('../components/property-card', { p, type: 'agri' }) %>
-        <% }) %>
-      </div>
-    </div>
-  <% } %>
-</section>
-
-<!-- Email Alert Modal -->
-<div
-  id="emailAlertModal"
-  class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center"
->
-  <div class="bg-white rounded-xl p-5 w-80 shadow-2xl">
-    <h3 class="text-lg font-semibold mb-2">Get New Property Alerts</h3>
-    <p class="text-xs text-gray-500 mb-3">
-      Get an email whenever a new property is listed in any location.
-    </p>
-    <input
-      type="email"
-      id="emailAlertInput"
-      placeholder="Enter your email"
-      class="w-full mb-3 px-3 py-2 border border-gray-200 rounded-lg
-             text-sm focus:ring-2 focus:ring-[#A1824C] focus:border-[#A1824C]"
-    />
-    <div class="flex justify-end gap-2">
-      <button
-        id="emailAlertCancel"
-        class="px-3 py-1.5 text-xs font-semibold text-gray-600 hover:text-gray-800"
+    <section id="propertyGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 hidden">
+      <% properties.forEach(p=>{ 
+          /* [FIX] Manually generate slug to avoid 'undefined' links */
+          const rawTitle = p.title || String(p._id || '');
+          const slugTitle = rawTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          const slug = `${slugTitle}-${p._id}`;
+      %>
+      <article
+        class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-transform duration-200 hover:-translate-y-1 overflow-hidden flex flex-col"
       >
-        Cancel
-      </button>
-      <button
-        id="emailAlertSave"
-        class="px-3 py-1.5 text-xs font-semibold text-white bg-[#A1824C]
-               hover:bg-[#8b6f3f] rounded-lg"
-      >
-        Subscribe
-      </button>
-    </div>
-  </div>
-</div>
-<% } %>
+        <div class="relative overflow-hidden">
+          <img
+            src="<%= p.imageUrls && p.imageUrls.length > 0 ? p.imageUrls[0] : '/images/no-image.jpg' %>"
+            alt="<%= p.title %>"
+            class="h-52 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            loading="lazy"
+          />
 
-<!-- Global Image Lightbox -->
-<div
-  id="imageLightbox"
-  class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center"
->
-  <button
-    id="lightboxClose"
-    class="absolute top-4 right-4 text-white text-2xl font-bold px-3 py-1 bg-black/40 rounded-full hover:bg-black/70"
-  >
-    ✕
-  </button>
-  <div class="max-w-4xl w-[94%] max-h-[90vh] flex flex-col items-center">
-    <img
-      id="lightboxImage"
-      src=""
-      alt="Property image"
-      class="w-full h-auto max-h-[80vh] object-contain rounded-xl shadow-2xl bg-black"
-    />
-    <p id="lightboxCaption" class="mt-3 text-sm text-gray-200 text-center line-clamp-2"></p>
+          <div class="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/45 to-transparent"></div>
+
+          <div class="absolute top-3 left-3 flex flex-wrap gap-2 text-[10px]">
+            <% if (p.type) { %>
+            <span class="px-2.5 py-1 rounded-full bg-white/90 text-gray-800 shadow-sm border border-gray-100">
+              <%= p.type %>
+            </span>
+            <% } %>
+            <% if(p.isFeatured){ %>
+            <span class="px-2.5 py-1 rounded-full bg-amber-400 text-white font-semibold shadow-sm">
+              Featured
+            </span>
+            <% } %>
+          </div>
+
+          <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[11px] text-white">
+            <% if(p.location){ %>
+            <div class="flex items-center gap-1.5 drop-shadow">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-6-4.35-6-10a6 6 0 1112 0 6 6 0 01-12 0z" />
+              </svg>
+              <span class="line-clamp-1"><%= p.location %></span>
+            </div>
+            <% } %>
+            <% if(p.area){ %>
+            <span class="px-2 py-1 rounded-full bg-white/85 text-gray-800 text-[10px] shadow-sm">
+              <%= p.area %> sq.ft
+            </span>
+            <% } %>
+          </div>
+        </div>
+
+        <div class="p-4 flex flex-col flex-1">
+          <h3 class="text-sm md:text-base font-semibold text-gray-900 leading-snug line-clamp-2 mb-2 group-hover:text-indigo-600 transition-colors">
+            <%= p.title %>
+          </h3>
+
+          <div class="flex flex-wrap items-center gap-2 text-[11px] text-gray-500 mb-3">
+            <% if(p.city){ %>
+            <span class="px-2 py-1 rounded-full bg-gray-50 border border-gray-200">
+              <%= p.city %>
+            </span>
+            <% } %>
+            <% if(p.beds){ %>
+            <span class="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-50 border border-gray-200">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M5 7h4M15 7h4M4 18h16v-8H4v8z" />
+              </svg>
+              <span><%= p.beds %> Beds</span>
+            </span>
+            <% } %>
+            <% if(p.baths){ %>
+            <span class="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-50 border border-gray-200">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 10h10M9 21h6M12 3v5m-7 2v8a2 2 0 002 2h10a2 2 0 002-2v-8" />
+              </svg>
+              <span><%= p.baths %> Baths</span>
+            </span>
+            <% } %>
+          </div>
+
+          <div class="flex flex-wrap gap-2 mb-4 text-[11px]">
+            <% if(p.price){ %>
+            <span class="px-3 py-1.5 rounded-full bg-green-50 text-green-700 font-semibold border border-green-100">
+              ₹ <%= p.price.toLocaleString('en-IN') %>
+            </span>
+            <% } %>
+            <% if(p.area){ %>
+            <span class="px-3 py-1.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+              <%= p.area %> sq.ft
+            </span>
+            <% } %>
+          </div>
+
+          <div class="mt-auto">
+            <a
+              href="/property/<%= slug %>"
+              class="block text-center rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 py-2.5 text-[13px] font-semibold text-white shadow-sm hover:shadow-md transition-transform duration-150 hover:-translate-y-0.5 active:scale-95"
+            >
+              View Details
+            </a>
+          </div>
+        </div>
+      </article>
+      <% }) %>
+    </section>
+
+    <% } else { %>
+
+    <section class="flex items-center justify-center min-h-[50vh]">
+      <div class="text-center max-w-md mx-auto">
+        <div class="mb-4 flex justify-center">
+          <div class="h-14 w-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
+            <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M5 11a6 6 0 1112 0 6 6 0 01-12 0z" />
+            </svg>
+          </div>
+        </div>
+        <h2 class="text-xl md:text-2xl font-semibold mb-2 text-gray-900">No Properties Found</h2>
+        <p class="text-gray-600 mb-5 text-sm">
+          Try changing filters or updating your search keyword to explore more options in Dehradun, Rishikesh and Haridwar.
+        </p>
+        <a
+          href="/"
+          class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-2.5 rounded-2xl text-sm font-semibold shadow-sm hover:shadow-md transition-transform hover:-translate-y-0.5"
+        >
+          Back to Home
+        </a>
+      </div>
+    </section>
+
+    <% } %>
   </div>
-</div>
+</main>
 
 <%- include('../components/footer') %>
 
-<link rel="stylesheet" href="/css/property-listing.css">
 <script>
-  window.flats = <%- JSON.stringify(flats || []) %>;
-  window.plots = <%- JSON.stringify(plots || []) %>;
-  window.agri  = <%- JSON.stringify(agri  || []) %>;
+  window.addEventListener("load", () => {
+    const skeleton = document.getElementById("skeleton");
+    const grid = document.getElementById("propertyGrid");
+    if (skeleton) skeleton.style.display = "none";
+    if (grid) grid.classList.remove("hidden");
+  });
+  const searchInput = document.getElementById("searchInput");
+  const searchBtn = document.getElementById("searchBtn");
+  if (searchInput && searchBtn) {
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") searchBtn.click();
+    });
+  }
 </script>
-<script src="/js/property-listing.js" defer></script>
-<script src="/js/share-buttons.js" defer></script>
-<script src="/js/image-lightbox.js" defer></script>

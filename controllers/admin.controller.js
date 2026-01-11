@@ -1,12 +1,14 @@
 // controllers/admin.controller.js
 const Property = require('../models/property');
-const { splitByCategory } = require('../utils/propertyHelpers');
 const { Resend } = require('resend');
 const { notifyNewProperty } = require('../services/alertsService');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// ======================= OTP HELPER ===================
+// ======================= CONSTANTS =======================
+const ADMIN_FALLBACK_EMAIL = 'gauravsaklani021106@gmail.com';
+
+// ======================= OTP HELPER ======================
 const generateOTP = () => {
   const digits = '0123456789';
   let otp = '';
@@ -16,7 +18,7 @@ const generateOTP = () => {
   return otp;
 };
 
-// ======================= RESEND STARTUP TEST =======================
+// ======================= RESEND STARTUP TEST =============
 resend.emails
   .list()
   .then((listResult) => {
@@ -32,7 +34,7 @@ resend.emails
     });
   });
 
-// ======================= SEND ADMIN OTP EMAIL =======================
+// ======================= SEND ADMIN OTP EMAIL ============
 async function sendOtpEmail(adminEmail, code) {
   try {
     console.log('📤 Sending Admin OTP:', {
@@ -56,7 +58,6 @@ async function sendOtpEmail(adminEmail, code) {
             <p style="font-size: 16px; color: #666666; margin-bottom: 20px;">
               Admin login request from GS Infra system to: <strong>${adminEmail}</strong>
             </p>
-
             <div style="background-color: #f8f9fa; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
               <p style="color: #555555; font-size: 14px; margin-bottom: 10px;">Your one-time verification code is:</p>
               <h1 style="color: #0066cc; font-size: 48px; letter-spacing: 8px; margin: 0; font-weight: bold;">
@@ -66,9 +67,7 @@ async function sendOtpEmail(adminEmail, code) {
                 Valid for 10 minutes only
               </p>
             </div>
-
             <hr style="border: none; border-top: 1px solid #dddddd; margin: 20px 0;" />
-
             <p style="color: #999999; font-size: 12px; line-height: 1.5;">
               Sent from <strong>${process.env.FROM_EMAIL}</strong><br />
               If you didn't request this code, please ignore this email and contact support immediately.
@@ -123,26 +122,46 @@ async function sendOtpEmail(adminEmail, code) {
   }
 }
 
-// helper for JSON vs HTML
+// ======================= HELPERS =========================
 const wantsJson = (req) =>
   req.xhr ||
   (req.headers.accept && req.headers.accept.includes('application/json'));
 
-// ======================= LOGIN VIEW =======================
-exports.showLogin = (req, res) => {
+const getAdminEmail = (req) =>
+  req.session.adminEmail ||
+  process.env.ADMINEMAIL ||
+  ADMIN_FALLBACK_EMAIL;
+
+// Split properties into 4 new categories
+const splitIntoAdminBuckets = (props) => ({
+  residential: props.filter((p) => p.category === 'residential_properties'),
+  commercialPlots: props.filter((p) => p.category === 'commercial_plots'),
+  landPlots: props.filter((p) => p.category === 'land_plots'),
+  premiumInvestment: props.filter((p) => p.category === 'premium_investment'),
+});
+
+// ======================= LOGIN VIEW ======================
+exports.showLogin = (req, res, next) => {
   try {
     res.render('admin/login', {
       title: 'GS Infra Estates - Admin Login',
       email: req.session.adminEmail || null,
-      adminEmail: process.env.ADMINEMAIL || 'gauravsaklani021106@gmail.com',
+      adminEmail: process.env.ADMINEMAIL || ADMIN_FALLBACK_EMAIL,
+      error: null,
+      message: null,
+      seo: {
+        title: 'Admin Login | GS Infra Estates',
+        desc: 'Secure admin login panel for GS Infra Estates.',
+        keywords: 'admin login, gs infra estates, dashboard',
+      },
     });
   } catch (err) {
     console.error('❌ Login view error:', err);
-    res.status(500).send('Server error');
+    next(err);
   }
 };
 
-// ======================= LOGIN STEP 1 (EMAIL + PASSWORD) =======================
+// ======================= LOGIN STEP 1 ====================
 exports.loginStep1 = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -170,10 +189,7 @@ exports.loginStep1 = async (req, res) => {
     };
 
     await new Promise((resolve, reject) => {
-      req.session.save((err) => {
-        if (err) reject(err);
-        else resolve();
-      });
+      req.session.save((err) => (err ? reject(err) : resolve()));
     });
 
     await sendOtpEmail(ADMINEMAIL, code);
@@ -212,7 +228,7 @@ exports.loginStep1 = async (req, res) => {
   }
 };
 
-// ======================= LOGIN STEP 2 (VERIFY OTP) =======================
+// ======================= LOGIN STEP 2 ====================
 exports.loginVerify = async (req, res) => {
   try {
     const { verificationCode } = req.body;
@@ -259,19 +275,14 @@ exports.loginVerify = async (req, res) => {
       });
     }
 
-    const ADMINEMAIL =
-      process.env.ADMINEMAIL || 'gauravsaklani021106@gmail.com';
+    const ADMINEMAIL = process.env.ADMINEMAIL || ADMIN_FALLBACK_EMAIL;
 
     req.session.isAdmin = true;
     req.session.adminEmail = ADMINEMAIL;
-
     delete req.session.otp;
 
     await new Promise((resolve, reject) => {
-      req.session.save((err) => {
-        if (err) reject(err);
-        else resolve();
-      });
+      req.session.save((err) => (err ? reject(err) : resolve()));
     });
 
     console.log(`✅ Admin logged in: ${ADMINEMAIL}`);
@@ -284,13 +295,10 @@ exports.loginVerify = async (req, res) => {
   }
 };
 
-// ======================= LOGOUT =======================
+// ======================= LOGOUT ==========================
 exports.logoutAdmin = (req, res) => {
   try {
-    const adminEmail =
-      req.session.adminEmail ||
-      process.env.ADMINEMAIL ||
-      'gauravsaklani021106@gmail.com';
+    const adminEmail = getAdminEmail(req);
 
     req.session.destroy((err) => {
       if (err) {
@@ -306,24 +314,23 @@ exports.logoutAdmin = (req, res) => {
   }
 };
 
-// ======================= DASHBOARD VIEW =======================
+// ======================= DASHBOARD VIEW =================
 exports.dashboard = async (req, res) => {
   try {
-    const props = await Property.find().sort({ createdAt: -1 });
-    const { flats, plots, agri } = splitByCategory(props);
-    const editingProperty = req.query.id
-      ? await Property.findById(req.query.id)
-      : null;
+    const [props, editingProperty] = await Promise.all([
+      Property.find().sort({ createdAt: -1 }).lean(),
+      req.query.id ? Property.findById(req.query.id).lean() : null,
+    ]);
+
+    const buckets = splitIntoAdminBuckets(props);
 
     res.render('admin/dashboard', {
       title: 'Admin Dashboard - GS Infra Estates',
-      flats,
-      plots,
-      agri,
-      email:
-        req.session.adminEmail ||
-        process.env.ADMINEMAIL ||
-        'gauravsaklani021106@gmail.com',
+      residential: buckets.residential,
+      commercialPlots: buckets.commercialPlots,
+      landPlots: buckets.landPlots,
+      premiumInvestment: buckets.premiumInvestment,
+      email: getAdminEmail(req),
       editingProperty,
       status: req.query.status || null,
     });
@@ -331,31 +338,30 @@ exports.dashboard = async (req, res) => {
     console.error('❌ Dashboard error:', err);
     res.status(500).render('admin/dashboard', {
       title: 'Admin Dashboard Error',
-      flats: [],
-      plots: [],
-      agri: [],
-      email:
-        req.session.adminEmail ||
-        process.env.ADMINEMAIL ||
-        'gauravsaklani021106@gmail.com',
+      residential: [],
+      commercialPlots: [],
+      landPlots: [],
+      premiumInvestment: [],
+      email: getAdminEmail(req),
       error: 'Failed to load properties',
     });
   }
 };
 
-// ======================= LIST PROPERTIES AS JSON =======================
+// ======================= LIST PROPERTIES JSON ===========
 exports.listPropertiesJson = async (req, res) => {
   try {
-    const props = await Property.find().sort({ createdAt: -1 });
-    const { flats, plots, agri } = splitByCategory(props);
-    res.json({ ok: true, flats, plots, agri });
+    const props = await Property.find().sort({ createdAt: -1 }).lean();
+    const buckets = splitIntoAdminBuckets(props);
+
+    res.json({ ok: true, ...buckets });
   } catch (err) {
     console.error('❌ List properties JSON error:', err);
     res.status(500).json({ ok: false, error: 'Failed to load properties' });
   }
 };
 
-// ======================= CREATE PROPERTY =======================
+// ======================= CREATE PROPERTY =================
 exports.createProperty = async (req, res) => {
   try {
     let {
@@ -438,27 +444,25 @@ exports.createProperty = async (req, res) => {
   }
 };
 
-// ======================= EDIT FORM (for URL-based edit) =======================
+// ======================= EDIT FORM =======================
 exports.editForm = async (req, res) => {
   try {
-    const property = await Property.findById(req.params.id);
+    const property = await Property.findById(req.params.id).lean();
 
     if (!property) {
       return res.status(404).send('Property not found');
     }
 
-    const props = await Property.find().sort({ createdAt: -1 });
-    const { flats, plots, agri } = splitByCategory(props);
+    const props = await Property.find().sort({ createdAt: -1 }).lean();
+    const buckets = splitIntoAdminBuckets(props);
 
     res.render('admin/dashboard', {
       title: 'Admin Dashboard - GS Infra Estates',
-      flats,
-      plots,
-      agri,
-      email:
-        req.session.adminEmail ||
-        process.env.ADMINEMAIL ||
-        'gauravsaklani021106@gmail.com',
+      residential: buckets.residential,
+      commercialPlots: buckets.commercialPlots,
+      landPlots: buckets.landPlots,
+      premiumInvestment: buckets.premiumInvestment,
+      email: getAdminEmail(req),
       editingProperty: property,
       status: null,
     });
@@ -468,7 +472,7 @@ exports.editForm = async (req, res) => {
   }
 };
 
-// ======================= UPDATE PROPERTY =======================
+// ======================= UPDATE PROPERTY =================
 exports.updateProperty = async (req, res) => {
   try {
     const updates = { ...req.body };
@@ -508,7 +512,7 @@ exports.updateProperty = async (req, res) => {
       req.params.id,
       updates,
       { new: true, runValidators: true }
-    );
+    ).lean();
 
     if (!property) {
       const msg = 'Property not found';
@@ -531,10 +535,10 @@ exports.updateProperty = async (req, res) => {
   }
 };
 
-// ======================= DELETE PROPERTY =======================
+// ======================= DELETE PROPERTY =================
 exports.deleteProperty = async (req, res) => {
   try {
-    const property = await Property.findByIdAndDelete(req.params.id);
+    const property = await Property.findByIdAndDelete(req.params.id).lean();
 
     if (!property) {
       const msg = 'Property not found';

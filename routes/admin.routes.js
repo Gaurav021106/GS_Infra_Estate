@@ -6,10 +6,13 @@ const adminController = require('../controllers/admin.controller');
 const authAdmin = require('../middleware/authAdmin');
 const multer = require('multer');
 
-// ======================= MULTER CONFIG =======================
+/**
+ * ====================== MULTER CONFIG ======================
+ * Stores uploaded files in /public/uploads with unique filenames.
+ */
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // adjust path if needed (ensure /public/uploads exists)
+    // Ensure /public/uploads exists
     cb(null, 'public/uploads');
   },
   filename: (req, file, cb) => {
@@ -21,8 +24,14 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Accept multiple named file fields from the form
-// name attributes must match your EJS: map3dFile, virtualTourFile, images, videos
+/**
+ * Accept multiple named file fields from the admin property form.
+ * name attributes in EJS must match:
+ *  - map3dFile
+ *  - virtualTourFile
+ *  - images
+ *  - videos
+ */
 const uploadFields = upload.fields([
   { name: 'map3dFile', maxCount: 1 },
   { name: 'virtualTourFile', maxCount: 1 },
@@ -30,9 +39,16 @@ const uploadFields = upload.fields([
   { name: 'videos', maxCount: 10 },
 ]);
 
-// ======================= PUBLIC ADMIN ROUTES =======================
+/**
+ * ====================== PUBLIC ADMIN ROUTES ======================
+ * Mounted at /admin in index.js:
+ *  - GET  /admin/login
+ *  - POST /admin/login
+ *  - POST /admin/login/verify
+ *  - GET  /admin/logout
+ */
 
-// Login page (GET)
+// Login page (email + password + OTP flow)
 router.get('/login', adminController.showLogin);
 
 // Step 1: email + password (POST /admin/login)
@@ -44,18 +60,24 @@ router.post('/login/verify', adminController.loginVerify);
 // Logout (clears session, then redirect to /)
 router.get('/logout', adminController.logoutAdmin);
 
-// ======================= PROTECTED ADMIN ROUTES =======================
-// All routes below require req.session.isAdmin === true
+/**
+ * ====================== PROTECTED ADMIN ROUTES ======================
+ * All routes below require req.session.isAdmin === true via authAdmin middleware.
+ *
+ * Mounted at /admin in index.js:
+ *  - GET    /admin/dashboard
+ *  - GET    /admin/properties/json
+ *  - POST   /admin/properties/new
+ *  - GET    /admin/properties/:id/edit
+ *  - POST   /admin/properties/:id/update
+ *  - POST   /admin/properties/:id/delete
+ */
 
 // Dashboard (EJS view)
 router.get('/dashboard', authAdmin, adminController.dashboard);
 
-// JSON list for SPA dashboard (used by AJAX if you want)
-router.get(
-  '/properties/json',
-  authAdmin,
-  adminController.listPropertiesJson
-);
+// JSON list for SPA dashboard / AJAX usage
+router.get('/properties/json', authAdmin, adminController.listPropertiesJson);
 
 // Create property (supports files, returns JSON or redirect)
 router.post(
@@ -65,7 +87,7 @@ router.post(
   adminController.createProperty
 );
 
-// Optional: Edit property view (if you still navigate by URL)
+// Edit property view (optional, if navigating by URL)
 router.get(
   '/properties/:id/edit',
   authAdmin,
