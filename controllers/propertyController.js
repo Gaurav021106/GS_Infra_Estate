@@ -297,7 +297,7 @@ const getPropertyDetail = async (req, res) => {
   try {
     let { slug, id } = req.params; // /property/:slug-:id
 
-    // Validate ObjectId to avoid CastError
+    // [FIX] Strict ID check to handle route ambiguity
     if (!mongoose.Types.ObjectId.isValid(id)) {
       console.warn('Invalid property id in URL:', id);
       return res.status(404).render('pages/404', {
@@ -361,7 +361,7 @@ const getPropertyDetail = async (req, res) => {
       property.seoMetaDescription || property.description || ''
     ).substring(0, 155);
 
-    // [FIX] Added 'referrer' to the passed object
+    // [FIX] Added 'referrer' here to prevent EJS ReferenceError
     res.render('pages/property-detail', {
       pageTitle,
       metaDescription,

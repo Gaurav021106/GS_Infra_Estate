@@ -57,12 +57,12 @@ router.get('/properties-in-haridwar', (req, res, next) => {
   return propertyController.getPropertiesByCity(req, res, next);
 });
 
-// [FIX] Redirect bare /property path to prevent 404s (as seen in your screenshot)
+// [FIX] Redirect bare /property path to prevent 404s
 router.get('/property', (req, res) => res.redirect('/properties'));
 
-// [FIX] PROPERTY DETAIL PAGE
-// Added regex ([0-9a-fA-F]{24}) to strictly match the ID, ensuring titles with hyphens don't break the route
-router.get('/property/:slug-:id([0-9a-fA-F]{24})', propertyController.getPropertyDetail);
+// [FIXED ROUTE] Removed Regex constraint to prevent server crash
+// The validation logic inside propertyController will handle the ID check
+router.get('/property/:slug-:id', propertyController.getPropertyDetail);
 
 // optional SEO pattern using public.controller -> propertyDetailPage
 router.get('/properties/:location/:category/:slug-:id', propertyDetailPage);
