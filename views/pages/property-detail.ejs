@@ -79,7 +79,7 @@
       "addressRegion": "Uttarakhand",
       "addressCountry": "IN"
     },
-    "telephone": "+91-XXXXXXXXXX"
+    "telephone": "+91-8279702969"
   }
   </script>
 
@@ -171,7 +171,7 @@
                 <span class="inline-flex items-center gap-1">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                          d="M12 21s-6.5-4.33-6.5-10A6.5 6.5 0 0112 4.5 6.5 6.5 0 0118.5 11c0 5.67-6.5 10-6.5 10z" />
+                          d="M12 21s-6.5-4.33-6.5-10A6.5 6.5 0 01112 4.5 6.5 6.5 0 0118.5 11c0 5.67-6.5 10-6.5 10z" />
                     <circle cx="12" cy="11" r="2.5" stroke-width="1.5"></circle>
                   </svg>
                   <span>
@@ -207,7 +207,7 @@
               </div>
               <div class="flex flex-wrap gap-2">
                 <a
-                  href="tel:<%= prop.contactPhone || '+919999999999' %>"
+                  href="tel:<%= prop.contactPhone || '+918279702969' %>"
                   class="group inline-flex flex-1 items-center justify-center rounded-full bg-indigo-600 px-4 py-2 text-xs font-medium text-white
                          hover:bg-indigo-700 transition transform hover:-translate-y-0.5 hover:shadow-md">
                   Call for details
@@ -218,8 +218,10 @@
                           d="M9 5l7 7-7 7" />
                   </svg>
                 </a>
+                <!-- UPDATED BUTTON WITH ID -->
                 <button
                   type="button"
+                  id="whatsapp-visit-btn"
                   class="inline-flex items-center justify-center rounded-full border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700
                          hover:border-indigo-500 hover:text-indigo-600 transition">
                   Schedule site visit
@@ -583,7 +585,7 @@
 
   <%- include('../components/footer') %>
 
-  <!-- Share + Zoom scripts -->
+  <!-- Share + Zoom + WhatsApp scripts -->
   <script>
     (function() {
       // SHARE LOGIC
@@ -628,6 +630,31 @@
           } catch (err) {
             showStatus('Could not copy link');
           }
+        });
+      }
+
+      // WHATSAPP "SCHEDULE SITE VISIT" LOGIC
+      const waBtn = document.getElementById('whatsapp-visit-btn');
+      if (waBtn) {
+        waBtn.addEventListener('click', () => {
+          const phone = "918279702969"; // admin number in international format without +
+
+          const message = `
+Hello, I want to schedule a site visit.
+
+Property: <%= prop.title || 'N/A' %>
+Property ID: <%= prop._id || 'N/A' %>
+Location: <%= (prop.location || '') + (prop.city ? ', ' + prop.city : '') + (prop.state ? ', ' + prop.state : '') %>
+Price: <%= priceText || 'Contact for price' %>
+Category: <%= prop.category || 'N/A' %>
+Status: <%= prop.status || 'N/A' %>
+
+Link: https://www.gsinfraandestate.com/property/<%= prop.slug || prop._id || '' %>
+          `.trim();
+
+          const encoded = encodeURIComponent(message); // encodes spaces, line breaks, and special chars for WhatsApp text param [web:20][web:28]
+          const url = `https://wa.me/${phone}?text=${encoded}`; // WhatsApp click-to-chat format with prefilled message [web:1][web:6][web:9][web:12]
+          window.open(url, "_blank"); // open in new tab / WhatsApp Web / app [web:23][web:30]
         });
       }
 
