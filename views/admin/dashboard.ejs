@@ -48,8 +48,12 @@
     >
       <!-- Category/Type -->
       <div>
-        <label class="block text-sm font-medium mb-1">Category</label>
-        <select name="category" class="border rounded-lg px-3 py-2 w-full text-sm md:text-base" required>
+        <label class="block text-sm font-medium mb-1">Category<span class="text-red-500">*</span></label>
+        <select
+          name="category"
+          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+          required
+        >
           <option value="residential_properties" <%= editingProperty?.category === 'residential_properties' ? 'selected' : '' %>>Residential Properties</option>
           <option value="commercial_plots" <%= editingProperty?.category === 'commercial_plots' ? 'selected' : '' %>>Commercial Plots</option>
           <option value="land_plots" <%= editingProperty?.category === 'land_plots' ? 'selected' : '' %>>Land & Plots</option>
@@ -59,35 +63,37 @@
 
       <!-- Title -->
       <div>
-        <label class="block text-sm font-medium mb-1">Title</label>
+        <label class="block text-sm font-medium mb-1">Title<span class="text-red-500">*</span></label>
         <input 
           name="title" 
           value="<%= editingProperty?.title || '' %>" 
-          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base" 
+          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
           required
         >
       </div>
 
       <!-- Price -->
       <div>
-        <label class="block text-sm font-medium mb-1">Price (INR)</label>
+        <label class="block text-sm font-medium mb-1">Price (INR)<span class="text-red-500">*</span></label>
         <input 
           type="number" 
           name="price" 
           value="<%= editingProperty?.price || '' %>" 
-          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base" 
+          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+          min="0"
+          step="1"
           required
         >
       </div>
 
       <!-- Location -->
       <div>
-        <label class="block text-sm font-medium mb-1">Location</label>
+        <label class="block text-sm font-medium mb-1">Location<span class="text-red-500">*</span></label>
         <input 
           name="location" 
           value="<%= editingProperty?.location || '' %>" 
           class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
-          placeholder="Rishikesh, Uttarakhand" 
+          placeholder="Rishikesh, Uttarakhand"
           required
         >
       </div>
@@ -105,6 +111,20 @@
           class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
           placeholder="Family, Investment, Farmhouse"
         >
+      </div>
+
+      <!-- Key Features (NEW) -->
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium mb-1">
+          Key Features
+          <span class="text-xs text-gray-500">(comma separated, shown as bullets on property page)</span>
+        </label>
+        <textarea
+          name="features"
+          rows="2"
+          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+          placeholder="Roadside plot, Gated society, River view, Registry available"
+        ><%= editingProperty?.features?.join(', ') || '' %></textarea>
       </div>
 
       <!-- Current Files Preview (Edit mode only) -->
@@ -149,39 +169,61 @@
       <!-- New File Uploads -->
       <div class="md:col-span-2">
         <label class="block text-sm font-medium mb-1">3D Map / 360 Image (one file)</label>
-        <input type="file" name="map3dFile" accept="image/*,.glb,.gltf,.obj,.fbx"
-               class="border rounded-lg px-3 py-2 w-full text-sm md:text-base">
+        <input
+          type="file"
+          name="map3dFile"
+          accept="image/*,.glb,.gltf,.obj,.fbx"
+          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+        >
       </div>
 
       <div class="md:col-span-2">
         <label class="block text-sm font-medium mb-1">Virtual Tour Video (one file)</label>
-        <input type="file" name="virtualTourFile" accept="video/*"
-               class="border rounded-lg px-3 py-2 w-full text-sm md:text-base">
+        <input
+          type="file"
+          name="virtualTourFile"
+          accept="video/*"
+          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+        >
       </div>
 
+      <!-- Property Images / Videos -->
       <div class="md:col-span-2">
         <label class="block text-sm font-medium mb-1">
           Property Images (max 10) - <%= editingProperty?.imageUrls?.length || 0 %> existing
+          <% if (!editingProperty) { %><span class="text-red-500">*</span><% } %>
         </label>
-        <input type="file" name="images" multiple accept="image/*"
-               class="border rounded-lg px-3 py-2 w-full text-sm md:text-base">
+        <input
+          type="file"
+          name="images"
+          multiple
+          accept="image/*"
+          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+          <%= editingProperty ? '' : 'required' %>
+        >
       </div>
 
       <div class="md:col-span-2">
         <label class="block text-sm font-medium mb-1">
           Property Videos (max 10) - <%= editingProperty?.videoUrls?.length || 0 %> existing
         </label>
-        <input type="file" name="videos" multiple accept="video/*"
-               class="border rounded-lg px-3 py-2 w-full text-sm md:text-base">
+        <input
+          type="file"
+          name="videos"
+          multiple
+          accept="video/*"
+          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+        >
       </div>
 
       <!-- Description -->
       <div class="md:col-span-2">
-        <label class="block text-sm font-medium mb-1">Description</label>
+        <label class="block text-sm font-medium mb-1">Description<span class="text-red-500">*</span></label>
         <textarea 
           name="description" 
           rows="3"
           class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+          required
         ><%= editingProperty?.description || '' %></textarea>
       </div>
 
@@ -192,8 +234,10 @@
             Cancel
           </a>
         <% } %>
-        <button type="submit"
-                class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 text-sm md:text-base font-semibold shadow-sm transition">
+        <button
+          type="submit"
+          class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 text-sm md:text-base font-semibold shadow-sm transition"
+        >
           <%= editingProperty ? 'Update Property' : 'Add Property' %>
         </button>
       </div>
@@ -468,8 +512,8 @@
 
   const getBodyByCategory = (cat) => {
     if (cat === 'residential_properties') return residentialTbody;
-    if (cat === 'commercial_plots')       return commercialTbody;
-    if (cat === 'land_plots')            return landTbody;
+    if (cat === 'commercial_plots')      return commercialTbody;
+    if (cat === 'land_plots')           return landTbody;
     if (cat === 'premium_investment')    return premiumTbody;
     return residentialTbody;
   };
@@ -544,7 +588,7 @@
     form.querySelector('input[name="price"]').value = p.price || '';
     form.querySelector('input[name="location"]').value = p.location || '';
     form.querySelector('input[name="suitableFor"]').value = (p.suitableFor || []).join(', ');
-    form.querySelector('textarea[name="description"]').value = p.description || '';
+    // features and description are not available from row, only from server; keep as-is in edit screen
     if (locationInput) {
       fillCityState();
     }

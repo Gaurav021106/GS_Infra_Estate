@@ -247,6 +247,4 @@
       ticking = true;
     }
   });
-
-  console.log('✅ SPA-Nav loaded - Category links will now trigger reload.');
 })();

@@ -23,21 +23,12 @@
     gtag('config', 'G-KKDNYYE9YY');
   </script>
 
-  <!-- Writesonic SEO Fixer -->
-  <script src="https://seo-fixer.writesonic.com/site-audit/fixer-script/index-godaddy.js" id="wsAiSeoMb" type="application/javascript"></script>
-  <script id="wsAiSeoInitScript">
-    wsSEOfixer.configure({
-      hostURL: 'https://seo-fixer.writesonic.com',
-      siteID: '69595ed560b44b5aaa59ce97'
-    });
-  </script>
-
   <!-- Essential Meta Tags -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Favicon -->
-  <link rel="icon" type="image/jpeg" href="/images/logo.jpeg" />
+  <link rel="icon" type="image/jpeg" href="/images/logo.jpg" />
 
   <!-- Primary SEO Meta Tags -->
   <title><%= pageTitleSafe %></title>
@@ -65,7 +56,7 @@
     "@type": "RealEstateAgent",
     "name": "GS Infra & Estate",
     "url": "https://www.gsinfraandestate.com/",
-    "image": "https://www.gsinfraandestate.com/images/logo.jpeg",
+    "image": "https://www.gsinfraandestate.com/images/logo.jpg",
     "description": "Real estate agent dealing in residential, commercial, industrial and agricultural properties in Dehradun, Rishikesh and Haridwar.",
     "areaServed": [
       "Dehradun, Uttarakhand, India",
@@ -84,7 +75,7 @@
   </script>
 
   <!-- Tailwind CSS & Fonts (CDN) -->
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> <!-- Tailwind v4 Play CDN --> [web:19]
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link href="https://fonts.cdnfonts.com/css/instrument-serif" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Italiana&display=swap" rel="stylesheet">
 
@@ -124,13 +115,9 @@
       color: #1f2937;
     }
   </style>
-
-  <!-- SPA Navigation Script (GA4 Compatible) -->
-  <script src="/javascripts/spa-nav.js" defer></script>
 </head>
 
 <body class="bg-gray-50 text-gray-900">
-
   <%
     const priceText = typeof prop.price === 'number'
       ? prop.price.toLocaleString('en-IN')
@@ -139,18 +126,18 @@
   %>
 
   <main class="min-h-screen">
-    <!-- LIGHT PROPERTY PAGE WRAPPER -->
+    <!-- TOP WRAPPER -->
     <div class="bg-gradient-to-b from-gray-50 to-white">
       <!-- Hero + breadcrumb -->
       <section class="relative overflow-hidden">
         <div class="pointer-events-none absolute inset-x-0 -top-40 h-80 bg-[radial-gradient(circle_at_top,_rgba(79,70,229,0.15),_transparent_60%)]"></div>
 
         <div class="relative mx-auto max-w-6xl px-4 pt-6 pb-8 lg:pt-8 lg:pb-10">
+          <!-- Breadcrumb -->
           <nav class="mb-4 flex items-center justify-between text-[11px] text-gray-500">
             <div class="flex items-center gap-1">
               <a href="/" class="hover:text-indigo-600 transition">Home</a>
               <span>/</span>
-
               <span class="text-gray-500"><%= prop.city || 'Location' %></span>
             </div>
             <div class="flex items-center gap-2">
@@ -218,7 +205,6 @@
                           d="M9 5l7 7-7 7" />
                   </svg>
                 </a>
-                <!-- UPDATED BUTTON WITH ID -->
                 <button
                   type="button"
                   id="whatsapp-visit-btn"
@@ -240,7 +226,7 @@
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                      d="M15 8.5l-6 3m0 0l6 3m-6-3V5m0 6v6" />
+                  d="M15 8.5l-6 3m0 0l6 3m-6-3V5m0 6v6" />
               </svg>
               Share this property
             </button>
@@ -260,11 +246,12 @@
         </div>
       </section>
 
-      <!-- Main body -->
+      <!-- MAIN LAYOUT -->
       <section class="relative mx-auto max-w-6xl px-4 pb-10 lg:pb-14">
         <div class="grid gap-8 lg:grid-cols-[minmax(0,_1.6fr)_minmax(0,_1fr)]">
-          <!-- Gallery -->
-          <div class="space-y-4">
+          <!-- LEFT: MEDIA -->
+          <div class="space-y-5">
+            <!-- Primary photo gallery -->
             <div
               class="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition
                      duration-500 hover:-translate-y-1 hover:shadow-lg cursor-zoom-in"
@@ -305,6 +292,7 @@
               <% } %>
             </div>
 
+            <!-- Thumbnail strip -->
             <% if (images.length > 1) { %>
               <div class="grid grid-cols-3 gap-3 sm:grid-cols-4">
                 <% images.slice(1, 7).forEach(function(img, idx) { %>
@@ -329,9 +317,74 @@
                 <% }); %>
               </div>
             <% } %>
+
+            <!-- Videos block -->
+            <% if (videos && videos.length) { %>
+              <section class="rounded-2xl border border-gray-200 bg-white p-5">
+                <h2 class="text-sm font-semibold text-gray-900 mb-3">Property videos</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <% videos.slice(0, 2).forEach(function(vUrl, idx) { %>
+                    <div class="aspect-video w-full overflow-hidden rounded-xl border border-gray-200 bg-black/5">
+                      <% if (vUrl.includes('youtube.com') || vUrl.includes('youtu.be')) { %>
+                        <iframe
+                          src="<%= vUrl %>"
+                          class="h-full w-full"
+                          style="border:0;"
+                          allowfullscreen
+                          loading="lazy"
+                          title="Property video <%= idx + 1 %>"
+                        ></iframe>
+                      <% } else { %>
+                        <video
+                          src="<%= vUrl %>"
+                          controls
+                          class="h-full w-full object-cover"
+                        ></video>
+                      <% } %>
+                    </div>
+                  <% }); %>
+                </div>
+              </section>
+            <% } %>
+
+            <!-- Virtual tour -->
+            <% if (prop.virtualTourUrl) { %>
+              <section class="rounded-2xl border border-gray-200 bg-white p-5">
+                <h2 class="text-sm font-semibold text-gray-900 mb-3">Virtual tour</h2>
+                <div class="aspect-video w-full overflow-hidden rounded-xl border border-gray-200 bg-black/5">
+                  <iframe
+                    src="<%= prop.virtualTourUrl %>"
+                    class="h-full w-full"
+                    style="border:0;"
+                    allowfullscreen
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                    title="Virtual tour of the property"
+                  ></iframe>
+                </div>
+              </section>
+            <% } %>
+
+            <!-- 3D view / floor plan -->
+            <% if (prop.map3dUrl) { %>
+              <section class="rounded-2xl border border-gray-200 bg-white p-5">
+                <h2 class="text-sm font-semibold text-gray-900 mb-3">3D view / floor plan</h2>
+                <div class="aspect-video w-full overflow-hidden rounded-xl border border-gray-200 bg-black/5">
+                  <iframe
+                    src="<%= prop.map3dUrl %>"
+                    class="h-full w-full"
+                    style="border:0;"
+                    allowfullscreen
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                    title="3D view or floor plan"
+                  ></iframe>
+                </div>
+              </section>
+            <% } %>
           </div>
 
-          <!-- Right side info panel -->
+          <!-- RIGHT: INFO -->
           <aside class="space-y-4">
             <!-- Key details -->
             <section class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
@@ -410,9 +463,9 @@
           </aside>
         </div>
 
-        <!-- Lower section -->
+        <!-- LOWER: TEXT + MAP -->
         <div class="mt-10 grid gap-8 lg:grid-cols-[minmax(0,_1.6fr)_minmax(0,_1fr)]">
-          <!-- LEFT COLUMN: Overview, features, media -->
+          <!-- LEFT COLUMN: Overview + features -->
           <div class="space-y-6">
             <% if (prop.description) { %>
               <section class="rounded-2xl border border-gray-200 bg-white p-5">
@@ -434,68 +487,6 @@
                     </li>
                   <% }); %>
                 </ul>
-              </section>
-            <% } %>
-
-            <!-- Virtual tour -->
-            <% if (prop.virtualTourUrl) { %>
-              <section class="rounded-2xl border border-gray-200 bg-white p-5">
-                <h2 class="text-sm font-semibold text-gray-900 mb-3">Virtual tour</h2>
-                <div class="aspect-video w-full overflow-hidden rounded-xl border border-gray-200 bg-black/5">
-                  <iframe
-                    src="<%= prop.virtualTourUrl %>"
-                    class="h-full w-full"
-                    style="border:0;"
-                    allowfullscreen
-                    loading="lazy"
-                    referrerpolicy="no-referrer-when-downgrade"
-                  ></iframe>
-                </div>
-              </section>
-            <% } %>
-
-            <!-- 3D map / 3D view -->
-            <% if (prop.map3dUrl) { %>
-              <section class="rounded-2xl border border-gray-200 bg-white p-5">
-                <h2 class="text-sm font-semibold text-gray-900 mb-3">3D view / floor plan</h2>
-                <div class="aspect-video w-full overflow-hidden rounded-xl border border-gray-200 bg-black/5">
-                  <iframe
-                    src="<%= prop.map3dUrl %>"
-                    class="h-full w-full"
-                    style="border:0;"
-                    allowfullscreen
-                    loading="lazy"
-                    referrerpolicy="no-referrer-when-downgrade"
-                  ></iframe>
-                </div>
-              </section>
-            <% } %>
-
-            <!-- Property videos -->
-            <% if (videos && videos.length) { %>
-              <section class="rounded-2xl border border-gray-200 bg-white p-5">
-                <h2 class="text-sm font-semibold text-gray-900 mb-3">Property videos</h2>
-                <div class="space-y-4">
-                  <% videos.slice(0, 3).forEach(function(vUrl, idx) { %>
-                    <div class="aspect-video w-full overflow-hidden rounded-xl border border-gray-200 bg-black/5">
-                      <% if (vUrl.includes('youtube.com') || vUrl.includes('youtu.be')) { %>
-                        <iframe
-                          src="<%= vUrl %>"
-                          class="h-full w-full"
-                          style="border:0;"
-                          allowfullscreen
-                          loading="lazy"
-                        ></iframe>
-                      <% } else { %>
-                        <video
-                          src="<%= vUrl %>"
-                          controls
-                          class="h-full w-full object-cover"
-                        ></video>
-                      <% } %>
-                    </div>
-                  <% }); %>
-                </div>
               </section>
             <% } %>
           </div>
@@ -546,7 +537,7 @@
           <button
             type="button"
             id="zoom-out"
-            class="rounded-full bg_white/10 px-2 py-1 hover:bg-white/20"
+            class="rounded-full bg-white/10 px-2 py-1 hover:bg-white/20"
           >
             −
           </button>
@@ -637,7 +628,7 @@
       const waBtn = document.getElementById('whatsapp-visit-btn');
       if (waBtn) {
         waBtn.addEventListener('click', () => {
-          const phone = "918279702969"; // admin number in international format without +
+          const phone = "918279702969"; // admin number without +
 
           const message = `
 Hello, I want to schedule a site visit.
@@ -652,9 +643,9 @@ Status: <%= prop.status || 'N/A' %>
 Link: https://www.gsinfraandestate.com/property/<%= prop.slug || prop._id || '' %>
           `.trim();
 
-          const encoded = encodeURIComponent(message); // encodes spaces, line breaks, and special chars for WhatsApp text param [web:20][web:28]
-          const url = `https://wa.me/${phone}?text=${encoded}`; // WhatsApp click-to-chat format with prefilled message [web:1][web:6][web:9][web:12]
-          window.open(url, "_blank"); // open in new tab / WhatsApp Web / app [web:23][web:30]
+          const encoded = encodeURIComponent(message);
+          const url = `https://wa.me/${phone}?text=${encoded}`;
+          window.open(url, "_blank");
         });
       }
 
@@ -697,7 +688,6 @@ Link: https://www.gsinfraandestate.com/property/<%= prop.slug || prop._id || '' 
         document.body.style.overflow = '';
       }
 
-      // Open zoom on main image / thumbnails
       document.querySelectorAll('[data-main-image] img[data-zoom-src], button[data-thumb]').forEach(el => {
         el.addEventListener('click', () => {
           const src = el.getAttribute('data-zoom-src') || el.querySelector('img')?.src;
@@ -705,7 +695,6 @@ Link: https://www.gsinfraandestate.com/property/<%= prop.slug || prop._id || '' 
         });
       });
 
-      // Drag to pan
       zoomContainer.addEventListener('mousedown', e => {
         isDragging = true;
         startX = e.clientX - posX;
@@ -723,7 +712,6 @@ Link: https://www.gsinfraandestate.com/property/<%= prop.slug || prop._id || '' 
         isDragging = false;
       });
 
-      // Wheel to zoom
       zoomContainer.addEventListener('wheel', e => {
         e.preventDefault();
         const delta = e.deltaY < 0 ? 0.1 : -0.1;
@@ -731,7 +719,6 @@ Link: https://www.gsinfraandestate.com/property/<%= prop.slug || prop._id || '' 
         applyTransform();
       }, { passive: false });
 
-      // Buttons zoom
       if (zoomInBtn) {
         zoomInBtn.addEventListener('click', () => {
           scale = Math.min(4, scale + 0.2);
@@ -753,7 +740,6 @@ Link: https://www.gsinfraandestate.com/property/<%= prop.slug || prop._id || '' 
         });
       }
 
-      // Close handlers
       if (closeBtn) {
         closeBtn.addEventListener('click', closeZoom);
       }
