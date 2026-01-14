@@ -45,14 +45,19 @@
       method="POST" 
       enctype="multipart/form-data"
       class="grid md:grid-cols-2 gap-4 md:gap-5"
+      autocomplete="off"
     >
       <!-- Category/Type -->
       <div>
-        <label class="block text-sm font-medium mb-1">Category<span class="text-red-500">*</span></label>
+        <label for="category" class="block text-sm font-medium mb-1">
+          Category<span class="text-red-500">*</span>
+        </label>
         <select
+          id="category"
           name="category"
           class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
           required
+          autocomplete="off"
         >
           <option value="residential_properties" <%= editingProperty?.category === 'residential_properties' ? 'selected' : '' %>>Residential Properties</option>
           <option value="commercial_plots" <%= editingProperty?.category === 'commercial_plots' ? 'selected' : '' %>>Commercial Plots</option>
@@ -63,66 +68,87 @@
 
       <!-- Title -->
       <div>
-        <label class="block text-sm font-medium mb-1">Title<span class="text-red-500">*</span></label>
+        <label for="title" class="block text-sm font-medium mb-1">
+          Title<span class="text-red-500">*</span>
+        </label>
         <input 
+          type="text"
+          id="title"
           name="title" 
           value="<%= editingProperty?.title || '' %>" 
           class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+          autocomplete="off"
           required
         >
       </div>
 
       <!-- Price -->
       <div>
-        <label class="block text-sm font-medium mb-1">Price (INR)<span class="text-red-500">*</span></label>
+        <label for="price" class="block text-sm font-medium mb-1">
+          Price (INR)<span class="text-red-500">*</span>
+        </label>
         <input 
           type="number" 
+          id="price"
           name="price" 
           value="<%= editingProperty?.price || '' %>" 
           class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
           min="0"
           step="1"
+          autocomplete="off"
           required
         >
       </div>
 
       <!-- Location -->
       <div>
-        <label class="block text-sm font-medium mb-1">Location<span class="text-red-500">*</span></label>
+        <label for="location" class="block text-sm font-medium mb-1">
+          Location<span class="text-red-500">*</span>
+        </label>
         <input 
+          type="text"
+          id="location"
           name="location" 
           value="<%= editingProperty?.location || '' %>" 
           class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+          autocomplete="off"
           placeholder="Rishikesh, Uttarakhand"
           required
         >
       </div>
 
       <!-- City and State (extracted from location) -->
-      <input type="hidden" name="city" id="cityInput" />
-      <input type="hidden" name="state" id="stateInput" />
+      <input type="hidden" name="city" id="cityInput" autocomplete="off" />
+      <input type="hidden" name="state" id="stateInput" autocomplete="off" />
 
       <!-- Suitable For -->
       <div class="md:col-span-2">
-        <label class="block text-sm font-medium mb-1">Suitable For</label>
+        <label for="suitableFor" class="block text-sm font-medium mb-1">
+          Suitable For
+        </label>
         <input 
+          type="text"
+          id="suitableFor"
           name="suitableFor" 
           value="<%= editingProperty?.suitableFor?.join(', ') || '' %>" 
           class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+          autocomplete="off"
           placeholder="Family, Investment, Farmhouse"
         >
       </div>
 
-      <!-- Key Features (NEW) -->
+      <!-- Key Features -->
       <div class="md:col-span-2">
-        <label class="block text-sm font-medium mb-1">
+        <label for="features" class="block text-sm font-medium mb-1">
           Key Features
           <span class="text-xs text-gray-500">(comma separated, shown as bullets on property page)</span>
         </label>
         <textarea
+          id="features"
           name="features"
           rows="2"
           class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+          autocomplete="off"
           placeholder="Roadside plot, Gated society, River view, Registry available"
         ><%= editingProperty?.features?.join(', ') || '' %></textarea>
       </div>
@@ -168,9 +194,12 @@
 
       <!-- New File Uploads -->
       <div class="md:col-span-2">
-        <label class="block text-sm font-medium mb-1">3D Map / 360 Image (one file)</label>
+        <label for="map3dFile" class="block text-sm font-medium mb-1">
+          3D Map / 360 Image (one file)
+        </label>
         <input
           type="file"
+          id="map3dFile"
           name="map3dFile"
           accept="image/*,.glb,.gltf,.obj,.fbx"
           class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
@@ -178,9 +207,12 @@
       </div>
 
       <div class="md:col-span-2">
-        <label class="block text-sm font-medium mb-1">Virtual Tour Video (one file)</label>
+        <label for="virtualTourFile" class="block text-sm font-medium mb-1">
+          Virtual Tour Video (one file)
+        </label>
         <input
           type="file"
+          id="virtualTourFile"
           name="virtualTourFile"
           accept="video/*"
           class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
@@ -189,12 +221,13 @@
 
       <!-- Property Images / Videos -->
       <div class="md:col-span-2">
-        <label class="block text-sm font-medium mb-1">
+        <label for="images" class="block text-sm font-medium mb-1">
           Property Images (max 10) - <%= editingProperty?.imageUrls?.length || 0 %> existing
           <% if (!editingProperty) { %><span class="text-red-500">*</span><% } %>
         </label>
         <input
           type="file"
+          id="images"
           name="images"
           multiple
           accept="image/*"
@@ -204,11 +237,12 @@
       </div>
 
       <div class="md:col-span-2">
-        <label class="block text-sm font-medium mb-1">
+        <label for="videos" class="block text-sm font-medium mb-1">
           Property Videos (max 10) - <%= editingProperty?.videoUrls?.length || 0 %> existing
         </label>
         <input
           type="file"
+          id="videos"
           name="videos"
           multiple
           accept="video/*"
@@ -218,11 +252,15 @@
 
       <!-- Description -->
       <div class="md:col-span-2">
-        <label class="block text-sm font-medium mb-1">Description<span class="text-red-500">*</span></label>
+        <label for="description" class="block text-sm font-medium mb-1">
+          Description<span class="text-red-500">*</span>
+        </label>
         <textarea 
+          id="description"
           name="description" 
           rows="3"
           class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+          autocomplete="off"
           required
         ><%= editingProperty?.description || '' %></textarea>
       </div>
@@ -499,9 +537,9 @@
   let editingId = null;
 
   const submitBtn = form.querySelector('button[type="submit"]');
-  const locationInput = form.querySelector('input[name="location"]');
-  const cityInput = form.querySelector('input[name="city"]');
-  const stateInput = form.querySelector('input[name="state"]');
+  const locationInput = document.getElementById('location');
+  const cityInput = document.getElementById('cityInput');
+  const stateInput = document.getElementById('stateInput');
   const toastEl = document.getElementById('toast');
 
   const tables = document.querySelectorAll('section.space-y-8 table');
@@ -514,7 +552,7 @@
     if (cat === 'residential_properties') return residentialTbody;
     if (cat === 'commercial_plots')      return commercialTbody;
     if (cat === 'land_plots')           return landTbody;
-    if (cat === 'premium_investment')    return premiumTbody;
+    if (cat === 'premium_investment')   return premiumTbody;
     return residentialTbody;
   };
 
@@ -583,12 +621,11 @@
   }
 
   function populateFormFromRow(p) {
-    form.querySelector('select[name="category"]').value = p.category || 'residential_properties';
-    form.querySelector('input[name="title"]').value = p.title || '';
-    form.querySelector('input[name="price"]').value = p.price || '';
-    form.querySelector('input[name="location"]').value = p.location || '';
-    form.querySelector('input[name="suitableFor"]').value = (p.suitableFor || []).join(', ');
-    // features and description are not available from row, only from server; keep as-is in edit screen
+    form.querySelector('#category').value = p.category || 'residential_properties';
+    form.querySelector('#title').value = p.title || '';
+    form.querySelector('#price').value = p.price || '';
+    form.querySelector('#location').value = p.location || '';
+    form.querySelector('#suitableFor').value = (p.suitableFor || []).join(', ');
     if (locationInput) {
       fillCityState();
     }
