@@ -1,0 +1,54 @@
+# Robots.txt for GS Infra & Estate
+# Last Updated: January 14, 2026
+
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api
+Disallow: /admin.*
+Disallow: /api/*
+Disallow: /private
+Disallow: /admin-panel
+Disallow: /uploads/private
+
+# Allow all search engines
+Allow: /robots.txt
+Allow: /sitemap.xml
+Allow: /properties
+Allow: /properties-in-dehradun
+Allow: /properties-in-rishikesh
+Allow: /properties-in-haridwar
+Allow: /about
+Allow: /contact
+Allow: /services
+
+# Sitemap
+Sitemap: https://www.gsinfraandestate.com/sitemap.xml
+
+# Crawl delay for bots (optional - prevents server overload)
+# Crawl-delay: 1
+
+# Specific rules for Google
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /api
+
+# Specific rules for Bing
+User-agent: Bingbot
+Allow: /
+Disallow: /admin
+Disallow: /api
+
+# Block bad bots
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /

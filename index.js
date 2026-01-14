@@ -86,6 +86,7 @@ app.use(
               "'self'",
               'https://fonts.gstatic.com',
               'https://fonts.cdnfonts.com',
+              'https://r2cdn.perplexity.ai',
               'data:',
             ],
             imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
