@@ -23,6 +23,8 @@
   <meta name="keywords" content="real estate Dehradun, real estate Rishikesh, real estate Haridwar, buy property Dehradun, buy property Rishikesh, buy property Haridwar, residential flats, commercial property, industrial property, agricultural land, plots, houses" />
   <meta name="author" content="GS Infra & Estate" />
   <meta name="robots" content="index, follow" />
+    <!-- Content Security Policy -->
+  <meta http-equiv="Content-Security-Policy" content="font-src 'self' https://fonts.gstatic.com https://fonts.cdnfonts.com https://r2cdn.perplexity.ai data:" />
 
   <!-- Canonical URL -->
   <link rel="canonical" href="https://www.gsinfraandestate.com/" />
@@ -122,5 +124,37 @@
   </style>
 
   <!-- SPA Navigation Script (GA4 Compatible) -->
+     <script>
+    // Function to track SPA page views
+    function trackSpaPageView() {
+      gtag('event', 'page_view', {
+        page_location: window.location.href,
+        page_path: window.location.pathname,
+        page_title: document.title
+      });
+    }
+
+    // Listen to history changes (for pushState/popState navigation)
+    window.addEventListener('popstate', function() {
+      // Add a small delay to ensure DOM updates are complete
+      setTimeout(trackSpaPageView, 100);
+    });
+
+    // Optional: Intercept internal navigation links
+    document.addEventListener('click', function(e) {
+      const link = e.target.closest('a[href^="/"], a[href^="#"]');
+      if (link && !link.getAttribute('target')) {
+        e.preventDefault();
+        const href = link.getAttribute('href');
+        
+        // Update your SPA routing here (adjust based on your framework)
+        // Example: your router function
+        // router.navigate(href);
+        
+        // Track the page view
+        trackSpaPageView();
+      }
+    });
+  </script>
 </head>
 <body>
