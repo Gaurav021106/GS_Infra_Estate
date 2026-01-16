@@ -2,7 +2,6 @@
 
 <nav class="m-0 w-full h-[8vh] fixed top-0 left-0 right-0 z-50
      bg-white/80 backdrop-blur flex items-center justify-between px-4 border-b border-gray-100">
-  <!-- Brand -->
   <div class="flex items-center">
     <a href="/admin/dashboard" class="flex items-center nav-link">
       <img src="/images/logo.jpg" alt="Logo" class="w-10 h-10 md:w-12 md:h-12 mr-3 rounded-xl" />
@@ -10,10 +9,10 @@
     </a>
   </div>
 
-  <!-- Right actions -->
   <div class="flex items-center space-x-2">
     <a href="../"
-       class="mx-1 px-4 py-1 rounded-full text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors nav-link text-sm md:text-base">
+       class="mx-1 px-4 py-1 rounded-full text-gray-700 hover:text-gray-900 hover:bg-gray-100 
+       transition-colors nav-link text-sm md:text-base">
        Home
     </a>
     <a href="/admin/logout"
@@ -25,18 +24,18 @@
 
 <div class="min-h-screen bg-gray-50 px-4 md:px-6 lg:px-10 py-6 pt-24">
   <h1 class="text-2xl md:text-3xl font-bold mb-6">
-    <%= editingProperty ? `Edit: ${editingProperty.title}` : 'Admin Dashboard' %>
+    <%= editingProperty ?
+      `Edit: ${editingProperty.title}` : 'Admin Dashboard' %>
   </h1>
 
-  <!-- Toast Notifications -->
   <div id="toast"
        class="fixed top-20 right-4 z-50 hidden px-4 py-2 rounded-lg shadow-lg text-sm font-medium text-white bg-gray-800/90">
   </div>
 
-  <!-- Add/Edit Property Form -->
   <section class="bg-white rounded-xl shadow p-5 md:p-6 mb-10 border border-gray-100">
     <h2 class="text-lg md:text-xl font-semibold mb-4">
-      <%= editingProperty ? 'Edit Property' : 'Add New Property' %>
+      <%= editingProperty ?
+      'Edit Property' : 'Add New Property' %>
     </h2>
     
     <form 
@@ -47,7 +46,6 @@
       class="grid md:grid-cols-2 gap-4 md:gap-5"
       autocomplete="off"
     >
-      <!-- Category/Type -->
       <div>
         <label for="category" class="block text-sm font-medium mb-1">
           Category<span class="text-red-500">*</span>
@@ -59,14 +57,17 @@
           required
           autocomplete="off"
         >
-          <option value="residential_properties" <%= editingProperty?.category === 'residential_properties' ? 'selected' : '' %>>Residential Properties</option>
-          <option value="commercial_plots" <%= editingProperty?.category === 'commercial_plots' ? 'selected' : '' %>>Commercial Plots</option>
-          <option value="land_plots" <%= editingProperty?.category === 'land_plots' ? 'selected' : '' %>>Land & Plots</option>
-          <option value="premium_investment" <%= editingProperty?.category === 'premium_investment' ? 'selected' : '' %>>Premium & Investment</option>
+          <option value="residential_properties" 
+          <%= editingProperty?.category === 'residential_properties' ? 'selected' : '' %>>Residential Properties</option>
+          <option value="commercial_plots" <%= editingProperty?.category === 'commercial_plots' ?
+          'selected' : '' %>>Commercial Plots</option>
+          <option value="land_plots" <%= editingProperty?.category === 'land_plots' ?
+          'selected' : '' %>>Land & Plots</option>
+          <option value="premium_investment" <%= editingProperty?.category === 'premium_investment' ?
+          'selected' : '' %>>Premium & Investment</option>
         </select>
       </div>
 
-      <!-- Title -->
       <div>
         <label for="title" class="block text-sm font-medium mb-1">
           Title<span class="text-red-500">*</span>
@@ -82,7 +83,6 @@
         >
       </div>
 
-      <!-- Price -->
       <div>
         <label for="price" class="block text-sm font-medium mb-1">
           Price (INR)<span class="text-red-500">*</span>
@@ -100,7 +100,6 @@
         >
       </div>
 
-      <!-- Location -->
       <div>
         <label for="location" class="block text-sm font-medium mb-1">
           Location<span class="text-red-500">*</span>
@@ -109,35 +108,115 @@
           type="text"
           id="location"
           name="location" 
-          value="<%= editingProperty?.location || '' %>" 
+          value="<%= editingProperty?.location ||
+          '' %>" 
           class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
           autocomplete="off"
-          placeholder="Rishikesh, Uttarakhand"
+          placeholder="Tapovan, Rishikesh, Uttarakhand"
           required
         >
       </div>
 
-      <!-- City and State (extracted from location) -->
-      <input type="hidden" name="city" id="cityInput" autocomplete="off" />
-      <input type="hidden" name="state" id="stateInput" autocomplete="off" />
+      <div>
+        <label for="cityInput" class="block text-sm font-medium mb-1">
+          City<span class="text-red-500">*</span>
+        </label>
+        <input 
+          type="text"
+          id="cityInput"
+          name="city"
+          value="<%= editingProperty?.city ||
+          '' %>"
+          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+          autocomplete="off"
+          placeholder="Rishikesh"
+          required
+        >
+      </div>
 
-      <!-- Suitable For -->
+      <div>
+        <label for="stateInput" class="block text-sm font-medium mb-1">
+          State<span class="text-red-500">*</span>
+        </label>
+        <input 
+          type="text"
+          id="stateInput"
+          name="state"
+          value="<%= editingProperty?.state ||
+          '' %>"
+          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+          autocomplete="off"
+          placeholder="Uttarakhand"
+          required
+        >
+      </div>
+
+      <div>
+        <label for="locality" class="block text-sm font-medium mb-1">
+          Locality
+        </label>
+        <input 
+          type="text"
+          id="locality"
+          name="locality" 
+          value="<%= editingProperty?.locality ||
+          '' %>" 
+          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+          autocomplete="off"
+          placeholder="Tapovan, Laxman Jhula"
+        >
+      </div>
+
+      <div>
+        <label for="pincode" class="block text-sm font-medium mb-1">
+          Pincode
+        </label>
+        <input 
+          type="text"
+          id="pincode"
+          name="pincode" 
+          value="<%= editingProperty?.pincode ||
+          '' %>" 
+          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+          autocomplete="off"
+          placeholder="249192"
+          pattern="[0-9]{6}"
+          maxlength="6"
+        >
+      </div>
+
       <div class="md:col-span-2">
-        <label for="suitableFor" class="block text-sm font-medium mb-1">
+        <label for="suitableFor" class="block text-sm 
+          font-medium mb-1">
           Suitable For
         </label>
         <input 
           type="text"
           id="suitableFor"
           name="suitableFor" 
-          value="<%= editingProperty?.suitableFor?.join(', ') || '' %>" 
+          value="<%= editingProperty?.suitableFor?.join(', ') ||
+          '' %>" 
           class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
           autocomplete="off"
           placeholder="Family, Investment, Farmhouse"
         >
       </div>
 
-      <!-- Key Features -->
+      <div class="md:col-span-2">
+        <label for="description" class="block text-sm font-medium mb-1">
+          Property Description
+          <span class="text-xs text-gray-500">(Main content shown on detail page)</span>
+        </label>
+        <textarea
+          id="description"
+          name="description"
+          rows="5"
+          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+          autocomplete="off"
+          placeholder="Describe the property in detail..."
+        ><%= editingProperty?.description || '' %></textarea>
+      </div>
+
       <div class="md:col-span-2">
         <label for="features" class="block text-sm font-medium mb-1">
           Key Features
@@ -153,7 +232,56 @@
         ><%= editingProperty?.features?.join(', ') || '' %></textarea>
       </div>
 
-      <!-- Current Files Preview (Edit mode only) -->
+      <div>
+        <label for="status" class="block text-sm font-medium mb-1">
+          Status
+        </label>
+        <select
+          id="status"
+          name="status"
+          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+        >
+          <option value="available" <%= editingProperty?.status === 'available' ?
+          'selected' : '' %>>Available</option>
+          <option value="sold" <%= editingProperty?.status === 'sold' ?
+          'selected' : '' %>>Sold</option>
+          <option value="on_hold" <%= editingProperty?.status === 'on_hold' ?
+          'selected' : '' %>>On Hold</option>
+        </select>
+      </div>
+
+      <div class="md:col-span-2">
+        <label for="searchTags" class="block text-sm font-medium mb-1">
+          Search Tags
+          <span class="text-xs text-gray-500">(comma separated for better search)</span>
+        </label>
+        <input 
+          type="text"
+          id="searchTags"
+          name="searchTags" 
+          value="<%= editingProperty?.searchTags?.join(', ') || '' %>" 
+          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+          autocomplete="off"
+          placeholder="river view, gated, investment, rishikesh"
+        >
+      </div>
+
+      <div class="md:col-span-2">
+        <label for="seoMetaDescription" class="block text-sm font-medium mb-1">
+          SEO Meta Description
+          <span class="text-xs text-gray-500">(max 160 characters)</span>
+        </label>
+        <textarea
+          id="seoMetaDescription"
+          name="seoMetaDescription"
+          rows="2"
+          maxlength="160"
+          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
+          autocomplete="off"
+        ><%= editingProperty?.seoMetaDescription ||
+          '' %></textarea>
+      </div>
+
       <% if (editingProperty) { %>
         <% if (editingProperty.map3dUrl) { %>
           <div class="md:col-span-2">
@@ -174,7 +302,8 @@
             <label class="block text-sm font-medium mb-1">Current Images:</label>
             <div class="grid grid-cols-4 md:grid-cols-6 gap-2 mt-2">
               <% editingProperty.imageUrls.forEach(img => { %>
-                <img src="<%= img %>" class="w-20 h-20 object-cover rounded border" />
+                <img src="<%= img %>" class="w-20 h-20 object-cover 
+                rounded border" />
               <% }) %>
             </div>
           </div>
@@ -192,7 +321,6 @@
         <% } %>
       <% } %>
 
-      <!-- New File Uploads -->
       <div class="md:col-span-2">
         <label for="map3dFile" class="block text-sm font-medium mb-1">
           3D Map / 360 Image (one file)
@@ -219,7 +347,6 @@
         >
       </div>
 
-      <!-- Property Images / Videos -->
       <div class="md:col-span-2">
         <label for="images" class="block text-sm font-medium mb-1">
           Property Images (max 10) - <%= editingProperty?.imageUrls?.length || 0 %> existing
@@ -232,13 +359,15 @@
           multiple
           accept="image/*"
           class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
-          <%= editingProperty ? '' : 'required' %>
+          <%= editingProperty ?
+          '' : 'required' %>
         >
       </div>
 
       <div class="md:col-span-2">
         <label for="videos" class="block text-sm font-medium mb-1">
-          Property Videos (max 10) - <%= editingProperty?.videoUrls?.length || 0 %> existing
+          Property Videos (max 10) - <%= editingProperty?.videoUrls?.length ||
+          0 %> existing
         </label>
         <input
           type="file"
@@ -248,21 +377,6 @@
           accept="video/*"
           class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
         >
-      </div>
-
-      <!-- Description -->
-      <div class="md:col-span-2">
-        <label for="description" class="block text-sm font-medium mb-1">
-          Description<span class="text-red-500">*</span>
-        </label>
-        <textarea 
-          id="description"
-          name="description" 
-          rows="3"
-          class="border rounded-lg px-3 py-2 w-full text-sm md:text-base"
-          autocomplete="off"
-          required
-        ><%= editingProperty?.description || '' %></textarea>
       </div>
 
       <div class="md:col-span-2 flex justify-end space-x-3">
@@ -276,16 +390,15 @@
           type="submit"
           class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 text-sm md:text-base font-semibold shadow-sm transition"
         >
-          <%= editingProperty ? 'Update Property' : 'Add Property' %>
+          <%= editingProperty ?
+          'Update Property' : 'Add Property' %>
         </button>
       </div>
     </form>
   </section>
 
-  <!-- Property Lists (only show when not editing) -->
   <% if (!editingProperty) { %>
     <section class="space-y-8">
-      <!-- Residential Properties -->
       <div>
         <h2 class="text-lg md:text-xl font-semibold mb-2">Residential Properties</h2>
         <div class="overflow-x-auto bg-white rounded-xl shadow border border-gray-200">
@@ -306,7 +419,7 @@
                   <td class="border px-2 py-1 text-center">
                     <% if (p.imageUrls && p.imageUrls.length) { %>
                       <img src="<%= p.imageUrls[0] %>" alt="front image"
-                           class="w-20 h-16 object-cover rounded mx-auto border" />
+                          class="w-20 h-16 object-cover rounded mx-auto border" />
                     <% } else { %>
                       <span class="text-xs text-gray-400">No image</span>
                     <% } %>
@@ -315,16 +428,17 @@
                   <td class="border px-2 py-1"><%= p.location %></td>
                   <td class="border px-2 py-1">₹ <%= p.price.toLocaleString('en-IN') %></td>
                   <td class="border px-2 py-1">
-                    <%= (p.suitableFor || []).join(', ').substring(0,20) +
+                    <%= (p.suitableFor ||
+                    []).join(', ').substring(0,20) +
                         ((p.suitableFor || []).join(', ').length > 20 ? '...' : '') %>
                   </td>
                   <td class="border px-2 py-1 space-x-2 whitespace-nowrap">
                     <button type="button"
-                            class="js-edit inline-block px-3 py-1 text-xs rounded bg-yellow-500 text-white hover:bg-yellow-600 transition">
+                          class="js-edit inline-block px-3 py-1 text-xs rounded bg-yellow-500 text-white hover:bg-yellow-600 transition">
                       Edit
                     </button>
                     <button type="button"
-                            class="js-delete px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition">
+                          class="js-delete px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition">
                       Delete
                     </button>
                   </td>
@@ -345,7 +459,6 @@
         </div>
       </div>
 
-      <!-- Commercial Plots -->
       <div>
         <h2 class="text-lg md:text-xl font-semibold mb-2">Commercial Plots</h2>
         <div class="overflow-x-auto bg-white rounded-xl shadow border border-gray-200">
@@ -368,23 +481,25 @@
                       <img src="<%= p.imageUrls[0] %>" alt="front image"
                            class="w-20 h-16 object-cover rounded mx-auto border" />
                     <% } else { %>
-                      <span class="text-xs text-gray-400">No image</span>
+                      <span class="text-xs 
+                      text-gray-400">No image</span>
                     <% } %>
                   </td>
                   <td class="border px-2 py-1 font-medium"><%= p.title %></td>
                   <td class="border px-2 py-1"><%= p.location %></td>
                   <td class="border px-2 py-1">₹ <%= p.price.toLocaleString('en-IN') %></td>
                   <td class="border px-2 py-1">
-                    <%= (p.suitableFor || []).join(', ').substring(0,20) +
+                    <%= (p.suitableFor ||
+                    []).join(', ').substring(0,20) +
                         ((p.suitableFor || []).join(', ').length > 20 ? '...' : '') %>
                   </td>
                   <td class="border px-2 py-1 space-x-2 whitespace-nowrap">
                     <button type="button"
-                            class="js-edit inline-block px-3 py-1 text-xs rounded bg-yellow-500 text-white hover:bg-yellow-600 transition">
+                          class="js-edit inline-block px-3 py-1 text-xs rounded bg-yellow-500 text-white hover:bg-yellow-600 transition">
                       Edit
                     </button>
                     <button type="button"
-                            class="js-delete px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition">
+                          class="js-delete px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition">
                       Delete
                     </button>
                   </td>
@@ -405,7 +520,6 @@
         </div>
       </div>
 
-      <!-- Land & Plots -->
       <div>
         <h2 class="text-lg md:text-xl font-semibold mb-2">Land & Plots</h2>
         <div class="overflow-x-auto bg-white rounded-xl shadow border border-gray-200">
@@ -435,16 +549,17 @@
                   <td class="border px-2 py-1"><%= p.location %></td>
                   <td class="border px-2 py-1">₹ <%= p.price.toLocaleString('en-IN') %></td>
                   <td class="border px-2 py-1">
-                    <%= (p.suitableFor || []).join(', ').substring(0,20) +
+                    <%= (p.suitableFor ||
+                    []).join(', ').substring(0,20) +
                         ((p.suitableFor || []).join(', ').length > 20 ? '...' : '') %>
                   </td>
                   <td class="border px-2 py-1 space-x-2 whitespace-nowrap">
                     <button type="button"
-                            class="js-edit inline-block px-3 py-1 text-xs rounded bg-yellow-500 text-white hover:bg-yellow-600 transition">
+                          class="js-edit inline-block px-3 py-1 text-xs rounded bg-yellow-500 text-white hover:bg-yellow-600 transition">
                       Edit
                     </button>
                     <button type="button"
-                            class="js-delete px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition">
+                          class="js-delete px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition">
                       Delete
                     </button>
                   </td>
@@ -465,7 +580,6 @@
         </div>
       </div>
 
-      <!-- Premium & Investment -->
       <div>
         <h2 class="text-lg md:text-xl font-semibold mb-2">Premium & Investment</h2>
         <div class="overflow-x-auto bg-white rounded-xl shadow border border-gray-200">
@@ -495,16 +609,17 @@
                   <td class="border px-2 py-1"><%= p.location %></td>
                   <td class="border px-2 py-1">₹ <%= p.price.toLocaleString('en-IN') %></td>
                   <td class="border px-2 py-1">
-                    <%= (p.suitableFor || []).join(', ').substring(0,20) +
+                    <%= (p.suitableFor ||
+                    []).join(', ').substring(0,20) +
                         ((p.suitableFor || []).join(', ').length > 20 ? '...' : '') %>
                   </td>
                   <td class="border px-2 py-1 space-x-2 whitespace-nowrap">
                     <button type="button"
-                            class="js-edit inline-block px-3 py-1 text-xs rounded bg-yellow-500 text-white hover:bg-yellow-600 transition">
+                          class="js-edit inline-block px-3 py-1 text-xs rounded bg-yellow-500 text-white hover:bg-yellow-600 transition">
                       Edit
                     </button>
                     <button type="button"
-                            class="js-delete px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition">
+                          class="js-delete px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition">
                       Delete
                     </button>
                   </td>
@@ -547,15 +662,13 @@
   const commercialTbody     = tables[1]?.querySelector('tbody');
   const landTbody           = tables[2]?.querySelector('tbody');
   const premiumTbody        = tables[3]?.querySelector('tbody');
-
   const getBodyByCategory = (cat) => {
     if (cat === 'residential_properties') return residentialTbody;
     if (cat === 'commercial_plots')      return commercialTbody;
-    if (cat === 'land_plots')           return landTbody;
-    if (cat === 'premium_investment')   return premiumTbody;
+    if (cat === 'land_plots')            return landTbody;
+    if (cat === 'premium_investment')    return premiumTbody;
     return residentialTbody;
   };
-
   function showToast(message, type = 'success') {
     if (!toastEl) return;
     toastEl.textContent = message;
@@ -568,10 +681,10 @@
 
   function fillCityState() {
     if (!locationInput || !cityInput || !stateInput) return;
-    if (locationInput.value) {
+    if (locationInput.value && (!cityInput.value || !stateInput.value)) {
       const parts = locationInput.value.split(',').map(p => p.trim());
-      if (parts.length >= 1) cityInput.value = parts[0];
-      if (parts.length >= 2) stateInput.value = parts[1];
+      if (parts.length >= 1 && !cityInput.value)  cityInput.value = parts[0];
+      if (parts.length >= 2 && !stateInput.value) stateInput.value = parts[1];
     }
   }
 
@@ -584,12 +697,12 @@
     const firstImage = (p.imageUrls && p.imageUrls.length) ? p.imageUrls[0] : null;
     const suitableStr = (p.suitableFor || []).join(', ');
     const suitableShort = suitableStr.substring(0, 20) + (suitableStr.length > 20 ? '...' : '');
-
     tr.innerHTML = `
       <td class="border px-2 py-1 text-center">
         ${firstImage
-          ? `<img src="${firstImage}" alt="front image"
-                 class="w-20 h-16 object-cover rounded mx-auto border" />`
+          ?
+          `<img src="${firstImage}" alt="front image"
+                  class="w-20 h-16 object-cover rounded mx-auto border" />`
           : `<span class="text-xs text-gray-400">No image</span>`}
       </td>
       <td class="border px-2 py-1 font-medium">${p.title}</td>
@@ -626,9 +739,9 @@
     form.querySelector('#price').value = p.price || '';
     form.querySelector('#location').value = p.location || '';
     form.querySelector('#suitableFor').value = (p.suitableFor || []).join(', ');
-    if (locationInput) {
-      fillCityState();
-    }
+    if (cityInput) cityInput.value = p.city || '';
+    if (stateInput) stateInput.value = p.state || '';
+    if (locationInput) fillCityState();
   }
 
   function readPropertyFromRow(tr) {
@@ -639,13 +752,13 @@
     const suitableFor = (tds[4]?.textContent || '').replace('...', '').split(',')
       .map(s => s.trim())
       .filter(Boolean);
-
     return {
       _id: tr.dataset.id,
       category: tr.dataset.category,
       title,
       location,
-      price: priceText || '',
+      price: priceText ||
+      '',
       suitableFor,
       description: ''
     };
@@ -707,11 +820,11 @@
       showToast(err.message || 'Save failed', 'error');
       if (submitBtn) {
         submitBtn.disabled = false;
-        submitBtn.textContent = mode === 'edit' ? 'Update Property' : 'Add Property';
+        submitBtn.textContent = mode === 'edit' ?
+        'Update Property' : 'Add Property';
       }
     }
   });
-
   document.addEventListener('click', async function (e) {
     const editBtn = e.target.closest('.js-edit');
     const deleteBtn = e.target.closest('.js-delete');
@@ -727,7 +840,8 @@
 
       if (submitBtn) {
         submitBtn.textContent = 'Update Property';
-        submitBtn.disabled = false;
+        submitBtn.disabled 
+        = false;
       }
 
       window.scrollTo({

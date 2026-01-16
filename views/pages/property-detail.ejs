@@ -2,19 +2,24 @@
 <html lang="en">
 <head>
   <% 
-    // NORMALIZE DATA
-    const prop = property || p || {};
+    // ====================================================================
+    // FIX: Safe variable access to prevent ReferenceError crashes
+    // We check typeof to safely handle cases where 'property' is undefined
+    // ====================================================================
+    const prop = (typeof property !== 'undefined' ? property : (typeof p !== 'undefined' ? p : {}));
+    
     const images = prop.imageUrls || [];
     const videos = prop.videoUrls || [];
+    
     const pageTitleSafe = typeof pageTitle !== 'undefined'
       ? pageTitle
       : (prop.title || 'GS Infra & Estate');
+      
     const metaDescriptionSafe = typeof metaDescription !== 'undefined'
       ? metaDescription
       : (prop.description || 'Residential, commercial, industrial & agricultural properties in Dehradun, Rishikesh & Haridwar.');
   %>
 
-  <!-- Google Tag Manager (gtag.js) - Primary GA4 Property -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-KKDNYYE9YY"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -23,24 +28,19 @@
     gtag('config', 'G-KKDNYYE9YY');
   </script>
 
-  <!-- Essential Meta Tags -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Favicon -->
   <link rel="icon" type="image/jpeg" href="/images/logo.jpg" />
 
-  <!-- Primary SEO Meta Tags -->
   <title><%= pageTitleSafe %></title>
   <meta name="description" content="<%= metaDescriptionSafe %>" />
   <meta name="keywords" content="real estate Dehradun, real estate Rishikesh, real estate Haridwar, buy property Dehradun, buy property Rishikesh, buy property Haridwar, residential flats, commercial property, industrial property, agricultural land, plots, houses" />
   <meta name="author" content="GS Infra & Estate" />
   <meta name="robots" content="index, follow" />
 
-  <!-- Canonical URL -->
   <link rel="canonical" href="https://www.gsinfraandestate.com/property/<%= prop.slug || prop._id || '' %>" />
 
-  <!-- Open Graph / Social Meta -->
   <meta property="og:title" content="<%= pageTitleSafe %>" />
   <meta property="og:description" content="<%= metaDescriptionSafe %>" />
   <meta property="og:type" content="article" />
@@ -49,41 +49,14 @@
     <meta property="og:image" content="<%= images[0] %>" />
   <% } %>
 
-  <!-- Organization / RealEstateAgent Schema -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "RealEstateAgent",
-    "name": "GS Infra & Estate",
-    "url": "https://www.gsinfraandestate.com/",
-    "image": "https://www.gsinfraandestate.com/images/logo.jpg",
-    "description": "Real estate agent dealing in residential, commercial, industrial and agricultural properties in Dehradun, Rishikesh and Haridwar.",
-    "areaServed": [
-      "Dehradun, Uttarakhand, India",
-      "Rishikesh, Uttarakhand, India",
-      "Haridwar, Uttarakhand, India"
-    ],
-    "serviceType": "Real estate buying, selling, renting and investment services",
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "Rishikesh",
-      "addressRegion": "Uttarakhand",
-      "addressCountry": "IN"
-    },
-    "telephone": "+91-8279702969"
-  }
-  </script>
-
-  <!-- Tailwind CSS & Fonts (CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link href="https://fonts.cdnfonts.com/css/instrument-serif" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Italiana&display=swap" rel="stylesheet">
 
-  <!-- Global Styles -->
   <style>
     :root {
       --global-transition-delay: 150ms;
-      --global-transition-duration: 150ms;
+      --global-transition-duration: 300ms;
     }
     .heading {
       font-family: 'Italiana', serif;
@@ -91,33 +64,66 @@
     html {
       scroll-behavior: smooth;
     }
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
+    /* Standard Transitions */
     a, button, input, textarea, select, img, .heading {
-      transition-delay: var(--global-transition-delay);
       transition-duration: var(--global-transition-duration);
-      transition-timing-function: ease;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .page-exit {
-      opacity: 0;
-      transform: translateY(6px);
-      transition:
-        opacity var(--global-transition-duration) ease var(--global-transition-delay),
-        transform var(--global-transition-duration) ease var(--global-transition-delay);
+    
+    /* Reveal Animation Classes */
+    .reveal {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.8s ease-out, transform 0.8s ease-out;
     }
-    .page-enter {
-      opacity: 1;
-      transform: translateY(0);
-      transition:
-        opacity var(--global-transition-duration) ease,
-        transform var(--global-transition-duration) ease;
+    .reveal.active {
+        opacity: 1;
+        transform: translateY(0);
     }
-    ::selection {
-      background-color: #fde68a;
-      color: #1f2937;
+
+    /* Staggered Load Animations */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-enter-1 { animation: fadeInUp 0.6s ease-out forwards; opacity: 0; animation-delay: 0.1s; }
+    .animate-enter-2 { animation: fadeInUp 0.6s ease-out forwards; opacity: 0; animation-delay: 0.2s; }
+    .animate-enter-3 { animation: fadeInUp 0.6s ease-out forwards; opacity: 0; animation-delay: 0.3s; }
+    
+    /* Lightbox Animation */
+    @keyframes zoomIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+    }
+    .lightbox-enter {
+        animation: zoomIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Fullscreen fixes for 3D viewer */
+    #model-viewer-container:fullscreen {
+      background-color: white;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      border-radius: 0;
+    }
+    #model-viewer-container:fullscreen model-viewer {
+      width: 100%;
+      height: 100%;
     }
   </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 </head>
 
-<body class="bg-gray-50 text-gray-900">
+<body class="bg-gray-50 text-gray-900 selection:bg-indigo-100 selection:text-indigo-900">
   <%
     const priceText = typeof prop.price === 'number'
       ? prop.price.toLocaleString('en-IN')
@@ -126,42 +132,38 @@
   %>
 
   <main class="min-h-screen">
-    <!-- TOP WRAPPER -->
-    <div class="bg-gradient-to-b from-gray-50 to-white">
-      <!-- Hero + breadcrumb -->
+    <div class="bg-gradient-to-b from-gray-50 via-white to-gray-50">
       <section class="relative overflow-hidden">
-        <div class="pointer-events-none absolute inset-x-0 -top-40 h-80 bg-[radial-gradient(circle_at_top,_rgba(79,70,229,0.15),_transparent_60%)]"></div>
+        <div class="pointer-events-none absolute inset-x-0 -top-40 h-80 bg-[radial-gradient(circle_at_top,_rgba(79,70,229,0.1),_transparent_70%)] opacity-80 duration-1000 animate-pulse"></div>
 
         <div class="relative mx-auto max-w-6xl px-4 pt-6 pb-8 lg:pt-8 lg:pb-10">
-          <!-- Breadcrumb -->
-          <nav class="mb-4 flex items-center justify-between text-[11px] text-gray-500">
+          <nav class="animate-enter-1 mb-4 flex items-center justify-between text-[11px] text-gray-500">
             <div class="flex items-center gap-1">
-              <a href="/" class="hover:text-indigo-600 transition">Home</a>
+              <a href="/" class="hover:text-indigo-600 transition hover:underline decoration-indigo-200 underline-offset-2">Home</a>
               <span>/</span>
               <span class="text-gray-500"><%= prop.city || 'Location' %></span>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 rounded-full bg-white px-2 py-1 shadow-sm border border-gray-100">
               <span class="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span class="uppercase tracking-[0.18em] text-[10px] text-emerald-600">
+              <span class="uppercase tracking-[0.18em] text-[10px] text-emerald-600 font-medium">
                 Verified listing
               </span>
             </div>
           </nav>
 
-          <!-- Title + price row -->
-          <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">
+          <div class="animate-enter-2 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div class="max-w-2xl">
+              <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 leading-tight">
                 <%= prop.title || 'Property details' %>
               </h1>
-              <p class="mt-1 text-sm text-gray-600 flex flex-wrap items-center gap-2">
-                <span class="inline-flex items-center gap-1">
+              <p class="mt-2 text-sm text-gray-600 flex flex-wrap items-center gap-2">
+                <span class="inline-flex items-center gap-1.5 rounded-md bg-gray-50 px-2 py-1 border border-gray-100">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                          d="M12 21s-6.5-4.33-6.5-10A6.5 6.5 0 01112 4.5 6.5 6.5 0 0118.5 11c0 5.67-6.5 10-6.5 10z" />
+                          d="M12 21s-6.5-4.33-6.5-10A6.5 6.5 0 0112 4.5 6.5 6.5 0 0118.5 11c0 5.67-6.5 10-6.5 10z" />
                     <circle cx="12" cy="11" r="2.5" stroke-width="1.5"></circle>
                   </svg>
-                  <span>
+                  <span class="font-medium text-gray-700">
                     <%= prop.location || 'Location' %>, 
                     <%= prop.city || 'City' %>, 
                     <%= prop.state || 'Uttarakhand' %>
@@ -169,19 +171,18 @@
                 </span>
               </p>
               <% if (prop.createdAt) { %>
-                <p class="mt-1 text-[11px] text-gray-500">
+                <p class="mt-1 text-[11px] text-gray-400 pl-1">
                   Added on <%= new Date(prop.createdAt).toLocaleDateString('en-IN') %> • GS Infra Estate listing
                 </p>
               <% } %>
             </div>
 
-            <!-- Price & CTAs -->
-            <div class="flex flex-col items-stretch gap-3 rounded-2xl bg-white px-4 py-3 border border-gray-200 shadow-sm">
+            <div class="flex flex-col items-stretch gap-3 rounded-2xl bg-white/80 backdrop-blur-sm px-5 py-4 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
               <div>
-                <p class="text-[11px] uppercase tracking-[0.18em] text-gray-500">
+                <p class="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-semibold">
                   Asking price
                 </p>
-                <p class="mt-1 text-2xl font-semibold text-emerald-600">
+                <p class="mt-0.5 text-2xl font-bold text-emerald-600 tracking-tight">
                   <% if (priceText) { %>
                     ₹ <%= priceText %>
                   <% } else { %>
@@ -189,17 +190,17 @@
                   <% } %>
                 </p>
                 <% if (prop.priceNote) { %>
-                  <p class="mt-0.5 text-[11px] text-gray-500"><%= prop.priceNote %></p>
+                  <p class="mt-0.5 text-[11px] text-gray-500 italic"><%= prop.priceNote %></p>
                 <% } %>
               </div>
               <div class="flex flex-wrap gap-2">
                 <a
                   href="tel:<%= prop.contactPhone || '+918279702969' %>"
-                  class="group inline-flex flex-1 items-center justify-center rounded-full bg-indigo-600 px-4 py-2 text-xs font-medium text-white
-                         hover:bg-indigo-700 transition transform hover:-translate-y-0.5 hover:shadow-md">
-                  Call for details
+                  class="group active:scale-95 inline-flex flex-1 items-center justify-center rounded-full bg-indigo-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm shadow-indigo-200
+                         hover:bg-indigo-700 hover:shadow-indigo-300 transition-all">
+                  Call now
                   <svg xmlns="http://www.w3.org/2000/svg"
-                       class="ml-2 h-3 w-3 transition-transform group-hover:translate-x-0.5"
+                       class="ml-2 h-3.5 w-3.5 transition-transform group-hover:translate-x-1"
                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M9 5l7 7-7 7" />
@@ -208,123 +209,125 @@
                 <button
                   type="button"
                   id="whatsapp-visit-btn"
-                  class="inline-flex items-center justify-center rounded-full border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700
-                         hover:border-indigo-500 hover:text-indigo-600 transition">
-                  Schedule site visit
+                  class="active:scale-95 inline-flex items-center justify-center rounded-full border border-gray-300 px-4 py-2.5 text-xs font-semibold text-gray-700 bg-white
+                         hover:border-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 transition-colors">
+                   <span class="mr-1.5">💬</span> Schedule Visit
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- Share row -->
-          <div class="mt-4 flex flex-wrap items-center gap-3 text-xs text-gray-600">
+          <div class="animate-enter-3 mt-5 flex flex-wrap items-center gap-3 text-xs text-gray-600">
             <button
               type="button"
               id="share-button"
-              class="inline-flex items-center gap-2 rounded-full border border-gray-300 px-3 py-1.5
-                     text-xs font-medium text-gray-700 hover:border-indigo-500 hover:text-indigo-600 transition"
+              class="active:scale-95 inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5
+                     text-xs font-medium text-gray-600 hover:border-indigo-300 hover:text-indigo-600 hover:shadow-sm transition-all"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                  d="M15 8.5l-6 3m0 0l6 3m-6-3V5m0 6v6" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M15 8.5l-6 3m0 0l6 3m-6-3V5m0 6v6" />
               </svg>
-              Share this property
+              Share
             </button>
 
             <button
               type="button"
               id="copy-link-button"
-              class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs text-gray-500 hover:text-gray-800 transition"
+              class="active:scale-95 inline-flex items-center gap-2 rounded-full border border-transparent px-3 py-1.5 text-xs text-gray-500 hover:bg-gray-100 transition-colors"
             >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
               Copy link
             </button>
 
-            <span id="share-status" class="text-[11px] text-emerald-600 hidden">
+            <span id="share-status" class="text-[11px] font-medium text-emerald-600 hidden opacity-0 transition-opacity duration-300">
               Link copied!
             </span>
           </div>
         </div>
       </section>
 
-      <!-- MAIN LAYOUT -->
       <section class="relative mx-auto max-w-6xl px-4 pb-10 lg:pb-14">
         <div class="grid gap-8 lg:grid-cols-[minmax(0,_1.6fr)_minmax(0,_1fr)]">
-          <!-- LEFT: MEDIA -->
-          <div class="space-y-5">
-            <!-- Primary photo gallery -->
+          <div class="space-y-6">
+            
             <div
-              class="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition
-                     duration-500 hover:-translate-y-1 hover:shadow-lg cursor-zoom-in"
+              class="animate-enter-3 group relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm 
+                     hover:shadow-xl hover:border-indigo-200 cursor-pointer transition-all duration-500"
               data-main-image
             >
               <% if (images.length) { %>
                 <img
                   src="<%= images[0] %>"
                   alt="<%= prop.title || 'Property image' %>"
-                  class="h-72 w-full object-cover sm:h-80 lg:h-96 transition duration-700 group-hover:scale-105"
-                  data-zoom-src="<%= images[0] %>"
+                  class="h-72 w-full object-cover sm:h-80 lg:h-96 transition duration-700 ease-in-out group-hover:scale-105"
+                  loading="eager"
+                  fetchpriority="high"
                 />
+                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition duration-500"></div>
               <% } else { %>
-                <div class="flex h-72 w-full items-center justify-center text-sm text-gray-500 sm:h-80 lg:h-96">
+                 <div class="flex h-72 w-full items-center justify-center text-sm text-gray-500 sm:h-80 lg:h-96 bg-gray-50">
                   No image available
-                </div>
+                 </div>
               <% } %>
 
-              <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
-
-              <div class="absolute left-4 top-4 flex flex-wrap gap-2">
+              <div class="absolute left-4 top-4 flex flex-wrap gap-2 pointer-events-none">
                 <% if (prop.category) { %>
-                  <span class="rounded-full bg-white/90 px-3 py-1 text-[11px] font-medium text-gray-800 border border-gray-200">
+                  <span class="rounded-full bg-white/95 backdrop-blur-md px-3 py-1 text-[11px] font-bold tracking-wide text-gray-800 border border-gray-200 shadow-sm">
                     <%= prop.category %>
                   </span>
                 <% } %>
                 <% if (prop.status) { %>
-                  <span class="rounded-full bg-emerald-500 px-3 py-1 text-[11px] font-medium text-white shadow">
+                  <span class="rounded-full bg-emerald-500/95 backdrop-blur-md px-3 py-1 text-[11px] font-bold tracking-wide text-white shadow-sm">
                     <%= prop.status %>
                   </span>
                 <% } %>
               </div>
 
-              <% if (images.length > 1) { %>
-                <div class="absolute bottom-3 right-3 rounded-full bg-white/90 px-3 py-1 text-[11px] text-gray-800 border border-gray-200">
-                  <%= images.length %> photos
+              <% if (images.length) { %>
+                <div class="absolute bottom-3 right-3 rounded-full bg-black/60 backdrop-blur-md px-3 py-1 text-[11px] font-medium text-white border border-white/10 pointer-events-none">
+                  📷 <%= images.length %> photos
                 </div>
               <% } %>
+              
+              <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300 pointer-events-none">
+                 <span class="bg-black/50 text-white px-4 py-2 rounded-full text-xs backdrop-blur-sm transform translate-y-4 group-hover:translate-y-0 transition duration-300">View Gallery</span>
+              </div>
             </div>
 
-            <!-- Thumbnail strip -->
             <% if (images.length > 1) { %>
-              <div class="grid grid-cols-3 gap-3 sm:grid-cols-4">
-                <% images.slice(1, 7).forEach(function(img, idx) { %>
-                  <button
-                    type="button"
-                    class="group relative overflow-hidden rounded-xl border border-gray-200 bg-white transition duration-300 hover:border-indigo-400 cursor-zoom-in"
-                    data-thumb
-                    data-zoom-src="<%= img %>"
-                  >
-                    <img
-                      src="<%= img %>"
-                      alt="Photo <%= idx + 2 %>"
-                      class="h-20 w-full object-cover sm:h-24 group-hover:scale-105 transition duration-500"
-                    />
-                    <div class="pointer-events-none absolute inset-0 bg-black/0 group-hover:bg-black/20 transition"></div>
-                    <% if (idx === 5 && images.length > 7) { %>
-                      <span class="pointer-events-none absolute inset-0 flex items-center justify-center text-xs font-medium text-white">
-                        +<%= images.length - 7 %> more
-                      </span>
-                    <% } %>
-                  </button>
-                <% }); %>
+              <div class="reveal grid grid-cols-3 gap-3 sm:grid-cols-4">
+              <% images.slice(1).forEach(function(img, idx) { %>
+                <button
+                  type="button"
+                  class="group relative overflow-hidden rounded-xl border border-gray-200 bg-white transition-all hover:ring-2 hover:ring-indigo-500 hover:ring-offset-1"
+                  data-thumb
+                  data-index="<%= idx + 1 %>"
+                >
+                  <img
+                    src="<%= img %>"
+                    alt="Property photo <%= idx + 2 %>"
+                    class="h-20 w-full object-cover sm:h-24 group-hover:scale-110 transition duration-500"
+                    loading="lazy"
+                  />
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition"></div>
+                </button>
+              <% }); %>
               </div>
             <% } %>
 
-            <!-- Videos block -->
             <% if (videos && videos.length) { %>
-              <section class="rounded-2xl border border-gray-200 bg-white p-5">
-                <h2 class="text-sm font-semibold text-gray-900 mb-3">Property videos</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <% videos.slice(0, 2).forEach(function(vUrl, idx) { %>
-                    <div class="aspect-video w-full overflow-hidden rounded-xl border border-gray-200 bg-black/5">
+              <section class="reveal rounded-2xl border border-gray-200 bg-white p-1">
+                 <div class="p-4 pb-0">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-gray-900 mb-3 flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Property videos
+                    </h2>
+                 </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-1 p-1">
+                  <% videos.forEach(function(vUrl, idx) { %>
+                    <div class="aspect-video w-full overflow-hidden rounded-xl bg-black relative group">
                       <% if (vUrl.includes('youtube.com') || vUrl.includes('youtu.be')) { %>
                         <iframe
                           src="<%= vUrl %>"
@@ -347,11 +350,10 @@
               </section>
             <% } %>
 
-            <!-- Virtual tour -->
             <% if (prop.virtualTourUrl) { %>
-              <section class="rounded-2xl border border-gray-200 bg-white p-5">
-                <h2 class="text-sm font-semibold text-gray-900 mb-3">Virtual tour</h2>
-                <div class="aspect-video w-full overflow-hidden rounded-xl border border-gray-200 bg-black/5">
+              <section class="reveal rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-gray-900 mb-3">Virtual tour</h2>
+                <div class="aspect-video w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
                   <iframe
                     src="<%= prop.virtualTourUrl %>"
                     class="h-full w-full"
@@ -365,221 +367,216 @@
               </section>
             <% } %>
 
-            <!-- 3D view / floor plan -->
             <% if (prop.map3dUrl) { %>
-              <section class="rounded-2xl border border-gray-200 bg-white p-5">
-                <h2 class="text-sm font-semibold text-gray-900 mb-3">3D view / floor plan</h2>
-                <div class="aspect-video w-full overflow-hidden rounded-xl border border-gray-200 bg-black/5">
-                  <iframe
-                    src="<%= prop.map3dUrl %>"
-                    class="h-full w-full"
-                    style="border:0;"
-                    allowfullscreen
-                    loading="lazy"
-                    referrerpolicy="no-referrer-when-downgrade"
-                    title="3D view or floor plan"
-                  ></iframe>
+            <section class="reveal rounded-2xl border border-gray-200 bg-white p-5 shadow-sm group hover:border-indigo-300 transition-colors">
+              <div class="flex items-center justify-between mb-3">
+                  <h2 class="text-sm font-bold uppercase tracking-wider text-gray-900">3D View / Floor Plan</h2>
+                  <span class="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-100">Interactive</span>
+              </div>
+              
+              <div class="aspect-video w-full overflow-hidden rounded-xl border border-gray-100 bg-gray-50 relative group/model" id="model-viewer-container">
+                <button
+                  type="button"
+                  id="enter-fullscreen"
+                  class="active:scale-90 absolute top-4 left-4 z-10 rounded-full bg-white/90 backdrop-blur p-2 shadow-sm hover:bg-white hover:text-indigo-600 transition-all text-gray-700 opacity-0 group-hover/model:opacity-100 translate-y-2 group-hover/model:translate-y-0 duration-300"
+                  title="View Fullscreen"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                  </svg>
+                </button>
+
+                <model-viewer
+                  id="property-3d-model"
+                  src="<%= prop.map3dUrl %>"
+                  alt="3D model of <%= prop.title %>"
+                  camera-controls
+                  auto-rotate
+                  ar
+                  ar-modes="webxr scene-viewer quick-look"
+                  shadow-intensity="1"
+                  environment-image="neutral"
+                  poster="<%= prop.imageUrls?.[0] %>"
+                  loading="lazy"
+                  style="width: 100%; height: 100%; background: rgba(0, 0, 0, 0.05);"
+                  exposure="1"
+                  interaction-prompt="auto"
+                >
+                  <button slot="ar-button" class="ar-button shadow-md hover:shadow-lg transition-shadow" style="background-color: white; border-radius: 4px; border: none; position: absolute; top: 16px; right: 16px; padding: 10px 20px; font-weight: 600; font-size: 12px; color: #4338ca;">
+                    👋 Tap to Place
+                  </button>
+                </model-viewer>
+              </div>
+              
+              <div class="mt-3 flex flex-wrap gap-4 text-xs text-gray-500">
+                <div class="flex items-center gap-1.5">
+                  <span class="bg-gray-100 p-1 rounded">🖱️</span>
+                  <span>Drag to rotate</span>
                 </div>
-              </section>
+                <div class="flex items-center gap-1.5">
+                  <span class="bg-gray-100 p-1 rounded">🔍</span>
+                  <span>Scroll to zoom</span>
+                </div>
+              </div>
+              
+              <style>
+                #property-3d-model[loading] {
+                  position: relative;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                }
+                
+                #property-3d-model[loading]::after {
+                  content: 'Loading 3D model...';
+                  position: absolute;
+                  color: #666;
+                  font-size: 14px;
+                  animation: pulse 1.5s infinite;
+                }
+              </style>
+            </section>
             <% } %>
           </div>
 
-          <!-- RIGHT: INFO -->
           <aside class="space-y-4">
-            <!-- Key details -->
-            <section class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-              <h2 class="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 text-[11px]">
-                  i
-                </span>
-                Key details
-              </h2>
-              <dl class="grid grid-cols-2 gap-3 text-xs text-gray-700">
-                <% if (prop.plotSize) { %>
-                  <div>
-                    <dt class="text-[11px] uppercase tracking-wide text-gray-500">Plot size</dt>
-                    <dd class="mt-0.5 font-medium"><%= prop.plotSize %></dd>
-                  </div>
-                <% } %>
-                <% if (prop.builtupArea) { %>
-                  <div>
-                    <dt class="text-[11px] uppercase tracking-wide text-gray-500">Built-up area</dt>
-                    <dd class="mt-0.5 font-medium"><%= prop.builtupArea %></dd>
-                  </div>
-                <% } %>
-                <% if (prop.dimensions) { %>
-                  <div>
-                    <dt class="text-[11px] uppercase tracking-wide text-gray-500">Dimensions</dt>
-                    <dd class="mt-0.5 font-medium"><%= prop.dimensions %></dd>
-                  </div>
-                <% } %>
-                <% if (prop.facing) { %>
-                  <div>
-                    <dt class="text-[11px] uppercase tracking-wide text-gray-500">Facing</dt>
-                    <dd class="mt-0.5 font-medium"><%= prop.facing %></dd>
-                  </div>
-                <% } %>
-                <% if (prop.roadWidth) { %>
-                  <div>
-                    <dt class="text-[11px] uppercase tracking-wide text-gray-500">Road width</dt>
-                    <dd class="mt-0.5 font-medium"><%= prop.roadWidth %></dd>
-                  </div>
-                <% } %>
-                <% if (prop.ownership) { %>
-                  <div>
-                    <dt class="text-[11px] uppercase tracking-wide text-gray-500">Ownership</dt>
-                    <dd class="mt-0.5 font-medium"><%= prop.ownership %></dd>
-                  </div>
-                <% } %>
-              </dl>
-            </section>
-
-            <% if (suitable) { %>
-              <section class="rounded-2xl border border-gray-200 bg-white p-4">
-                <h2 class="text-sm font-semibold text-gray-900 mb-2">Suitable for</h2>
-                <p class="text-xs text-gray-700"><%= suitable %></p>
-              </section>
-            <% } %>
-
-            <!-- Contact card -->
-            <section class="relative overflow-hidden rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4">
-              <div class="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full bg-indigo-200/40 blur-3xl"></div>
-              <h3 class="text-sm font-semibold text-gray-900 mb-1">Talk to our expert</h3>
-              <p class="text-xs text-gray-700 mb-3">
-                Get complete guidance, site visit, and documentation support for this property in <%= prop.city || 'Uttarakhand' %>.
-              </p>
-              <div class="space-y-1 text-xs text-gray-800">
-                <% if (prop.contactName) { %>
-                  <p class="font-medium"><%= prop.contactName %></p>
-                <% } %>
-                <% if (prop.contactPhone) { %>
-                  <p>📞 <a href="tel:<%= prop.contactPhone %>" class="hover:text-indigo-600 transition"><%= prop.contactPhone %></a></p>
-                <% } %>
-                <% if (prop.contactEmail) { %>
-                  <p>✉️ <a href="mailto:<%= prop.contactEmail %>" class="hover:text-indigo-600 transition"><%= prop.contactEmail %></a></p>
-                <% } %>
-              </div>
-            </section>
-          </aside>
-        </div>
-
-        <!-- LOWER: TEXT + MAP -->
-        <div class="mt-10 grid gap-8 lg:grid-cols-[minmax(0,_1.6fr)_minmax(0,_1fr)]">
-          <!-- LEFT COLUMN: Overview + features -->
-          <div class="space-y-6">
+            
             <% if (prop.description) { %>
-              <section class="rounded-2xl border border-gray-200 bg-white p-5">
-                <h2 class="text-sm font-semibold text-gray-900 mb-2">Property overview</h2>
-                <p class="text-sm leading-relaxed text-gray-700 whitespace-pre-line">
+              <section class="reveal rounded-2xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-gray-900 mb-3">Property overview</h2>
+                <div class="text-sm leading-relaxed text-gray-700 font-medium whitespace-pre-line prose prose-sm prose-indigo">
                   <%= prop.description %>
-                </p>
+                </div>
               </section>
             <% } %>
 
             <% if (prop.features && prop.features.length) { %>
-              <section class="rounded-2xl border border-gray-200 bg-white p-5">
-                <h2 class="text-sm font-semibold text-gray-900 mb-3">Key features</h2>
-                <ul class="grid gap-2 text-sm text-gray-700 sm:grid-cols-2">
+              <section class="reveal rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-gray-900 mb-4">Key features</h2>
+                <ul class="grid gap-3 text-sm text-gray-700 font-medium sm:grid-cols-2">
                   <% prop.features.forEach(function(feat) { %>
-                    <li class="flex items-start gap-2">
-                      <span class="mt-1 h-1.5 w-1.5 rounded-full bg-indigo-500"></span>
-                      <span><%= feat %></span>
+                    <li class="flex items-start gap-2.5 group">
+                      <span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-indigo-500 group-hover:bg-indigo-600 group-hover:scale-125 transition-all"></span>
+                      <span class="group-hover:text-gray-900 transition-colors"><%= feat %></span>
                     </li>
                   <% }); %>
                 </ul>
               </section>
             <% } %>
-          </div>
 
-          <!-- RIGHT COLUMN: Landmarks + map -->
-          <div class="space-y-6">
-            <% if (prop.landmarks && prop.landmarks.length) { %>
-              <section class="rounded-2xl border border-gray-200 bg-white p-5">
-                <h2 class="text-sm font-semibold text-gray-900 mb-3">Nearby landmarks</h2>
-                <ul class="space-y-1 text-xs text-gray-700">
-                  <% prop.landmarks.forEach(function(l) { %>
-                    <li>• <%= l %></li>
-                  <% }); %>
-                </ul>
+            <% if (suitable) { %>
+              <section class="reveal rounded-2xl border border-gray-200 bg-white p-5 hover:border-indigo-100 transition-colors">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-gray-900 mb-2">Suitable for</h2>
+                <p class="text-sm text-gray-600"><%= suitable %></p>
               </section>
             <% } %>
 
-            <% if (prop.mapEmbed) { %>
-              <section class="rounded-2xl border border-gray-200 bg-white p-2">
-                <div class="overflow-hidden rounded-xl">
-                  <%- prop.mapEmbed %>
+            <section class="reveal relative overflow-hidden rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6 shadow-sm hover:shadow-md transition-all duration-300">
+              <div class="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-indigo-200/40 blur-3xl animate-pulse"></div>
+              
+              <h3 class="text-base font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                <span>Talk to our expert</span>
+                <span class="flex h-2 w-2 relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+              </h3>
+              
+              <p class="text-sm text-gray-600 mb-4 leading-relaxed">
+                Get complete guidance, site visit, and documentation support for this property in <span class="font-semibold text-indigo-700"><%= prop.city || 'Uttarakhand' %></span>.
+              </p>
+              
+              <div class="space-y-3 text-sm">
+                <% if (prop.contactName) { %>
+                  <div class="flex items-center gap-3 text-gray-800">
+                    <div class="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs">
+                        <%= prop.contactName.charAt(0) %>
+                    </div>
+                    <p class="font-medium"><%= prop.contactName %></p>
+                  </div>
+                <% } %>
+                
+                <div class="pt-2 border-t border-indigo-100 space-y-2">
+                    <% if (prop.contactPhone) { %>
+                    <p class="flex items-center gap-2 text-gray-600 hover:text-indigo-700 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                        <a href="tel:<%= prop.contactPhone %>" class="font-medium"><%= prop.contactPhone %></a>
+                    </p>
+                    <% } %>
+                    <% if (prop.contactEmail) { %>
+                    <p class="flex items-center gap-2 text-gray-600 hover:text-indigo-700 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                        <a href="mailto:<%= prop.contactEmail %>"><%= prop.contactEmail %></a>
+                    </p>
+                    <% } %>
                 </div>
-              </section>
-            <% } %>
-          </div>
+              </div>
+            </section>
+          </aside>
         </div>
       </section>
     </div>
   </main>
 
-  <!-- IMAGE ZOOM MODAL -->
   <div
-    id="image-zoom-modal"
-    class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm"
+    id="imageLightbox"
+    class="fixed inset-0 z-50 hidden bg-black/95 backdrop-blur-sm flex items-center justify-center touch-none transition-opacity duration-300"
   >
-    <div class="relative max-h-[90vh] max-w-5xl w-full px-4">
-      <button
-        type="button"
-        id="zoom-close"
-        class="absolute -top-10 right-4 text-gray-200 hover:text-white text-sm"
-      >
-        Close ✕
-      </button>
+    <button
+      id="closeLightbox"
+      class="active:scale-90 absolute top-4 right-4 z-50 text-white/80 hover:text-white bg-black/20 hover:bg-black/50 rounded-full w-10 h-10 flex items-center justify-center transition-all"
+      aria-label="Close"
+    >
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    </button>
 
-      <div class="mb-3 flex items-center justify-between text-xs text-gray-200">
-        <div>Scroll / pinch to zoom, drag to pan</div>
-        <div class="flex items-center gap-2">
-          <button
-            type="button"
-            id="zoom-out"
-            class="rounded-full bg-white/10 px-2 py-1 hover:bg-white/20"
-          >
-            −
-          </button>
-          <button
-            type="button"
-            id="zoom-reset"
-            class="rounded-full bg-white/10 px-2 py-1 hover:bg-white/20"
-          >
-            Reset
-          </button>
-          <button
-            type="button"
-            id="zoom-in"
-            class="rounded-full bg-white/10 px-2 py-1 hover:bg-white/20"
-          >
-            +
-          </button>
-        </div>
-      </div>
+    <img
+      id="lightboxImage"
+      class="max-h-[90vh] max-w-[95vw] object-contain select-none will-change-transform transition-transform duration-300 shadow-2xl"
+      draggable="false"
+    />
 
-      <div
-        id="zoom-container"
-        class="relative overflow-hidden rounded-2xl bg-black flex items-center justify-center cursor-grab active:cursor-grabbing"
-        style="height: min(80vh, 600px);"
-      >
-        <img
-          id="zoom-image"
-          src=""
-          alt="Zoomed property image"
-          class="select-none"
-          draggable="false"
-        />
-      </div>
-    </div>
+    <button id="prevBtn"
+      class="active:scale-90 hidden md:flex absolute left-4 text-white/80 hover:text-white bg-black/20 hover:bg-black/50 rounded-full w-12 h-12 items-center justify-center transition-all">
+      <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7"></path></svg>
+    </button>
+
+    <button id="nextBtn"
+      class="active:scale-90 hidden md:flex absolute right-4 text-white/80 hover:text-white bg-black/20 hover:bg-black/50 rounded-full w-12 h-12 items-center justify-center transition-all">
+      <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"></path></svg>
+    </button>
+
+    <div
+      id="imageCounter"
+      class="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium text-white bg-white/10 backdrop-blur px-4 py-1.5 rounded-full border border-white/10"
+    ></div>
   </div>
 
   <%- include('../components/footer') %>
 
-  <!-- Share + Zoom + WhatsApp scripts -->
   <script>
     (function() {
-      // SHARE LOGIC
+      // 0. SCROLL REVEAL OBSERVER
+      const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1
+      };
+
+      const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            obs.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+
+      document.querySelectorAll('.reveal').forEach(el => {
+        observer.observe(el);
+      });
+
+      // 1. SHARE LOGIC
       const shareBtn = document.getElementById('share-button');
       const copyBtn = document.getElementById('copy-link-button');
       const statusEl = document.getElementById('share-status');
@@ -592,8 +589,15 @@
         if (!statusEl) return;
         statusEl.textContent = message;
         statusEl.classList.remove('hidden');
+        requestAnimationFrame(() => {
+            statusEl.classList.remove('opacity-0');
+        });
+        
         clearTimeout(statusEl._timer);
-        statusEl._timer = setTimeout(() => statusEl.classList.add('hidden'), 2500);
+        statusEl._timer = setTimeout(() => {
+            statusEl.classList.add('opacity-0');
+            setTimeout(() => statusEl.classList.add('hidden'), 300);
+        }, 2500);
       }
 
       if (shareBtn) {
@@ -624,23 +628,31 @@
         });
       }
 
-      // WHATSAPP "SCHEDULE SITE VISIT" LOGIC
+      // 2. WHATSAPP LOGIC
+      const waTitle = "<%= (prop.title || 'N/A').toString().replace(/\"/g, '\\\"') %>";
+      const waId = "<%= (prop._id || 'N/A').toString().replace(/\"/g, '\\\"') %>";
+      const waLocation = "<%= ((prop.location || '') + (prop.city ? ', ' + prop.city : '') + (prop.state ? ', ' + prop.state : '')).toString().replace(/\"/g, '\\\"') %>";
+      const waPrice = "<%= (priceText || 'Contact for price').toString().replace(/\"/g, '\\\"') %>";
+      const waCategory = "<%= (prop.category || 'N/A').toString().replace(/\"/g, '\\\"') %>";
+      const waStatus = "<%= (prop.status || 'N/A').toString().replace(/\"/g, '\\\"') %>";
+      const waLink = "https://www.gsinfraandestate.com/property/<%= prop.slug || prop._id || '' %>";
+
       const waBtn = document.getElementById('whatsapp-visit-btn');
       if (waBtn) {
         waBtn.addEventListener('click', () => {
-          const phone = "918279702969"; // admin number without +
+          const phone = "<%= prop.contactPhone || '918279702969' %>".replace(/\D/g, '');
 
           const message = `
 Hello, I want to schedule a site visit.
 
-Property: <%= prop.title || 'N/A' %>
-Property ID: <%= prop._id || 'N/A' %>
-Location: <%= (prop.location || '') + (prop.city ? ', ' + prop.city : '') + (prop.state ? ', ' + prop.state : '') %>
-Price: <%= priceText || 'Contact for price' %>
-Category: <%= prop.category || 'N/A' %>
-Status: <%= prop.status || 'N/A' %>
+Property: ${waTitle}
+Property ID: ${waId}
+Location: ${waLocation}
+Price: ${waPrice}
+Category: ${waCategory}
+Status: ${waStatus}
 
-Link: https://www.gsinfraandestate.com/property/<%= prop.slug || prop._id || '' %>
+Link: ${waLink}
           `.trim();
 
           const encoded = encodeURIComponent(message);
@@ -649,107 +661,134 @@ Link: https://www.gsinfraandestate.com/property/<%= prop.slug || prop._id || '' 
         });
       }
 
-      // IMAGE ZOOM LOGIC
-      const modal = document.getElementById('image-zoom-modal');
-      const zoomImg = document.getElementById('zoom-image');
-      const zoomContainer = document.getElementById('zoom-container');
-      const closeBtn = document.getElementById('zoom-close');
-      const zoomInBtn = document.getElementById('zoom-in');
-      const zoomOutBtn = document.getElementById('zoom-out');
-      const zoomResetBtn = document.getElementById('zoom-reset');
+      // 3. AR BUTTON FIX (Hide on Desktop) + 3D FULLSCREEN LOGIC
+      const modelViewer = document.querySelector('model-viewer');
+      if (modelViewer) {
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (!isMobile) {
+          // Hide the AR button on desktop to prevent the console error when clicking
+          const arBtn = modelViewer.querySelector('[slot="ar-button"]');
+          if (arBtn) {
+            arBtn.style.display = 'none';
+          }
+        }
+      }
 
-      if (!modal || !zoomImg || !zoomContainer) return;
+      // 4. FULLSCREEN TOGGLE
+      const fullscreenBtn = document.getElementById('enter-fullscreen');
+      const mvContainer = document.getElementById('model-viewer-container');
 
-      let scale = 1;
-      let posX = 0;
-      let posY = 0;
-      let isDragging = false;
+      if (fullscreenBtn && mvContainer) {
+        fullscreenBtn.addEventListener('click', () => {
+          if (!document.fullscreenElement) {
+            mvContainer.requestFullscreen().catch(err => {
+              console.error(`Error attempting to enable fullscreen: ${err.message}`);
+            });
+          } else {
+            document.exitFullscreen();
+          }
+        });
+      }
+    })();
+
+    // 5. LIGHTBOX SCRIPT (Using injected array for safety)
+    (() => {
+      const modal = document.getElementById('imageLightbox');
+      const img = document.getElementById('lightboxImage');
+      const closeBtn = document.getElementById('closeLightbox');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const counter = document.getElementById('imageCounter');
+
+      // Inject server-side array
+      const images = [
+        "<%= images[0] || '' %>",
+        <% images.slice(1).forEach(function(url){ %> "<%= url %>", <% }); %>
+      ].filter(Boolean);
+
+      let index = 0;
       let startX = 0;
-      let startY = 0;
+      let deltaX = 0;
 
-      function applyTransform() {
-        zoomImg.style.transform =
-          'translate(' + posX + 'px,' + posY + 'px) scale(' + scale + ')';
+      function preload(i) {
+        [i - 1, i + 1].forEach(n => {
+          if (images[n]) {
+            const p = new Image();
+            p.src = images[n];
+          }
+        });
       }
 
-      function openZoom(src) {
-        if (!src) return;
-        zoomImg.src = src;
-        scale = 1;
-        posX = 0;
-        posY = 0;
-        applyTransform();
+      function open(i) {
+        if (!images.length) return;
+        index = i;
+        img.src = images[index];
+        counter.textContent = `${index + 1} / ${images.length}`;
         modal.classList.remove('hidden');
+        
+        // Add animation class
+        img.classList.add('lightbox-enter');
+        setTimeout(() => img.classList.remove('lightbox-enter'), 300);
+        
         document.body.style.overflow = 'hidden';
+        preload(index);
       }
 
-      function closeZoom() {
+      function close() {
         modal.classList.add('hidden');
         document.body.style.overflow = '';
       }
 
-      document.querySelectorAll('[data-main-image] img[data-zoom-src], button[data-thumb]').forEach(el => {
-        el.addEventListener('click', () => {
-          const src = el.getAttribute('data-zoom-src') || el.querySelector('img')?.src;
-          openZoom(src);
+      function next() {
+        index = (index + 1) % images.length;
+        img.src = images[index];
+        counter.textContent = `${index + 1} / ${images.length}`;
+        preload(index);
+      }
+
+      function prev() {
+        index = (index - 1 + images.length) % images.length;
+        img.src = images[index];
+        counter.textContent = `${index + 1} / ${images.length}`;
+        preload(index);
+      }
+
+      // Init
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelector('[data-main-image]')
+          ?.addEventListener('click', () => open(0));
+
+        document.querySelectorAll('[data-thumb]').forEach(btn => {
+          btn.addEventListener('click', () => open(+btn.dataset.index));
         });
       });
 
-      zoomContainer.addEventListener('mousedown', e => {
-        isDragging = true;
-        startX = e.clientX - posX;
-        startY = e.clientY - posY;
+      // Desktop Controls
+      nextBtn.onclick = next;
+      prevBtn.onclick = prev;
+      closeBtn.onclick = close;
+
+      document.addEventListener('keydown', e => {
+        if (modal.classList.contains('hidden')) return;
+        if (e.key === 'Escape') close();
+        if (e.key === 'ArrowRight') next();
+        if (e.key === 'ArrowLeft') prev();
       });
 
-      window.addEventListener('mousemove', e => {
-        if (!isDragging) return;
-        posX = e.clientX - startX;
-        posY = e.clientY - startY;
-        applyTransform();
-      });
+      // Swipe (mobile)
+      modal.addEventListener('touchstart', e => {
+        startX = e.touches[0].clientX;
+      }, { passive: true });
 
-      window.addEventListener('mouseup', () => {
-        isDragging = false;
-      });
-
-      zoomContainer.addEventListener('wheel', e => {
-        e.preventDefault();
-        const delta = e.deltaY < 0 ? 0.1 : -0.1;
-        scale = Math.min(4, Math.max(1, scale + delta));
-        applyTransform();
-      }, { passive: false });
-
-      if (zoomInBtn) {
-        zoomInBtn.addEventListener('click', () => {
-          scale = Math.min(4, scale + 0.2);
-          applyTransform();
-        });
-      }
-      if (zoomOutBtn) {
-        zoomOutBtn.addEventListener('click', () => {
-          scale = Math.max(1, scale - 0.2);
-          applyTransform();
-        });
-      }
-      if (zoomResetBtn) {
-        zoomResetBtn.addEventListener('click', () => {
-          scale = 1;
-          posX = 0;
-          posY = 0;
-          applyTransform();
-        });
-      }
-
-      if (closeBtn) {
-        closeBtn.addEventListener('click', closeZoom);
-      }
-      modal.addEventListener('click', e => {
-        if (e.target === modal) closeZoom();
-      });
-      window.addEventListener('keydown', e => {
-        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
-          closeZoom();
+      modal.addEventListener('touchend', e => {
+        deltaX = e.changedTouches[0].clientX - startX;
+        if (Math.abs(deltaX) > 50) {
+          deltaX < 0 ? next() : prev();
         }
+      }, { passive: true });
+
+      modal.addEventListener('click', e => {
+        if (e.target === modal) close();
       });
     })();
   </script>

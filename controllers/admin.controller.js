@@ -2,13 +2,35 @@
 const Property = require('../models/property');
 const { Resend } = require('resend');
 const { notifyNewProperty } = require('../services/alertsService');
+const path = require('path');
+const { processUploads } = require('../utils/mediaOptimizer');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // ======================= CONSTANTS =======================
 const ADMIN_FALLBACK_EMAIL = 'gauravsaklani021106@gmail.com';
 
-// ======================= OTP HELPER ======================
+// ======================= HELPERS =========================
+/**
+ * Helper to determine if the client expects JSON response
+ */
+const wantsJson = (req) =>
+  req.xhr ||
+  (req.headers.accept && req.headers.accept.includes('application/json')) ||
+  (req.headers['content-type'] && req.headers['content-type'].includes('json'));
+
+const getAdminEmail = (req) =>
+  req.session.adminEmail ||
+  process.env.ADMINEMAIL ||
+  ADMIN_FALLBACK_EMAIL;
+
+const splitIntoAdminBuckets = (props) => ({
+  residential: props.filter((p) => p.category === 'residential_properties'),
+  commercialPlots: props.filter((p) => p.category === 'commercial_plots'),
+  landPlots: props.filter((p) => p.category === 'land_plots'),
+  premiumInvestment: props.filter((p) => p.category === 'premium_investment'),
+});
+
 const generateOTP = () => {
   const digits = '0123456789';
   let otp = '';
@@ -23,7 +45,7 @@ resend.emails
   .list()
   .then((listResult) => {
     console.log('✅ Resend API Connected Successfully');
-    console.log('ℹ️ Resend list() sample total:', listResult?.data?.length ?? 0);
+    console.log('ℹ️ Resend list() sample total:', listResult?.data?.data?.length ?? 0);
   })
   .catch((err) => {
     console.error('❌ Resend API Connection Failed:', {
@@ -41,7 +63,6 @@ async function sendOtpEmail(adminEmail, code) {
       from: process.env.FROM_EMAIL,
       toEnv: process.env.ADMINEMAIL,
       toParam: adminEmail,
-      nodeEnv: process.env.NODE_ENV,
     });
 
     const { data, error } = await resend.emails.send({
@@ -70,12 +91,7 @@ async function sendOtpEmail(adminEmail, code) {
             <hr style="border: none; border-top: 1px solid #dddddd; margin: 20px 0;" />
             <p style="color: #999999; font-size: 12px; line-height: 1.5;">
               Sent from <strong>${process.env.FROM_EMAIL}</strong><br />
-              If you didn't request this code, please ignore this email and contact support immediately.
-            </p>
-          </div>
-          <div style="text-align: center; padding: 15px; background-color: #f8f9fa; border-radius: 0 0 10px 10px; margin-top: -10px;">
-            <p style="color: #666666; font-size: 11px; margin: 0;">
-              © GS Infra Estates 2025
+              If you didn't request this code, please ignore this email.
             </p>
           </div>
         </div>
@@ -83,62 +99,17 @@ async function sendOtpEmail(adminEmail, code) {
     });
 
     if (error) {
-      console.error('❌ Resend send error:', {
-        name: error.name,
-        message: error.message,
-        code: error.code,
-        statusCode: error.statusCode,
-        cause: error.cause,
-        from: process.env.FROM_EMAIL,
-        to: process.env.ADMINEMAIL,
-      });
-
-      const e = new Error(error.message || 'Failed to send email via Resend');
-      e.name = error.name || 'ResendError';
-      e.statusCode = error.statusCode || 500;
-      e.code = error.code;
-      e.resendError = error;
-      throw e;
+      console.error('❌ Resend send error:', error);
+      throw new Error(error.message || 'Failed to send email via Resend');
     }
 
-    console.log('✅ Admin OTP sent:', {
-      to: process.env.ADMINEMAIL,
-      from: process.env.FROM_EMAIL,
-      id: data?.id,
-    });
-
+    console.log('✅ Admin OTP sent:', { id: data?.id });
     return data;
   } catch (err) {
-    console.error('❌ Admin OTP Error:', {
-      name: err.name,
-      message: err.message,
-      code: err.code,
-      statusCode: err.statusCode,
-      stack: err.stack,
-      resendError: err.resendError || null,
-    });
-
+    console.error('❌ Admin OTP Error:', err);
     throw err;
   }
 }
-
-// ======================= HELPERS =========================
-const wantsJson = (req) =>
-  req.xhr ||
-  (req.headers.accept && req.headers.accept.includes('application/json'));
-
-const getAdminEmail = (req) =>
-  req.session.adminEmail ||
-  process.env.ADMINEMAIL ||
-  ADMIN_FALLBACK_EMAIL;
-
-// Split properties into 4 new categories
-const splitIntoAdminBuckets = (props) => ({
-  residential: props.filter((p) => p.category === 'residential_properties'),
-  commercialPlots: props.filter((p) => p.category === 'commercial_plots'),
-  landPlots: props.filter((p) => p.category === 'land_plots'),
-  premiumInvestment: props.filter((p) => p.category === 'premium_investment'),
-});
 
 // ======================= LOGIN VIEW ======================
 exports.showLogin = (req, res, next) => {
@@ -167,9 +138,7 @@ exports.loginStep1 = async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
-      return res
-        .status(400)
-        .json({ ok: false, error: 'Email and password are required' });
+      return res.status(400).json({ ok: false, error: 'Email and password are required' });
     }
 
     const ADMINEMAIL = process.env.ADMINEMAIL;
@@ -201,12 +170,7 @@ exports.loginStep1 = async (req, res) => {
       message: 'Code sent to your email! Check inbox/spam folder.',
     });
   } catch (error) {
-    console.error('❌ Login Step 1 Error:', {
-      name: error.name,
-      message: error.message,
-      code: error.code,
-      statusCode: error.statusCode,
-    });
+    console.error('❌ Login Step 1 Error:', error);
 
     if (req.session.otp) {
       delete req.session.otp;
@@ -214,16 +178,9 @@ exports.loginStep1 = async (req, res) => {
     }
 
     const status = Number.isInteger(error.statusCode) ? error.statusCode : 503;
-
     return res.status(status).json({
       ok: false,
       error: 'Unable to send verification code',
-      resendError: {
-        name: error.name || null,
-        message: error.message || null,
-        code: error.code || null,
-        statusCode: error.statusCode || null,
-      },
     });
   }
 };
@@ -233,46 +190,28 @@ exports.loginVerify = async (req, res) => {
   try {
     const { verificationCode } = req.body;
 
-    if (!verificationCode) {
-      return res
-        .status(400)
-        .json({ ok: false, error: 'Verification code required' });
-    }
+    if (!verificationCode) return res.status(400).json({ ok: false, error: 'Verification code required' });
 
     const otpSession = req.session.otp;
 
-    if (!otpSession) {
-      return res.status(400).json({
-        ok: false,
-        error: 'No active verification session. Please login again.',
-      });
-    }
+    if (!otpSession) return res.status(400).json({ ok: false, error: 'No active verification session. Please login again.' });
 
     if (otpSession.attempts >= 5) {
       delete req.session.otp;
       await new Promise((resolve) => req.session.save(resolve));
-      return res.status(400).json({
-        ok: false,
-        error: 'Too many attempts. Please login again.',
-      });
+      return res.status(400).json({ ok: false, error: 'Too many attempts. Please login again.' });
     }
 
     if (otpSession.expiry < Date.now()) {
       delete req.session.otp;
       await new Promise((resolve) => req.session.save(resolve));
-      return res
-        .status(400)
-        .json({ ok: false, error: 'Code expired. Please login again.' });
+      return res.status(400).json({ ok: false, error: 'Code expired. Please login again.' });
     }
 
     if (verificationCode !== otpSession.code) {
       otpSession.attempts += 1;
       await new Promise((resolve) => req.session.save(resolve));
-
-      return res.status(400).json({
-        ok: false,
-        error: `Invalid code. Attempt ${otpSession.attempts}/5`,
-      });
+      return res.status(400).json({ ok: false, error: `Invalid code. Attempt ${otpSession.attempts}/5` });
     }
 
     const ADMINEMAIL = process.env.ADMINEMAIL || ADMIN_FALLBACK_EMAIL;
@@ -289,9 +228,7 @@ exports.loginVerify = async (req, res) => {
     return res.json({ ok: true, redirect: '/admin/dashboard' });
   } catch (error) {
     console.error('❌ Login Verify Error:', error);
-    return res
-      .status(500)
-      .json({ ok: false, error: 'Session verification failed' });
+    return res.status(500).json({ ok: false, error: 'Session verification failed' });
   }
 };
 
@@ -299,13 +236,9 @@ exports.loginVerify = async (req, res) => {
 exports.logoutAdmin = (req, res) => {
   try {
     const adminEmail = getAdminEmail(req);
-
     req.session.destroy((err) => {
-      if (err) {
-        console.error('❌ Logout error:', err);
-      } else {
-        console.log(`👋 Admin logged out: ${adminEmail}`);
-      }
+      if (err) console.error('❌ Logout error:', err);
+      else console.log(`👋 Admin logged out: ${adminEmail}`);
       res.redirect('/');
     });
   } catch (err) {
@@ -353,7 +286,6 @@ exports.listPropertiesJson = async (req, res) => {
   try {
     const props = await Property.find().sort({ createdAt: -1 }).lean();
     const buckets = splitIntoAdminBuckets(props);
-
     res.json({ ok: true, ...buckets });
   } catch (err) {
     console.error('❌ List properties JSON error:', err);
@@ -365,23 +297,14 @@ exports.listPropertiesJson = async (req, res) => {
 exports.createProperty = async (req, res) => {
   try {
     let {
-      category,
-      title,
-      description,
-      price,
-      location,
-      suitableFor,
-      status,
-      sqft,
-      city,
-      state,
+      category, title, description, price, location, suitableFor,
+      status, sqft, city, state, locality, pincode, features,
+      searchTags, seoMetaDescription
     } = req.body;
 
     if (!category || !title || !price || !location) {
       const msg = 'Missing required fields';
-      return wantsJson(req)
-        ? res.status(400).json({ ok: false, error: msg })
-        : res.status(400).send(msg);
+      return wantsJson(req) ? res.status(400).json({ ok: false, error: msg }) : res.status(400).send(msg);
     }
 
     if ((!city || !state) && location) {
@@ -390,57 +313,47 @@ exports.createProperty = async (req, res) => {
       if (!state && parts.length >= 2) state = parts[1];
     }
 
-    const suitableArr = suitableFor
-      ?.split(',')
-      .map((s) => s.trim())
-      .filter(Boolean);
+    const suitableArr = suitableFor?.split(',').map((s) => s.trim()).filter(Boolean) || [];
+    const featuresArr = features?.split(',').map((s) => s.trim()).filter(Boolean) || [];
+    const searchTagsArr = searchTags?.split(',').map((s) => s.trim()).filter(Boolean) || [];
 
-    const uploads = (file) => `/uploads/${file.filename}`;
-
-    const map3dFile = req.files?.map3dFile?.[0]
-      ? uploads(req.files.map3dFile[0])
-      : null;
-    const virtualTourFile = req.files?.virtualTourFile?.[0]
-      ? uploads(req.files.virtualTourFile[0])
-      : null;
-
-    const imageArr =
-      req.files?.images?.slice(0, 10).map((f) => uploads(f)) || [];
-    const videoArr =
-      req.files?.videos?.slice(0, 10).map((f) => uploads(f)) || [];
+    // Optimize Files
+    console.log('⏳ Optimizing media files...');
+    const optimizedMedia = await processUploads(req.files || {});
+    console.log('✅ Optimization complete');
 
     const property = await Property.create({
       category,
       title,
       description,
-      price,
+      price: Number(price),
       location,
       suitableFor: suitableArr,
+      features: featuresArr,
+      searchTags: searchTagsArr,
+      seoMetaDescription,
       status: status || 'available',
-      map3dUrl: map3dFile,
-      virtualTourUrl: virtualTourFile,
-      imageUrls: imageArr,
-      videoUrls: videoArr,
-      sqft,
+      map3dUrl: optimizedMedia.map3dUrl || null,
+      virtualTourUrl: optimizedMedia.virtualTourUrl || null,
+      imageUrls: optimizedMedia.imageUrls || [],
+      videoUrls: optimizedMedia.videoUrls || [],
+      builtupArea: sqft,
       city,
       state,
+      locality,
+      pincode
     });
 
     console.log(`✅ Property created: ${title} (ID: ${property.id})`);
+    notifyNewProperty(property).catch((err) => console.error('❌ Alert failed:', err.message));
 
-    notifyNewProperty(property).catch((err) => {
-      console.error('❌ Property alert send failed:', err.message);
-    });
-
-    if (wantsJson(req)) {
-      return res.status(201).json({ ok: true, property });
-    }
+    if (wantsJson(req)) return res.status(201).json({ ok: true, property });
     return res.redirect('/admin/dashboard?status=created');
   } catch (err) {
     console.error('❌ Create property error:', err);
     return wantsJson(req)
-      ? res.status(500).json({ ok: false, error: 'Failed to create property' })
-      : res.status(500).send('Failed to create property');
+      ? res.status(500).json({ ok: false, error: err.message })
+      : res.status(500).send(err.message);
   }
 };
 
@@ -448,10 +361,7 @@ exports.createProperty = async (req, res) => {
 exports.editForm = async (req, res) => {
   try {
     const property = await Property.findById(req.params.id).lean();
-
-    if (!property) {
-      return res.status(404).send('Property not found');
-    }
+    if (!property) return res.status(404).send('Property not found');
 
     const props = await Property.find().sort({ createdAt: -1 }).lean();
     const buckets = splitIntoAdminBuckets(props);
@@ -477,61 +387,55 @@ exports.updateProperty = async (req, res) => {
   try {
     const updates = { ...req.body };
 
-    if (updates.suitableFor) {
-      updates.suitableFor = updates.suitableFor
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
+    // Handle Checkboxes (HTML forms don't send 'unchecked', so we must check specifically)
+    // If not present in req.body, user might have unchecked it.
+    updates.active = req.body.active === 'on';
+    updates.featured = req.body.featured === 'on';
+
+    // Parse Comma-Separated Fields
+    if (typeof updates.suitableFor === 'string') {
+        updates.suitableFor = updates.suitableFor.split(',').map((s) => s.trim()).filter(Boolean);
+    }
+    if (typeof updates.features === 'string') {
+        updates.features = updates.features.split(',').map((s) => s.trim()).filter(Boolean);
+    }
+    if (typeof updates.searchTags === 'string') {
+        updates.searchTags = updates.searchTags.split(',').map((s) => s.trim()).filter(Boolean);
     }
 
-    const uploads = (file) => `/uploads/${file.filename}`;
-
-    if (req.files?.map3dFile?.[0]) {
-      updates.map3dUrl = uploads(req.files.map3dFile[0]);
+    let optimizedMedia = {};
+    if (req.files && Object.keys(req.files).length > 0) {
+      console.log('⏳ Optimizing new media files for update...');
+      optimizedMedia = await processUploads(req.files);
     }
 
-    if (req.files?.virtualTourFile?.[0]) {
-      updates.virtualTourUrl = uploads(req.files.virtualTourFile[0]);
+    if (optimizedMedia.map3dUrl) updates.map3dUrl = optimizedMedia.map3dUrl;
+    if (optimizedMedia.virtualTourUrl) updates.virtualTourUrl = optimizedMedia.virtualTourUrl;
+
+    const currentProp = await Property.findById(req.params.id);
+    
+    // Append new media to existing media
+    if (optimizedMedia.imageUrls && optimizedMedia.imageUrls.length > 0) {
+      updates.imageUrls = currentProp ? [...currentProp.imageUrls, ...optimizedMedia.imageUrls] : optimizedMedia.imageUrls;
     }
 
-    if (req.files?.images) {
-      const newImgs = req.files.images.map((f) => uploads(f));
-      updates.imageUrls = updates.imageUrls
-        ? [...updates.imageUrls, ...newImgs]
-        : newImgs;
+    if (optimizedMedia.videoUrls && optimizedMedia.videoUrls.length > 0) {
+      updates.videoUrls = currentProp ? [...currentProp.videoUrls, ...optimizedMedia.videoUrls] : optimizedMedia.videoUrls;
     }
 
-    if (req.files?.videos) {
-      const newVids = req.files.videos.map((f) => uploads(f));
-      updates.videoUrls = updates.videoUrls
-        ? [...updates.videoUrls, ...newVids]
-        : newVids;
-    }
-
-    const property = await Property.findByIdAndUpdate(
-      req.params.id,
-      updates,
-      { new: true, runValidators: true }
-    ).lean();
+    const property = await Property.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true }).lean();
 
     if (!property) {
       const msg = 'Property not found';
-      return wantsJson(req)
-        ? res.status(404).json({ ok: false, error: msg })
-        : res.status(404).send(msg);
+      return wantsJson(req) ? res.status(404).json({ ok: false, error: msg }) : res.status(404).send(msg);
     }
 
     console.log(`✅ Property updated: ${property.title}`);
-
-    if (wantsJson(req)) {
-      return res.json({ ok: true, property });
-    }
+    if (wantsJson(req)) return res.json({ ok: true, property });
     return res.redirect('/admin/dashboard?status=updated');
   } catch (err) {
     console.error('❌ Update property error:', err);
-    return wantsJson(req)
-      ? res.status(500).json({ ok: false, error: 'Update failed' })
-      : res.status(500).send('Update failed');
+    return wantsJson(req) ? res.status(500).json({ ok: false, error: 'Update failed' }) : res.status(500).send('Update failed');
   }
 };
 
@@ -539,24 +443,15 @@ exports.updateProperty = async (req, res) => {
 exports.deleteProperty = async (req, res) => {
   try {
     const property = await Property.findByIdAndDelete(req.params.id).lean();
-
     if (!property) {
       const msg = 'Property not found';
-      return wantsJson(req)
-        ? res.status(404).json({ ok: false, error: msg })
-        : res.status(404).send(msg);
+      return wantsJson(req) ? res.status(404).json({ ok: false, error: msg }) : res.status(404).send(msg);
     }
-
     console.log(`🗑️ Property deleted: ${property.title}`);
-
-    if (wantsJson(req)) {
-      return res.json({ ok: true, id: property._id });
-    }
+    if (wantsJson(req)) return res.json({ ok: true, id: property._id });
     return res.redirect('/admin/dashboard?status=deleted');
   } catch (err) {
     console.error('❌ Delete property error:', err);
-    return wantsJson(req)
-      ? res.status(500).json({ ok: false, error: 'Delete failed' })
-      : res.status(500).send('Delete failed');
+    return wantsJson(req) ? res.status(500).json({ ok: false, error: 'Delete failed' }) : res.status(500).send('Delete failed');
   }
 };

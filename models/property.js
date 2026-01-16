@@ -19,6 +19,8 @@ const propertySchema = new mongoose.Schema(
 
     location: { type: String, required: true },
     suitableFor: [String],
+    
+    features: [String],
 
     status: {
       type: String,

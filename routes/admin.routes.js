@@ -1,36 +1,77 @@
 // routes/admin.routes.js
 const express = require('express');
 const router = express.Router();
+const fs = require('fs');
+const path = require('path');
+const multer = require('multer');
 
 const adminController = require('../controllers/admin.controller');
 const authAdmin = require('../middleware/authAdmin');
-const multer = require('multer');
 
 /**
  * ====================== MULTER CONFIG ======================
- * Stores uploaded files in /public/uploads with unique filenames.
  */
+
+// 1. Ensure upload directory exists
+const uploadDir = path.join(__dirname, '..', 'public', 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// 2. Storage configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Ensure /public/uploads exists
     cb(null, 'public/uploads');
   },
   filename: (req, file, cb) => {
     const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    const ext = file.originalname.split('.').pop();
-    cb(null, `${unique}.${ext}`);
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `${file.fieldname}-${unique}${ext}`);
   },
 });
 
-const upload = multer({ storage });
+// 3. File Filter (Security)
+const fileFilter = (req, file, cb) => {
+  const ext = path.extname(file.originalname).toLowerCase();
+
+  // Validate 3D Models
+  if (file.fieldname === 'map3dFile') {
+    const allowedExts = ['.glb', '.gltf'];
+    const allowedMimes = ['model/gltf-binary', 'model/gltf+json', 'application/octet-stream'];
+    
+    if (!allowedExts.includes(ext) && !allowedMimes.includes(file.mimetype)) {
+      return cb(new Error('Only .glb and .gltf 3D model files are allowed'), false);
+    }
+  }
+  
+  // Validate Images
+  else if (file.fieldname === 'images') {
+    if (!file.mimetype.startsWith('image/')) {
+      return cb(new Error('Only image files are allowed'), false);
+    }
+  }
+
+  // Validate Videos
+  else if (file.fieldname === 'videos' || file.fieldname === 'virtualTourFile') {
+    if (!file.mimetype.startsWith('video/')) {
+      return cb(new Error('Only video files are allowed'), false);
+    }
+  }
+
+  cb(null, true);
+};
+
+// 4. Initialize Multer with 500MB Limit (FIXED HERE)
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 500 * 1024 * 1024 // Increased to 500MB
+  }
+});
 
 /**
- * Accept multiple named file fields from the admin property form.
- * name attributes in EJS must match:
- *  - map3dFile
- *  - virtualTourFile
- *  - images
- *  - videos
+ * Field Configuration
  */
 const uploadFields = upload.fields([
   { name: 'map3dFile', maxCount: 1 },
@@ -40,46 +81,20 @@ const uploadFields = upload.fields([
 ]);
 
 /**
- * ====================== PUBLIC ADMIN ROUTES ======================
- * Mounted at /admin in index.js:
- *  - GET  /admin/login
- *  - POST /admin/login
- *  - POST /admin/login/verify
- *  - GET  /admin/logout
+ * ====================== ROUTES ======================
  */
 
-// Login page (email + password + OTP flow)
+// Auth Routes
 router.get('/login', adminController.showLogin);
-
-// Step 1: email + password (POST /admin/login)
 router.post('/login', adminController.loginStep1);
-
-// Step 2: verify OTP (POST /admin/login/verify)
 router.post('/login/verify', adminController.loginVerify);
-
-// Logout (clears session, then redirect to /)
 router.get('/logout', adminController.logoutAdmin);
 
-/**
- * ====================== PROTECTED ADMIN ROUTES ======================
- * All routes below require req.session.isAdmin === true via authAdmin middleware.
- *
- * Mounted at /admin in index.js:
- *  - GET    /admin/dashboard
- *  - GET    /admin/properties/json
- *  - POST   /admin/properties/new
- *  - GET    /admin/properties/:id/edit
- *  - POST   /admin/properties/:id/update
- *  - POST   /admin/properties/:id/delete
- */
-
-// Dashboard (EJS view)
+// Dashboard & Property Routes
 router.get('/dashboard', authAdmin, adminController.dashboard);
-
-// JSON list for SPA dashboard / AJAX usage
 router.get('/properties/json', authAdmin, adminController.listPropertiesJson);
 
-// Create property (supports files, returns JSON or redirect)
+// Create Property (Apply upload middleware)
 router.post(
   '/properties/new',
   authAdmin,
@@ -87,14 +102,8 @@ router.post(
   adminController.createProperty
 );
 
-// Edit property view (optional, if navigating by URL)
-router.get(
-  '/properties/:id/edit',
-  authAdmin,
-  adminController.editForm
-);
-
-// Update property (supports files, returns JSON or redirect)
+// Edit & Update
+router.get('/properties/:id/edit', authAdmin, adminController.editForm);
 router.post(
   '/properties/:id/update',
   authAdmin,
@@ -102,11 +111,7 @@ router.post(
   adminController.updateProperty
 );
 
-// Delete property (returns JSON or redirect)
-router.post(
-  '/properties/:id/delete',
-  authAdmin,
-  adminController.deleteProperty
-);
+// Delete
+router.post('/properties/:id/delete', authAdmin, adminController.deleteProperty);
 
 module.exports = router;
