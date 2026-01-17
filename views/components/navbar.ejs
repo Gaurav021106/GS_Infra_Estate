@@ -1,14 +1,12 @@
-<!-- navbar.ejs -->
 <nav class="m-0 w-full fixed top-0 left-0 right-0 z-50
            rounded-none bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-50
            flex items-center justify-between px-4 md:px-6 py-3 md:py-3.5
            animate-slideInDown">
- <!-- Logo + brand -->
  <div class="flex items-center">
    <a href="/" class="nav-link">
      <div class="flex items-center gap-2.5">
        <img src="/images/logo.jpg" alt="Logo" loading="lazy" class="w-12 h-12 md:w-14 md:h-14 rounded-xl shadow-sm
-                transform transition-all duration-300 hover:scale-105 hover:shadow-md" />
+             transform transition-all duration-300 hover:scale-105 hover:shadow-md" />
      </div>
    </a>
    <h1 class="font-bold text-base md:text-xl text-gray-900 ml-1.5 md:ml-3
@@ -17,13 +15,12 @@
    </h1>
  </div>
 
- <!-- Center links (desktop) -->
  <div class="hidden md:flex items-center gap-1.5 animate-fadeIn animation-delay-200">
    <a href="/" class="mx-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium text-gray-700 nav-link
               hover:text-blue-600 hover:bg-blue-50/80 hover:shadow-sm
               transition-all duration-200 hover:-translate-y-0.5">Home</a>
 
-     <a href="#property" class="mx-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium text-gray-700 nav-link
+   <a href="#property" class="mx-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium text-gray-700 nav-link
                 hover:text-blue-600 hover:bg-blue-50/80 hover:shadow-sm
                 transition-all duration-200 hover:-translate-y-0.5">Properties</a>
   
@@ -38,7 +35,6 @@
               transition-all duration-200 hover:-translate-y-0.5">Contact</a>
  </div>
 
- <!-- Mobile dropdown -->
  <div class="relative md:hidden animate-fadeIn animation-delay-300">
    <button id="profileDropdownBtn" class="group inline-flex items-center gap-1.5 px-3 py-2 rounded-full border border-gray-200
               bg-white/95 text-gray-700 text-sm font-medium hover:bg-gray-50/80 
@@ -56,8 +52,7 @@
      <a href="/" class="block px-4 py-2.5 text-gray-700 hover:text-blue-600 hover:bg-blue-50/80 nav-link
                 font-medium transition-all duration-200 border-b border-gray-50 last:border-b-0">🏠 Home</a>
      
-
-       <a href="#property" class="block px-4 py-2.5 text-gray-700 hover:text-blue-600 hover:bg-blue-50/80 nav-link
+     <a href="#property" class="block px-4 py-2.5 text-gray-700 hover:text-blue-600 hover:bg-blue-50/80 nav-link
                   font-medium transition-all duration-200 border-b border-gray-50 last:border-b-0">🏘️ Properties</a>
      
      <a href="#about" class="block px-4 py-2.5 text-gray-700 hover:text-blue-600 hover:bg-blue-50/80 nav-link
@@ -70,7 +65,6 @@
  </div>
 </nav>
 
-<!-- Animations CSS -->
 <style>
   @keyframes slideInDown {
     0% { transform: translateY(-100%); opacity: 0; }
@@ -99,5 +93,4 @@
   }
 </style>
 
-<!-- LOAD SCRIPT -->
 <script src="/javascripts/spa-nav.js"></script>

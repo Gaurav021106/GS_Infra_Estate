@@ -3,7 +3,13 @@ const path = require('path');
 const sharp = require('sharp');
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
-const Property = require('../models/property'); // Required for background updates
+const Property = require('../models/property');
+
+// ======================= MEMORY OPTIMIZATION =======================
+// 1. Disable Sharp's internal cache to prevent heap spikes
+sharp.cache(false);
+// 2. Limit Sharp to 1 thread to play nice with shared vCPU
+sharp.concurrency(1);
 
 // Set the path to the ffmpeg binary
 ffmpeg.setFfmpegPath(ffmpegPath);
@@ -13,7 +19,8 @@ ffmpeg.setFfmpegPath(ffmpegPath);
  */
 const deleteFile = (filePath) => {
   fs.unlink(filePath, (err) => {
-    if (err) console.error(`⚠️ Failed to delete original file: ${filePath}`, err.message);
+    // Ignore ENOENT (file not found) errors
+    if (err && err.code !== 'ENOENT') console.error(`⚠️ Failed to delete original file: ${filePath}`, err.message);
   });
 };
 
@@ -54,12 +61,13 @@ const optimizeImage = async (filePath) => {
     const name = path.basename(filePath, ext);
     const optimizedPath = path.join(dir, `${name}-opt.webp`);
 
+    // [MEMORY] Resize with 'inside' avoids complex cropping memory usage
     await sharp(filePath)
       .resize(1920, 1920, { 
         fit: 'inside',
         withoutEnlargement: true 
       })
-      .webp({ quality: 75, effort: 4 })
+      .webp({ quality: 75, effort: 3 }) // Effort 3 balances speed vs compression
       .toFile(optimizedPath);
 
     // Remove original after optimization
@@ -88,9 +96,9 @@ const optimizeVideo = (filePath) => {
       .size('?x720')
       .outputOptions([
         '-crf 28',
-        '-preset veryfast',
+        '-preset veryfast', // 'veryfast' uses less CPU than default
         '-movflags +faststart',
-        '-an'
+        '-an' // Strip audio to save space (remove this line if audio is needed)
       ])
       .on('end', () => {
         deleteFile(filePath);
@@ -106,9 +114,7 @@ const optimizeVideo = (filePath) => {
 
 /**
  * Background Optimization Task
- * - Processes images in PARALLEL (Fast)
- * - Processes videos SEQUENTIALLY (Safe for CPU)
- * - Updates MongoDB automatically
+ * OPTIMIZATION: Processes ALL media sequentially to minimize RAM usage.
  */
 const optimizeBackground = async (propertyId, files) => {
   console.log(`🚀 Starting background optimization for Property ID: ${propertyId}`);
@@ -118,27 +124,38 @@ const optimizeBackground = async (propertyId, files) => {
   const pushQueries = {}; // To add optimized URLs
 
   try {
-    // 1. Process Images (Parallel)
+    // 1. Process Images (SEQUENTIAL LOOP)
     if (files.images && files.images.length > 0) {
-      console.log(`🖼️ Optimizing ${files.images.length} images in background...`);
+      console.log(`🖼️ Optimizing ${files.images.length} images...`);
       
       const rawUrls = files.images.map(f => `/uploads/${f.filename}`);
-      const optimizedPaths = await Promise.all(files.images.map(file => optimizeImage(file.path)));
+      const optimizedPaths = [];
+
+      // Use for...of to process one by one
+      for (const file of files.images) {
+        // [MEMORY] Trigger GC before heavy operation if exposed
+        if (global.gc) global.gc();
+
+        const result = await optimizeImage(file.path);
+        optimizedPaths.push(result);
+      }
+
       const optimizedUrls = optimizedPaths.map(p => `/uploads/${path.basename(p)}`);
 
-      // Prepare DB operations
       pullQueries.imageUrls = { $in: rawUrls };
       pushQueries.imageUrls = { $each: optimizedUrls };
     }
 
-    // 2. Process Videos (Sequential to save CPU)
+    // 2. Process Videos (SEQUENTIAL LOOP)
     if (files.videos && files.videos.length > 0) {
-      console.log(`🎥 Optimizing ${files.videos.length} videos in background...`);
+      console.log(`🎥 Optimizing ${files.videos.length} videos...`);
       
       const rawUrls = files.videos.map(f => `/uploads/${f.filename}`);
       const optimizedUrls = [];
       
       for (const file of files.videos) {
+        if (global.gc) global.gc();
+        
         const newPath = await optimizeVideo(file.path);
         optimizedUrls.push(`/uploads/${path.basename(newPath)}`);
       }
@@ -155,42 +172,35 @@ const optimizeBackground = async (propertyId, files) => {
       updates.virtualTourUrl = `/uploads/${path.basename(newPath)}`;
     }
 
-    // 4. Execute DB Updates
-    const dbOps = [];
-
-    // If we have simple updates (virtual tour)
-    if (Object.keys(updates).length > 0) {
-      dbOps.push(Property.findByIdAndUpdate(propertyId, { $set: updates }));
-    }
-
-    // If we have arrays to update (images/videos) - We use $pull then $push to replace
-    // Note: We use bulkWrite or separate updates. For simplicity, we do separate updates.
-    if (pullQueries.imageUrls) {
-      // We perform a "Swap" operation: remove old, add new.
-      // Ideally, we'd just set the array if it was a create, but for updates, this is safer.
+    // 4. Execute DB Updates safely
+    if (pullQueries.imageUrls || pullQueries.videoUrls || Object.keys(updates).length > 0) {
       const prop = await Property.findById(propertyId);
       if (prop) {
-        // Filter out raw URLs and add optimized ones
-        let newImages = prop.imageUrls.filter(url => !pullQueries.imageUrls.$in.includes(url));
-        newImages = [...newImages, ...pushQueries.imageUrls.$each];
         
-        let newVideos = prop.videoUrls.filter(url => !pullQueries.videoUrls?.$in.includes(url));
-        if (pushQueries.videoUrls) {
-          newVideos = [...newVideos, ...pushQueries.videoUrls.$each];
+        // Handle Images
+        if (pullQueries.imageUrls) {
+          // Filter out the raw URLs we just processed
+          prop.imageUrls = prop.imageUrls.filter(url => !pullQueries.imageUrls.$in.includes(url));
+          // Add the new optimized URLs
+          prop.imageUrls.push(...pushQueries.imageUrls.$each);
         }
 
-        prop.imageUrls = newImages;
-        prop.videoUrls = newVideos;
+        // Handle Videos
+        if (pullQueries.videoUrls) {
+          prop.videoUrls = prop.videoUrls.filter(url => !pullQueries.videoUrls.$in.includes(url));
+          prop.videoUrls.push(...pushQueries.videoUrls.$each);
+        }
+        
         if (updates.virtualTourUrl) prop.virtualTourUrl = updates.virtualTourUrl;
         
         await prop.save();
       }
-    } else if (Object.keys(updates).length > 0) {
-        // Just save the simple updates if no arrays involved
-        await Property.findByIdAndUpdate(propertyId, updates);
     }
 
     console.log(`✅ Background optimization complete for Property: ${propertyId}`);
+    
+    // [MEMORY] Final cleanup
+    if (global.gc) global.gc();
 
   } catch (err) {
     console.error('❌ Background optimization failed:', err);

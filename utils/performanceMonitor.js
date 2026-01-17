@@ -4,9 +4,13 @@ const path = require('path');
 /**
  * PerformanceMonitor Class
  * Tracks request times, database queries, memory usage, and error rates
+ * Optimized for minimal memory footprint.
  */
 class PerformanceMonitor {
   constructor() {
+    // [MEMORY FIX] Strict limit on history size
+    this.HISTORY_LIMIT = 100; 
+    
     this.metrics = {
       requestCount: 0,
       responseTime: [],
@@ -36,10 +40,10 @@ class PerformanceMonitor {
   recordRequest(duration, statusCode = 200) {
     this.metrics.requestCount++;
     this.metrics.responseTime.push(duration);
-    this.metrics.timestamps.push(new Date().toISOString());
+    this.metrics.timestamps.push(Date.now()); // Store timestamp as number
     
-    // Keep only last 1000 records for memory efficiency
-    if (this.metrics.responseTime.length > 1000) {
+    // [MEMORY FIX] Keep history small
+    if (this.metrics.responseTime.length > this.HISTORY_LIMIT) {
       this.metrics.responseTime.shift();
       this.metrics.timestamps.shift();
     }
@@ -53,14 +57,15 @@ class PerformanceMonitor {
   // ============ DATABASE MONITORING ============
   
   recordDBQuery(duration, collection = 'unknown', operation = 'query') {
+    // [MEMORY FIX] Use short keys to save memory
     this.metrics.dbQueryTime.push({
-      duration,
-      collection,
-      operation,
-      timestamp: new Date().toISOString()
+      d: duration,
+      c: collection,
+      op: operation,
+      t: Date.now()
     });
     
-    if (this.metrics.dbQueryTime.length > 1000) {
+    if (this.metrics.dbQueryTime.length > this.HISTORY_LIMIT) {
       this.metrics.dbQueryTime.shift();
     }
   }
@@ -73,12 +78,10 @@ class PerformanceMonitor {
       this.metrics.memoryUsage.push({
         heapUsed: (memUsage.heapUsed / 1024 / 1024).toFixed(2),
         heapTotal: (memUsage.heapTotal / 1024 / 1024).toFixed(2),
-        external: (memUsage.external / 1024 / 1024).toFixed(2),
-        rss: (memUsage.rss / 1024 / 1024).toFixed(2),
         timestamp: new Date().toISOString()
       });
       
-      // Keep last 60 records (1 per minute if interval is 60s)
+      // Keep last 60 records
       if (this.metrics.memoryUsage.length > 60) {
         this.metrics.memoryUsage.shift();
       }
@@ -118,14 +121,15 @@ class PerformanceMonitor {
 
   getAverageDBQueryTime() {
     if (this.metrics.dbQueryTime.length === 0) return 0;
-    const sum = this.metrics.dbQueryTime.reduce((total, item) => total + item.duration, 0);
+    // [MEMORY FIX] Access 'd' instead of 'duration'
+    const sum = this.metrics.dbQueryTime.reduce((total, item) => total + item.d, 0);
     return (sum / this.metrics.dbQueryTime.length).toFixed(2);
   }
 
   getSlowQueries(threshold = 100) {
     return this.metrics.dbQueryTime
-      .filter(query => query.duration > threshold)
-      .sort((a, b) => b.duration - a.duration)
+      .filter(query => query.d > threshold)
+      .sort((a, b) => b.d - a.d)
       .slice(0, 10);
   }
 
@@ -179,6 +183,9 @@ class PerformanceMonitor {
     }
     
     logs.push(metrics);
+    // Keep log file from growing infinitely (keep last 1000 entries)
+    if (logs.length > 1000) logs = logs.slice(-1000);
+
     fs.writeFileSync(logPath, JSON.stringify(logs, null, 2));
     
     console.log(`
@@ -189,11 +196,6 @@ class PerformanceMonitor {
     ║  Errors: ${metrics.requests.errors.toString().padEnd(33)} ║
     ║  Error Rate: ${metrics.requests.errorRate.padEnd(31)} ║
     ║  Avg Response: ${metrics.responseTime.avg.padEnd(30)} ║
-    ║  Median Response: ${metrics.responseTime.median.padEnd(27)} ║
-    ║  P95 Response: ${metrics.responseTime.p95.padEnd(30)} ║
-    ║  P99 Response: ${metrics.responseTime.p99.padEnd(30)} ║
-    ║  Avg DB Query: ${metrics.database.avgQueryTime.padEnd(30)} ║
-    ║  Slow Queries: ${metrics.database.slowQueries.toString().padEnd(30)} ║
     ║  Memory (Heap): ${metrics.memory.current?.heapUsed || 'N/A'.padEnd(28)} MB ║
     ╚════════════════════════════════════════╝
     `);

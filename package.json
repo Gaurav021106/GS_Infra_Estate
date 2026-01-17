@@ -4,9 +4,9 @@
   "description": "Real estate website for GS Infra & Estates - flats, plots, and agricultural land in Uttarakhand",
   "main": "index.js",
   "scripts": {
-    "start": "node --max-old-space-size=512 index.js",
+    "start": "node --max-old-space-size=384 index.js",
     "dev": "nodemon --watch . --ext js,json --ignore public/ index.js",
-    "prod": "NODE_ENV=production node --max-old-space-size=1024 index.js",
+    "prod": "NODE_ENV=production node --max-old-space-size=384 index.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint . --ext .js",

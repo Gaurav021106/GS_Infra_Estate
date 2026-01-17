@@ -1,7 +1,6 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <!-- Google Tag Manager (gtag.js) - Primary GA4 Property -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-KKDNYYE9YY"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -10,29 +9,24 @@
     gtag('config', 'G-KKDNYYE9YY');
   </script>
 
-  <!-- Essential Meta Tags -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Favicon -->
   <link rel="icon" type="image/jpeg" href="/images/logo.jpg" />
 
-  <!-- Primary SEO Meta Tags -->
   <title>GS Infra & Estate – Residential, Commercial, Industrial & Agricultural Properties in Dehradun, Rishikesh & Haridwar</title>
   <meta name="description" content="GS Infra & Estate is a real estate agency dealing in residential flats, plots, villas, commercial spaces, industrial properties and agricultural land across Dehradun, Rishikesh & Haridwar in Uttarakhand." />
   <meta name="keywords" content="real estate Dehradun, real estate Rishikesh, real estate Haridwar, buy property Dehradun, buy property Rishikesh, buy property Haridwar, residential flats, commercial property, industrial property, agricultural land, plots, houses" />
   <meta name="author" content="GS Infra & Estate" />
   <meta name="robots" content="index, follow" />
-  <!-- Canonical URL -->
+  
   <link rel="canonical" href="https://www.gsinfraandestate.com/" />
 
-  <!-- Open Graph / Social Meta -->
   <meta property="og:title" content="GS Infra & Estate – Properties in Dehradun, Rishikesh & Haridwar" />
   <meta property="og:description" content="Search verified residential, commercial, industrial and agricultural properties in Dehradun, Rishikesh & Haridwar with GS Infra & Estate." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://www.gsinfraandestate.com/" />
 
-  <!-- Organization Schema -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -47,7 +41,6 @@
   }
   </script>
 
-  <!-- RealEstateAgent Schema -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -68,29 +61,22 @@
       "addressRegion": "Uttarakhand",
       "addressCountry": "IN"
     },
-    "telephone": "+91-XXXXXXXXXX"
+    "telephone": "+91-8279702969"
   }
   </script>
 
-  <!-- Tailwind CSS & Fonts -->
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link href="https://fonts.cdnfonts.com/css/instrument-serif" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Italiana&display=swap" rel="stylesheet">
 
-  <!-- Global Styles -->
   <style>
     :root {
       --global-transition-delay: 150ms;
       --global-transition-duration: 150ms;
     }
 
-    .heading {
-      font-family: 'Italiana', serif;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
+    .heading { font-family: 'Italiana', serif; }
+    html { scroll-behavior: smooth; }
 
     a, button, input, textarea, select, img, .heading {
       transition-delay: var(--global-transition-delay);
@@ -120,7 +106,23 @@
     }
   </style>
 
-  <!-- SPA Navigation Script (GA4 Compatible) -->
-   
-</head>
+  <script>
+    /**
+     * Dismisses global alerts/flash messages
+     * Looks for elements with role="alert" or class "alert-dismissible"
+     */
+    window.dismissAlert = function() {
+      const alerts = document.querySelectorAll('[role="alert"], .alert-dismissible');
+      alerts.forEach(el => {
+        el.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+          if (el && el.parentNode) el.remove();
+        }, 300);
+      });
+    };
+  </script>
+
+  </head>
 <body>

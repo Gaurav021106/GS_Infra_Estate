@@ -79,14 +79,13 @@
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
 
-    <div id="alertBanner" class="relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-900 shadow-lg shadow-indigo-200/50 transition-all duration-500 ease-out">
+    <div id="alertBanner" class="relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-900 shadow-lg shadow-indigo-200/50 transition-all duration-500 ease-out transform translate-y-0 opacity-100">
       
       <button 
         type="button" 
         onclick="dismissAlert()" 
         class="absolute top-2 right-2 z-20 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-indigo-100 hover:text-white transition-all backdrop-blur-sm"
-        aria-label="Close alert"
-      >
+        aria-label="Close alert" >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
         </svg>
@@ -97,7 +96,7 @@
       
       <div id="alertContentWrapper" class="relative">
         
-        <div id="subscriptionState" class="flex flex-col md:flex-row items-center justify-between p-4 md:p-5 gap-4">
+        <div id="subscriptionState" class="flex flex-col md:flex-row items-center justify-between p-4 md:p-5 gap-4 transition-opacity duration-300">
           <div class="text-center md:text-left space-y-1 max-w-xl">
             <h2 class="text-lg md:text-xl font-bold text-white leading-tight">
               Get notified about new properties
@@ -117,13 +116,14 @@
                 class="w-full sm:w-72 px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-indigo-200 focus:outline-none focus:bg-white/20 focus:border-white/40 transition-all text-sm"
               >
               <button 
+                id="alertSubmitBtn"
                 type="submit" 
-                class="w-full sm:w-auto px-6 py-2.5 rounded-lg bg-white text-indigo-900 text-sm font-bold hover:bg-indigo-50 active:scale-95 transition-all shadow-md whitespace-nowrap"
+                class="w-full sm:w-auto px-6 py-2.5 rounded-lg bg-white text-indigo-900 text-sm font-bold hover:bg-indigo-50 active:scale-95 transition-all shadow-md whitespace-nowrap flex items-center justify-center"
               >
-                Subscribe
+                <span>Subscribe</span>
               </button>
             </div>
-            <p id="alertMessage" class="text-[10px] mt-1 ml-1 h-3 transition-all duration-300"></p>
+            <p id="alertMessage" class="text-[10px] mt-1 ml-1 h-3 transition-all duration-300 text-red-200"></p>
           </form>
         </div>
 
@@ -135,12 +135,13 @@
            </div>
            <h3 class="text-lg font-bold text-white mb-1">Subscribed!</h3>
            <p class="text-indigo-100 text-xs max-w-md">
-             You have successfully joined our mailing list.
+             Thank you for joining. We'll keep you updated.
            </p>
         </div>
 
       </div>
     </div>
+
     <div id="skeleton" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       <% for(let i=0;i<6;i++){ %>
       <div class="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
@@ -162,7 +163,7 @@
           const slug = `${slugTitle}-${p._id}`;
       %>
       <article
-        class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-indigo-100/50 transition-all duration-300 hover:-translate-y-1 flex flex-col overflow-hidden"
+        class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-indigo-100/50 transition-all duration-300 hover:-translate-y-1 flex flex-col overflow-hidden property-card"
         data-location="<%= p.location || '' %>"
         data-price="<%= p.price || 0 %>"
         data-id="<%= p._id %>"
@@ -239,7 +240,9 @@
     </section>
     <% } %>
 
-    <div id="resultsCount" class="hidden text-center text-sm text-gray-500 font-medium"></div>
+    <div id="resultsCount" class="hidden text-center text-sm text-gray-500 font-medium">
+      Showing <span id="countNum" class="font-bold text-gray-900">0</span> properties
+    </div>
     <div id="loadingSpinner" class="hidden flex justify-center py-8">
       <div class="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
     </div>
@@ -247,62 +250,214 @@
   </div>
 </main>
 
-<script src="/javascripts/property-listing.js"></script>
-
 <script>
-  // Function to dismiss the alert
-  function dismissAlert() {
+  (function () {
+  'use strict';
+
+  // ===================== BANNER LOGIC (FIXED) =====================
+  
+  // 1. Dismiss Function (Global to work with onclick)
+  window.dismissAlert = function() {
     const banner = document.getElementById('alertBanner');
-    banner.style.opacity = '0';
-    banner.style.transform = 'translateY(-10px)';
-    setTimeout(() => {
-        banner.remove();
-    }, 500); // Wait for transition to finish
+    if (banner) {
+        // Animation
+        banner.style.opacity = '0';
+        banner.style.transform = 'translateY(-10px)';
+        // Remove after animation
+        setTimeout(() => {
+            banner.style.display = 'none';
+        }, 500);
+    }
+  };
+
+  function initPropertyListing() {
+    // ===================== SELECTORS =====================
+    const searchInput     = document.getElementById('searchInput');
+    const searchBtn       = document.getElementById('searchBtn');
+    const priceFilter     = document.getElementById('priceFilter');
+    const typeFilter      = document.getElementById('typeFilter');
+    const resetFiltersBtn = document.getElementById('resetFilters');
+
+    // Result Counts & Loading State
+    const resultsCount    = document.getElementById('resultsCount');
+    const countNum        = document.getElementById('countNum');
+    const skeleton        = document.getElementById('skeleton');
+    const propertyGrid    = document.getElementById('propertyGrid');
+    const loadingSpinner  = document.getElementById('loadingSpinner');
+
+    // Alert Banner Selectors
+    const alertForm = document.getElementById('alertForm');
+    const alertMessage = document.getElementById('alertMessage');
+    const subscriptionState = document.getElementById('subscriptionState');
+    const successState = document.getElementById('successState');
+    const alertSubmitBtn = document.getElementById('alertSubmitBtn');
+
+    // ===================== IMMEDIATE DISPLAY FIX =====================
+    // Instantly hide skeleton and show grid if elements exist
+    if (skeleton) skeleton.style.display = 'none';
+    if (propertyGrid) propertyGrid.classList.remove('hidden');
+
+    // ===================== SUBSCRIPTION LOGIC =====================
+    if (alertForm) {
+        alertForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Get Email
+            const emailInput = alertForm.querySelector('input[name="email"]');
+            const email = emailInput.value.trim();
+            
+            if (!email) return;
+
+            // Loading UI
+            const originalBtnText = alertSubmitBtn.innerHTML;
+            alertSubmitBtn.innerHTML = '<span>Processing...</span>';
+            alertSubmitBtn.disabled = true;
+            alertMessage.textContent = '';
+
+            try {
+                const res = await fetch('/alerts/subscribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email }),
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    // SUCCESS STATE
+                    // 1. Hide Form, Show Success
+                    if(subscriptionState) subscriptionState.style.display = 'none';
+                    if(successState) {
+                        successState.classList.remove('hidden');
+                        successState.classList.add('flex');
+                    }
+                    
+                    // 2. Auto-Dismiss after 3 seconds
+                    setTimeout(() => {
+                        window.dismissAlert();
+                    }, 3000);
+
+                } else {
+                    // ERROR STATE
+                    alertMessage.textContent = data.message || 'Error subscribing. Try again.';
+                    alertSubmitBtn.innerHTML = originalBtnText;
+                    alertSubmitBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error(error);
+                alertMessage.textContent = 'Connection error. Please try again.';
+                alertSubmitBtn.innerHTML = originalBtnText;
+                alertSubmitBtn.disabled = false;
+            }
+        });
+    }
+
+    // ===================== FILTER LOGIC =====================
+    function applyFilters() {
+      if (loadingSpinner) loadingSpinner.classList.remove('hidden');
+      if (resultsCount) resultsCount.classList.add('hidden');
+
+      // Small timeout to allow UI to show spinner if calculation is heavy
+      setTimeout(() => {
+        // Get values safely
+        const searchTerm  = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        const selectedPrice = priceFilter ? priceFilter.value : '';
+        const selectedType  = typeFilter ? typeFilter.value.toLowerCase() : '';
+
+        const cards = document.querySelectorAll('.property-card');
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+          // 1. Extract Data from DOM
+          const title    = card.querySelector('h3')?.innerText.toLowerCase() || '';
+          const location = (card.dataset.location || '').toLowerCase();
+          const price    = parseFloat(card.dataset.price || '0');
+          // Fallback for type matching if dataset isn't present
+          const cardText = card.innerText.toLowerCase(); 
+
+          // 2. Search Match (Title or Location)
+          const matchesSearch = !searchTerm || 
+                                title.includes(searchTerm) || 
+                                location.includes(searchTerm);
+
+          // 3. Price Match (Handling Lakhs conversion)
+          let matchesPrice = true;
+          if (selectedPrice) {
+            // Convert raw price to Lakhs (e.g., 5000000 -> 50)
+            const priceInLakhs = price / 100000;
+
+            if (selectedPrice === '100+') {
+              matchesPrice = priceInLakhs >= 100;
+            } else {
+              const [min, max] = selectedPrice.split('-').map(Number);
+              if (!isNaN(min)) {
+                matchesPrice = priceInLakhs >= min && (isNaN(max) ? true : priceInLakhs <= max);
+              }
+            }
+          }
+
+          // 4. Type Match
+          let matchesType = true;
+          if (selectedType) {
+             matchesType = cardText.includes(selectedType);
+          }
+
+          // 5. Toggle Visibility with Animation Reset
+          if (matchesSearch && matchesPrice && matchesType) {
+            card.style.display = 'flex';
+            visibleCount++;
+          } else {
+            card.style.display = 'none';
+          }
+        });
+
+        // Update Result Count UI
+        if (resultsCount && countNum) {
+          countNum.textContent = visibleCount;
+          resultsCount.classList.remove('hidden');
+        }
+        if (loadingSpinner) loadingSpinner.classList.add('hidden');
+      }, 50);
+    }
+
+    // ===================== EVENT LISTENERS =====================
+    if (searchInput) {
+      searchInput.addEventListener('input', applyFilters);
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          applyFilters();
+        }
+      });
+    }
+
+    if (searchBtn)    searchBtn.addEventListener('click', applyFilters);
+    if (priceFilter)  priceFilter.addEventListener('change', applyFilters);
+    if (typeFilter)   typeFilter.addEventListener('change', applyFilters);
+
+    if (resetFiltersBtn) {
+      resetFiltersBtn.addEventListener('click', () => {
+        if (searchInput) searchInput.value = '';
+        if (priceFilter) priceFilter.value = '';
+        if (typeFilter)  typeFilter.value = '';
+        // Reset all cards to visible
+        const cards = document.querySelectorAll('.property-card');
+        cards.forEach(card => card.style.display = 'flex');
+        applyFilters();
+      });
+    }
+
+    // Run once on init to ensure correct state
+    applyFilters();
   }
 
-  document.getElementById('alertForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const email = form.email.value;
-    const msgEl = document.getElementById('alertMessage');
-    const btn = form.querySelector('button');
-    const originalBtnText = btn.innerText;
-
-    // Reset UI
-    msgEl.className = 'text-[10px] mt-1 ml-1 h-3 transition-all duration-300';
-    msgEl.innerText = '';
-    btn.disabled = true;
-    btn.innerText = 'Sending...';
-
-    try {
-      const response = await fetch('/alerts/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // HIDE Form State, SHOW Success State
-        document.getElementById('subscriptionState').classList.add('hidden');
-        document.getElementById('successState').classList.remove('hidden');
-        document.getElementById('successState').classList.add('flex'); // Enable flex display
-        
-      } else {
-        msgEl.classList.add('text-red-300');
-        msgEl.innerText = '❌ ' + (data.message || 'Subscription failed');
-        btn.disabled = false;
-        btn.innerText = originalBtnText;
-      }
-    } catch (err) {
-      console.error(err);
-      msgEl.classList.add('text-red-300');
-      msgEl.innerText = '❌ Network error. Try again.';
-      btn.disabled = false;
-      btn.innerText = originalBtnText;
-    }
-  });
+  // ===================== SPA INITIALIZATION CHECK =====================
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPropertyListing);
+  } else {
+    initPropertyListing();
+  }
+})();
 </script>
 
 <%- include('../components/footer') %>
