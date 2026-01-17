@@ -1,13 +1,15 @@
 const { Resend } = require('resend');
 const AlertSubscriber = require('../models/AlertSubscriber');
 
+// Initialize Resend
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// OPTIONAL: health check
-resend.emails.list().then(() => {
-  console.log('\u2705 Resend API Connected Successfully (Alerts Service)');
+// OPTIONAL: Health check using domains.list() instead of emails.list()
+// This verifies your API key is valid by fetching your registered domains.
+resend.domains.list().then(() => {
+  console.log('✅ Resend API Connected Successfully (Alerts Service)');
 }).catch((err) => {
-  console.error('\u274c Resend API Connection Failed (Alerts Service):', err.message);
+  console.error('❌ Resend API Connection Failed (Alerts Service):', err.message);
 });
 
 // Send one email to multiple subscribers when a property is created
@@ -15,14 +17,18 @@ async function notifyNewProperty(property) {
   try {
     const subscribers = await AlertSubscriber.find({ active: true }).lean();
     if (!subscribers.length) {
-      console.log('\u2139\ufe0f No active subscribers, skipping alert email.');
+      console.log('ℹ️ No active subscribers, skipping alert email.');
       return;
     }
 
+    // Note: Resend "to" field accepts an array of strings, but there is a limit (usually 50).
+    // If you have many subscribers, you might need to loop or use BCC.
+    // For privacy, it is often better to send individually or use 'bcc' so users don't see each other's emails.
     const toList = subscribers.map(s => s.email);
 
-    const baseUrl = (process.env.APP_BASE_URL || '').replace(/\/$/, '');  // Replace with your actual URL
-const detailsUrl = `${baseUrl}/property/${property.slug}-${property._id}`;
+    const baseUrl = (process.env.APP_BASE_URL || '').replace(/\/$/, '');  
+    const detailsUrl = `${baseUrl}/property/${property.slug}-${property._id}`;
+    
     const html = `
       <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5; border-radius: 10px; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #0066cc 0%, #0080ff 100%); padding: 18px; border-radius: 10px 10px 0 0; text-align: center;">
@@ -38,7 +44,7 @@ const detailsUrl = `${baseUrl}/property/${property.slug}-${property._id}`;
             Location: <strong>${property.location}</strong>
           </p>
           <p style="font-size: 13px; color: #666; margin: 0 0 6px;">
-            Price: <strong>\u20b9${Number(property.price).toLocaleString('en-IN')}</strong>
+            Price: <strong>₹${Number(property.price).toLocaleString('en-IN')}</strong>
           </p>
           ${property.sqft ? `
           <p style="font-size: 13px; color: #666; margin: 0 0 6px;">
@@ -60,21 +66,23 @@ const detailsUrl = `${baseUrl}/property/${property.slug}-${property._id}`;
       </div>
     `;
 
+    // Sending via BCC to protect subscriber privacy is recommended if sending one bulk email
     const { data, error } = await resend.emails.send({
-      from: process.env.FROM_EMAIL,
-      to: toList,
+      from: process.env.FROM_EMAIL || 'onboarding@resend.dev', // Ensure you have a valid sender
+      to: 'noreply@yourdomain.com', // Dummy "to" address
+      bcc: toList, // Use BCC for the actual list
       subject: `New property listed: ${property.title}`,
       html
     });
 
     if (error) {
-      console.error('\u274c Property alert email error:', error);
+      console.error('❌ Property alert email error:', error);
       return;
     }
 
-    console.log(`\u2705 Property alert email sent to ${toList.length} subscribers. First ID: ${data?.id || 'N/A'}`);
+    console.log(`✅ Property alert email sent to ${toList.length} subscribers. First ID: ${data?.id || 'N/A'}`);
   } catch (err) {
-    console.error('\u274c notifyNewProperty failed:', err.message);
+    console.error('❌ notifyNewProperty failed:', err.message);
   }
 }
 

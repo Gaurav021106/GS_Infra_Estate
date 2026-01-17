@@ -293,7 +293,7 @@ if (process.env.MONGODB_URI) {
   try {
     sessionConfig.store = MongoStore.create({
       mongoUrl: process.env.MONGODB_URI,
-      collectionName: 'sessions',
+      collectionName: 'sessions_v2',
       ttl: 24 * 60 * 60,
       autoRemove: 'native',
       crypto: {

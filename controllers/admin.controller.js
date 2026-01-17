@@ -40,21 +40,6 @@ const generateOTP = () => {
   return otp;
 };
 
-// ======================= RESEND STARTUP TEST =============
-resend.emails
-  .list()
-  .then((listResult) => {
-    console.log('✅ Resend API Connected Successfully');
-    console.log('ℹ️ Resend list() sample total:', listResult?.data?.data?.length ?? 0);
-  })
-  .catch((err) => {
-    console.error('❌ Resend API Connection Failed:', {
-      name: err.name,
-      message: err.message,
-      code: err.code,
-      statusCode: err.statusCode,
-    });
-  });
 
 // ======================= SEND ADMIN OTP EMAIL ============
 async function sendOtpEmail(adminEmail, code) {
