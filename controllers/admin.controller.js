@@ -3,7 +3,8 @@ const Property = require('../models/property');
 const { Resend } = require('resend');
 const { notifyNewProperty } = require('../services/alertsService');
 const path = require('path');
-const { processUploads } = require('../utils/mediaOptimizer');
+// CHANGED: Use new helpers for background processing
+const { getRawUrls, optimizeBackground } = require('../utils/mediaOptimizer');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -52,7 +53,7 @@ async function sendOtpEmail(adminEmail, code) {
 
     const { data, error } = await resend.emails.send({
       from: process.env.FROM_EMAIL,
-      to: adminEmail, // Fixed: Use adminEmail parameter instead of env var
+      to: adminEmail,
       subject: '🔐 GS Infra Estates - Admin Login Verification',
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5; border-radius: 10px; max-width: 600px; margin: 0 auto;">
@@ -139,7 +140,6 @@ exports.loginStep1 = async (req, res) => {
       code,
       expiry: Date.now() + 10 * 60 * 1000,
       attempts: 0,
-      username: ADMINEMAIL,
     };
 
     await new Promise((resolve, reject) => {
@@ -269,7 +269,7 @@ exports.dashboard = async (req, res) => {
 // ======================= LIST PROPERTIES JSON ===========
 exports.listPropertiesJson = async (req, res) => {
   try {
-    const props = await Property.find().sort({ createdAt: -1 }).limit(1000).lean(); // Fixed: removed duplicate .lean()
+    const props = await Property.find().sort({ createdAt: -1 }).limit(1000).lean();
     const buckets = splitIntoAdminBuckets(props);
     res.json({ ok: true, ...buckets });
   } catch (err) {
@@ -278,7 +278,7 @@ exports.listPropertiesJson = async (req, res) => {
   }
 };
 
-// ======================= CREATE PROPERTY =================
+// ======================= CREATE PROPERTY (OPTIMIZED) =================
 exports.createProperty = async (req, res) => {
   try {
     let {
@@ -302,11 +302,10 @@ exports.createProperty = async (req, res) => {
     const featuresArr = features?.split(',').map((s) => s.trim()).filter(Boolean) || [];
     const searchTagsArr = searchTags?.split(',').map((s) => s.trim()).filter(Boolean) || [];
 
-    // Optimize Files
-    console.log('⏳ Optimizing media files...');
-    const optimizedMedia = await processUploads(req.files || {});
-    console.log('✅ Optimization complete');
+    // 1. GET RAW URLS (FAST) - Returns unoptimized paths instantly
+    const rawMedia = getRawUrls(req.files || {});
 
+    // 2. SAVE PROPERTY IMMEDIATELY using raw media
     const property = await Property.create({
       category,
       title,
@@ -318,10 +317,10 @@ exports.createProperty = async (req, res) => {
       searchTags: searchTagsArr,
       seoMetaDescription,
       status: status || 'available',
-      map3dUrl: optimizedMedia.map3dUrl || null,
-      virtualTourUrl: optimizedMedia.virtualTourUrl || null,
-      imageUrls: optimizedMedia.imageUrls || [],
-      videoUrls: optimizedMedia.videoUrls || [],
+      map3dUrl: rawMedia.map3dUrl,
+      virtualTourUrl: rawMedia.virtualTourUrl,
+      imageUrls: rawMedia.imageUrls,
+      videoUrls: rawMedia.videoUrls,
       builtupArea: sqft,
       city,
       state,
@@ -329,11 +328,24 @@ exports.createProperty = async (req, res) => {
       pincode
     });
 
-    console.log(`✅ Property created: ${title} (ID: ${property.id})`);
+    console.log(`✅ Property created (Raw): ${title} (ID: ${property.id})`);
+
+    // 3. SEND RESPONSE IMMEDIATELY
+    if (wantsJson(req)) {
+       res.status(201).json({ ok: true, property, message: "Property created. Media processing in background." });
+    } else {
+       res.redirect('/admin/dashboard?status=created');
+    }
+
+    // 4. TRIGGER BACKGROUND OPTIMIZATION (FIRE & FORGET)
+    if (req.files) {
+        // This runs asynchronously after response is sent
+        optimizeBackground(property._id, req.files);
+    }
+
+    // 5. Send Alert (Async)
     notifyNewProperty(property).catch((err) => console.error('❌ Alert failed:', err.message));
 
-    if (wantsJson(req)) return res.status(201).json({ ok: true, property });
-    return res.redirect('/admin/dashboard?status=created');
   } catch (err) {
     console.error('❌ Create property error:', err);
     return wantsJson(req)
@@ -348,7 +360,7 @@ exports.editForm = async (req, res) => {
     const property = await Property.findById(req.params.id).lean();
     if (!property) return res.status(404).send('Property not found');
 
-    const props = await Property.find().sort({ createdAt: -1 }).limit(1000).lean(); // Fixed: syntax errors
+    const props = await Property.find().sort({ createdAt: -1 }).limit(1000).lean();
     const buckets = splitIntoAdminBuckets(props);
 
     res.render('admin/dashboard', {
@@ -367,12 +379,12 @@ exports.editForm = async (req, res) => {
   }
 };
 
-// ======================= UPDATE PROPERTY =================
+// ======================= UPDATE PROPERTY (OPTIMIZED) =================
 exports.updateProperty = async (req, res) => {
   try {
     const updates = { ...req.body };
 
-    // Handle Checkboxes (HTML forms don't send 'unchecked', so we must check specifically)
+    // Handle Checkboxes
     updates.active = req.body.active === 'on';
     updates.featured = req.body.featured === 'on';
 
@@ -387,36 +399,44 @@ exports.updateProperty = async (req, res) => {
       updates.searchTags = updates.searchTags.split(',').map((s) => s.trim()).filter(Boolean);
     }
 
-    let optimizedMedia = {};
+    // 1. GET NEW RAW MEDIA
+    let rawMedia = { imageUrls: [], videoUrls: [], virtualTourUrl: null };
     if (req.files && Object.keys(req.files).length > 0) {
-      console.log('⏳ Optimizing new media files for update...');
-      optimizedMedia = await processUploads(req.files);
+      rawMedia = getRawUrls(req.files);
     }
 
-    if (optimizedMedia.map3dUrl) updates.map3dUrl = optimizedMedia.map3dUrl;
-    if (optimizedMedia.virtualTourUrl) updates.virtualTourUrl = optimizedMedia.virtualTourUrl;
-
+    // 2. FETCH CURRENT PROPERTY TO APPEND
     const currentProp = await Property.findById(req.params.id);
-    
-    // Append new media to existing media
-    if (optimizedMedia.imageUrls && optimizedMedia.imageUrls.length > 0) {
-      updates.imageUrls = currentProp ? [...currentProp.imageUrls, ...optimizedMedia.imageUrls] : optimizedMedia.imageUrls;
+    if (!currentProp) return res.status(404).send('Property not found');
+
+    if (rawMedia.map3dUrl) updates.map3dUrl = rawMedia.map3dUrl;
+    if (rawMedia.virtualTourUrl) updates.virtualTourUrl = rawMedia.virtualTourUrl;
+
+    // Append new raw files to existing ones (Images/Videos)
+    if (rawMedia.imageUrls.length > 0) {
+      updates.imageUrls = [...currentProp.imageUrls, ...rawMedia.imageUrls];
+    }
+    if (rawMedia.videoUrls.length > 0) {
+      updates.videoUrls = [...currentProp.videoUrls, ...rawMedia.videoUrls];
     }
 
-    if (optimizedMedia.videoUrls && optimizedMedia.videoUrls.length > 0) {
-      updates.videoUrls = currentProp ? [...currentProp.videoUrls, ...optimizedMedia.videoUrls] : optimizedMedia.videoUrls;
-    }
-
+    // 3. UPDATE DB IMMEDIATELY
     const property = await Property.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true }).lean();
 
-    if (!property) {
-      const msg = 'Property not found';
-      return wantsJson(req) ? res.status(404).json({ ok: false, error: msg }) : res.status(404).send(msg);
+    console.log(`✅ Property updated (Raw): ${property.title}`);
+
+    // 4. SEND RESPONSE
+    if (wantsJson(req)) {
+       res.json({ ok: true, property });
+    } else {
+       res.redirect('/admin/dashboard?status=updated');
     }
 
-    console.log(`✅ Property updated: ${property.title}`);
-    if (wantsJson(req)) return res.json({ ok: true, property });
-    return res.redirect('/admin/dashboard?status=updated');
+    // 5. TRIGGER BACKGROUND OPTIMIZATION
+    if (req.files && Object.keys(req.files).length > 0) {
+       optimizeBackground(property._id, req.files);
+    }
+
   } catch (err) {
     console.error('❌ Update property error:', err);
     return wantsJson(req) ? res.status(500).json({ ok: false, error: 'Update failed' }) : res.status(500).send('Update failed');

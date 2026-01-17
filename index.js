@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
-const MongoStore = require('connect-mongo'); // v4
+const MongoStore = require('connect-mongo');
 const path = require('path');
 const compression = require('compression');
 const helmet = require('helmet');
@@ -273,7 +273,17 @@ app.use(
   })
 );
 
-// ======================= SESSION CONFIGURATION =======================
+// ======================= SESSION CONFIGURATION (FIXED) =======================
+
+// 1. Detect if we are on localhost
+const isLocalhost = 
+  (process.env.HOST === 'localhost') || 
+  (process.env.HOST === '127.0.0.1') || 
+  (process.env.NODE_ENV !== 'production'); // Fallback: always secure false if not prod
+
+// 2. Only use secure cookies if production AND NOT localhost
+const shouldUseSecureCookies = isProd && !isLocalhost;
+
 const sessionConfig = {
   secret: process.env.SESSION_SECRET || 'fallback-secret-change-in-production',
   resave: false,
@@ -282,7 +292,7 @@ const sessionConfig = {
   cookie: {
     maxAge: 24 * 60 * 60 * 1000,
     httpOnly: true,
-    secure: isProd,
+    secure: shouldUseSecureCookies, // <--- FIXED HERE
     sameSite: 'lax',
   },
   rolling: true,
@@ -296,17 +306,11 @@ if (process.env.MONGODB_URI) {
       collectionName: 'sessions_v2',
       ttl: 24 * 60 * 60,
       autoRemove: 'native',
-      crypto: {
-        secret:
-          process.env.SESSION_SECRET || 'fallback-secret-change-in-production',
-      },
     });
     console.log('✅ MongoDB session store configured successfully');
   } catch (err) {
     console.error('❌ Session store error:', err.message);
-    console.warn(
-      '⚠️  Falling back to memory store (not recommended for production)'
-    );
+    console.warn('⚠️  Falling back to memory store (not recommended for production)');
   }
 } else {
   console.warn('⚠️  MONGODB_URI not found - using memory store');
@@ -378,7 +382,6 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
 });
 
 // ======================= 404 HANDLER =======================
-// Use single error view, not pages/404
 app.use((req, res) => {
   console.log(`⚠️  404 Not Found: ${req.method} ${req.originalUrl}`);
 
@@ -428,14 +431,22 @@ app.use((err, req, res, next) => {
 const gracefulShutdown = (signal) => {
   console.log(`\n⚠️  ${signal} signal received: closing HTTP server`);
 
-  server.close(() => {
-    console.log('✅ HTTP server closed');
-
-    mongoose.connection.close(false, () => {
-      console.log('✅ MongoDB connection closed');
-      process.exit(0);
+  if (server) {
+    server.close(() => {
+      console.log('✅ HTTP server closed');
+      mongoose.connection.close(false)
+        .then(() => {
+          console.log('✅ MongoDB connection closed');
+          process.exit(0);
+        })
+        .catch((err) => {
+          console.error('Error closing MongoDB connection:', err);
+          process.exit(1);
+        });
     });
-  });
+  } else {
+    process.exit(0);
+  }
 
   setTimeout(() => {
     console.error('⚠️  Forcing shutdown after timeout');
@@ -463,14 +474,13 @@ const server = app.listen(PORT, HOST, () => {
     }`
   );
   console.log(`🔒 Security: ✅ Helmet, Rate Limiting, Sanitization`);
+  console.log(`🍪 Cookies: ${shouldUseSecureCookies ? '🔒 Secure' : '🔓 Non-Secure (Localhost detected)'}`);
   console.log('='.repeat(70) + '\n');
 });
 
-// Handle shutdown signals
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
-// Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
   console.error('❌ UNCAUGHT EXCEPTION! Shutting down...');
   console.error(err.name, err.message);
@@ -478,14 +488,17 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
-// Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
   console.error('❌ UNHANDLED REJECTION! Shutting down...');
   console.error(err.name, err.message);
   console.error(err.stack);
-  server.close(() => {
+  if (server) {
+    server.close(() => {
+      process.exit(1);
+    });
+  } else {
     process.exit(1);
-  });
+  }
 });
 
 module.exports = app;
