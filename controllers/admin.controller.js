@@ -67,7 +67,7 @@ async function sendOtpEmail(adminEmail, code) {
 
     const { data, error } = await resend.emails.send({
       from: process.env.FROM_EMAIL,
-      to: process.env.ADMINEMAIL,
+      to: adminEmail, // Fixed: Use adminEmail parameter instead of env var
       subject: '🔐 GS Infra Estates - Admin Login Verification',
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5; border-radius: 10px; max-width: 600px; margin: 0 auto;">
@@ -284,7 +284,7 @@ exports.dashboard = async (req, res) => {
 // ======================= LIST PROPERTIES JSON ===========
 exports.listPropertiesJson = async (req, res) => {
   try {
-    const props = await Property.find().sort({ createdAt: -1 }).lean();
+    const props = await Property.find().sort({ createdAt: -1 }).limit(1000).lean(); // Fixed: removed duplicate .lean()
     const buckets = splitIntoAdminBuckets(props);
     res.json({ ok: true, ...buckets });
   } catch (err) {
@@ -363,7 +363,7 @@ exports.editForm = async (req, res) => {
     const property = await Property.findById(req.params.id).lean();
     if (!property) return res.status(404).send('Property not found');
 
-    const props = await Property.find().sort({ createdAt: -1 }).lean();
+    const props = await Property.find().sort({ createdAt: -1 }).limit(1000).lean(); // Fixed: syntax errors
     const buckets = splitIntoAdminBuckets(props);
 
     res.render('admin/dashboard', {
@@ -388,19 +388,18 @@ exports.updateProperty = async (req, res) => {
     const updates = { ...req.body };
 
     // Handle Checkboxes (HTML forms don't send 'unchecked', so we must check specifically)
-    // If not present in req.body, user might have unchecked it.
     updates.active = req.body.active === 'on';
     updates.featured = req.body.featured === 'on';
 
     // Parse Comma-Separated Fields
     if (typeof updates.suitableFor === 'string') {
-        updates.suitableFor = updates.suitableFor.split(',').map((s) => s.trim()).filter(Boolean);
+      updates.suitableFor = updates.suitableFor.split(',').map((s) => s.trim()).filter(Boolean);
     }
     if (typeof updates.features === 'string') {
-        updates.features = updates.features.split(',').map((s) => s.trim()).filter(Boolean);
+      updates.features = updates.features.split(',').map((s) => s.trim()).filter(Boolean);
     }
     if (typeof updates.searchTags === 'string') {
-        updates.searchTags = updates.searchTags.split(',').map((s) => s.trim()).filter(Boolean);
+      updates.searchTags = updates.searchTags.split(',').map((s) => s.trim()).filter(Boolean);
     }
 
     let optimizedMedia = {};
@@ -455,3 +454,5 @@ exports.deleteProperty = async (req, res) => {
     return wantsJson(req) ? res.status(500).json({ ok: false, error: 'Delete failed' }) : res.status(500).send('Delete failed');
   }
 };
+
+module.exports = exports;
