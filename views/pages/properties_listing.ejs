@@ -83,7 +83,7 @@
       
       <button 
         type="button" 
-        onclick="dismissAlert()" 
+        id="dismissAlertBtn" 
         class="absolute top-2 right-2 z-20 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-indigo-100 hover:text-white transition-all backdrop-blur-sm"
         aria-label="Close alert" >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -254,9 +254,9 @@
   (function () {
   'use strict';
 
-  // ===================== BANNER LOGIC (FIXED) =====================
+  // ===================== BANNER LOGIC =====================
   
-  // 1. Dismiss Function (Global to work with onclick)
+  // 1. Dismiss Function
   window.dismissAlert = function() {
     const banner = document.getElementById('alertBanner');
     if (banner) {
@@ -277,7 +277,7 @@
     const priceFilter     = document.getElementById('priceFilter');
     const typeFilter      = document.getElementById('typeFilter');
     const resetFiltersBtn = document.getElementById('resetFilters');
-
+    
     // Result Counts & Loading State
     const resultsCount    = document.getElementById('resultsCount');
     const countNum        = document.getElementById('countNum');
@@ -291,11 +291,22 @@
     const subscriptionState = document.getElementById('subscriptionState');
     const successState = document.getElementById('successState');
     const alertSubmitBtn = document.getElementById('alertSubmitBtn');
+    
+    // FIXED: Selector for the dismiss button
+    const dismissAlertBtn = document.getElementById('dismissAlertBtn'); 
 
     // ===================== IMMEDIATE DISPLAY FIX =====================
     // Instantly hide skeleton and show grid if elements exist
     if (skeleton) skeleton.style.display = 'none';
     if (propertyGrid) propertyGrid.classList.remove('hidden');
+
+    // FIXED: Attach Event Listener for Dismiss Button
+    if (dismissAlertBtn) {
+      dismissAlertBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.dismissAlert();
+      });
+    }
 
     // ===================== SUBSCRIPTION LOGIC =====================
     if (alertForm) {
@@ -305,7 +316,7 @@
             // Get Email
             const emailInput = alertForm.querySelector('input[name="email"]');
             const email = emailInput.value.trim();
-            
+        
             if (!email) return;
 
             // Loading UI
@@ -336,7 +347,6 @@
                     setTimeout(() => {
                         window.dismissAlert();
                     }, 3000);
-
                 } else {
                     // ERROR STATE
                     alertMessage.textContent = data.message || 'Error subscribing. Try again.';
@@ -365,6 +375,7 @@
         const selectedType  = typeFilter ? typeFilter.value.toLowerCase() : '';
 
         const cards = document.querySelectorAll('.property-card');
+        
         let visibleCount = 0;
 
         cards.forEach(card => {
@@ -377,7 +388,7 @@
 
           // 2. Search Match (Title or Location)
           const matchesSearch = !searchTerm || 
-                                title.includes(searchTerm) || 
+                                title.includes(searchTerm) ||
                                 location.includes(searchTerm);
 
           // 3. Price Match (Handling Lakhs conversion)
@@ -385,7 +396,6 @@
           if (selectedPrice) {
             // Convert raw price to Lakhs (e.g., 5000000 -> 50)
             const priceInLakhs = price / 100000;
-
             if (selectedPrice === '100+') {
               matchesPrice = priceInLakhs >= 100;
             } else {
