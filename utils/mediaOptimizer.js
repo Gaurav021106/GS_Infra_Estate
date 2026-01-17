@@ -11,6 +11,10 @@ sharp.cache(false);
 // 2. Limit Sharp to 1 thread to play nice with shared vCPU
 sharp.concurrency(1);
 
+// [CRITICAL FIX] Disable Video Optimization on low-memory instances
+// Set this to true ONLY if you have >2GB RAM
+const ENABLE_VIDEO_OPTIMIZATION = false;
+
 // Set the path to the ffmpeg binary
 ffmpeg.setFfmpegPath(ffmpegPath);
 
@@ -67,7 +71,8 @@ const optimizeImage = async (filePath) => {
         fit: 'inside',
         withoutEnlargement: true 
       })
-      .webp({ quality: 75, effort: 3 }) // Effort 3 balances speed vs compression
+      // [FIX] Lower effort to 0 (fastest, least memory) vs default 4 or previous 3
+      .webp({ quality: 75, effort: 0 }) 
       .toFile(optimizedPath);
 
     // Remove original after optimization
@@ -96,9 +101,9 @@ const optimizeVideo = (filePath) => {
       .size('?x720')
       .outputOptions([
         '-crf 28',
-        '-preset veryfast', // 'veryfast' uses less CPU than default
+        '-preset ultrafast', // [FIX] Changed to ultrafast for min CPU/RAM usage
         '-movflags +faststart',
-        '-an' // Strip audio to save space (remove this line if audio is needed)
+        '-an' // Strip audio to save space
       ])
       .on('end', () => {
         deleteFile(filePath);
@@ -146,26 +151,28 @@ const optimizeBackground = async (propertyId, files) => {
       pushQueries.imageUrls = { $each: optimizedUrls };
     }
 
-    // 2. Process Videos (SEQUENTIAL LOOP)
+    // 2. Process Videos (SKIPPED BY DEFAULT TO SAVE RAM)
     if (files.videos && files.videos.length > 0) {
-      console.log(`🎥 Optimizing ${files.videos.length} videos...`);
-      
-      const rawUrls = files.videos.map(f => `/uploads/${f.filename}`);
-      const optimizedUrls = [];
-      
-      for (const file of files.videos) {
-        if (global.gc) global.gc();
+      if (ENABLE_VIDEO_OPTIMIZATION) {
+        console.log(`🎥 Optimizing ${files.videos.length} videos...`);
+        const rawUrls = files.videos.map(f => `/uploads/${f.filename}`);
+        const optimizedUrls = [];
         
-        const newPath = await optimizeVideo(file.path);
-        optimizedUrls.push(`/uploads/${path.basename(newPath)}`);
-      }
+        for (const file of files.videos) {
+          if (global.gc) global.gc();
+          const newPath = await optimizeVideo(file.path);
+          optimizedUrls.push(`/uploads/${path.basename(newPath)}`);
+        }
 
-      pullQueries.videoUrls = { $in: rawUrls };
-      pushQueries.videoUrls = { $each: optimizedUrls };
+        pullQueries.videoUrls = { $in: rawUrls };
+        pushQueries.videoUrls = { $each: optimizedUrls };
+      } else {
+         console.log('⚠️ Video optimization skipped (Memory Preservation Mode)');
+      }
     }
 
-    // 3. Process Virtual Tour
-    if (files.virtualTourFile && files.virtualTourFile[0]) {
+    // 3. Process Virtual Tour (Video-based)
+    if (files.virtualTourFile && files.virtualTourFile[0] && ENABLE_VIDEO_OPTIMIZATION) {
       console.log('🎥 Optimizing Virtual Tour...');
       const rawUrl = `/uploads/${files.virtualTourFile[0].filename}`;
       const newPath = await optimizeVideo(files.virtualTourFile[0].path);
@@ -179,9 +186,7 @@ const optimizeBackground = async (propertyId, files) => {
         
         // Handle Images
         if (pullQueries.imageUrls) {
-          // Filter out the raw URLs we just processed
           prop.imageUrls = prop.imageUrls.filter(url => !pullQueries.imageUrls.$in.includes(url));
-          // Add the new optimized URLs
           prop.imageUrls.push(...pushQueries.imageUrls.$each);
         }
 

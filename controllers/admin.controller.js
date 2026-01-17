@@ -13,6 +13,10 @@ const ADMIN_FALLBACK_EMAIL = 'gauravsaklani021106@gmail.com';
 // [MEMORY OPTIMIZATION] Select only fields needed for the dashboard card view
 const DASHBOARD_SELECT = 'title category price status location city imageUrls createdAt featured active';
 
+// [MEMORY FIX] Reduce limits to prevent OOM
+const DASHBOARD_LIMIT = 50; 
+const JSON_LIST_LIMIT = 100;
+
 // ======================= HELPERS =========================
 const wantsJson = (req) =>
   req.xhr ||
@@ -126,12 +130,12 @@ exports.logoutAdmin = (req, res) => {
 // ======================= DASHBOARD VIEW =================
 exports.dashboard = async (req, res) => {
   try {
-    // [MEMORY FIX] Select only necessary fields and use lean() to reduce object size
+    // [MEMORY FIX] Reduced limit from 500 to DASHBOARD_LIMIT (50)
     const [props, editingProperty] = await Promise.all([
       Property.find()
         .select(DASHBOARD_SELECT)
         .sort({ createdAt: -1 })
-        .limit(500) // Safety limit
+        .limit(DASHBOARD_LIMIT) 
         .lean(),
       req.query.id ? Property.findById(req.query.id).lean() : null,
     ]);
@@ -157,11 +161,11 @@ exports.dashboard = async (req, res) => {
 // ======================= LIST PROPERTIES JSON ===========
 exports.listPropertiesJson = async (req, res) => {
   try {
-    // [MEMORY FIX] Select only necessary fields
+    // [MEMORY FIX] Reduced limit from 1000 to JSON_LIST_LIMIT (100)
     const props = await Property.find()
       .select(DASHBOARD_SELECT)
       .sort({ createdAt: -1 })
-      .limit(1000)
+      .limit(JSON_LIST_LIMIT)
       .lean();
     const buckets = splitIntoAdminBuckets(props);
     res.json({ ok: true, ...buckets });
