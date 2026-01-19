@@ -2,25 +2,20 @@ const performanceMonitor = require('../utils/performanceMonitor');
 
 /**
  * Middleware to track request performance
+ * [OPTIMIZED] Uses 'finish' event to capture actual network time 
+ * and avoids double-counting (unlike overriding res.send/res.json).
  */
 const requestPerformanceMiddleware = (req, res, next) => {
   const startTime = Date.now();
 
-  // Override res.json to track when response is sent
-  const originalJson = res.json;
-  res.json = function(data) {
+  res.on('finish', () => {
     const duration = Date.now() - startTime;
-    performanceMonitor.recordRequest(duration, res.statusCode);
-    return originalJson.call(this, data);
-  };
-
-  // Override res.send for non-JSON responses
-  const originalSend = res.send;
-  res.send = function(data) {
-    const duration = Date.now() - startTime;
-    performanceMonitor.recordRequest(duration, res.statusCode);
-    return originalSend.call(this, data);
-  };
+    
+    // Don't log static asset requests (images, css, js) to keep logs clean
+    if (!req.url.match(/\.(css|js|jpg|png|gif|ico|svg|woff|ttf|eot|map)$/)) {
+        performanceMonitor.recordRequest(duration, res.statusCode);
+    }
+  });
 
   next();
 };
@@ -29,7 +24,6 @@ const requestPerformanceMiddleware = (req, res, next) => {
  * Middleware for tracking database query performance
  */
 const dbQueryMonitoringMiddleware = (req, res, next) => {
-  // Wrap mongoose to track query performance
   req.dbQueryStart = Date.now;
   req.recordDBQuery = (collection, operation = 'query') => {
     const duration = Date.now() - req.dbQueryStart();

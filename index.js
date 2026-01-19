@@ -8,6 +8,10 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
 const { connectDB, mongoose } = require('./config/db');
+
+// [PERFORMANCE] Import the Monitor Middleware
+const { requestPerformanceMiddleware } = require('./middleware/performanceMonitor');
+
 const publicRoutes = require('./routes/public.routes');
 const adminRoutes = require('./routes/admin.routes');
 const apiRoutes = require('./routes/api.routes');
@@ -20,17 +24,21 @@ const isProd = process.env.NODE_ENV === 'production';
 
 app.set('trust proxy', 1);
 
+// [PERFORMANCE] Activate the Monitor HERE (Must be before other app.use calls)
+app.use(requestPerformanceMiddleware);
+
 if (isProd) {
   app.set('view cache', true);
   app.enable('view cache');
 }
 
-app.use(compression({ level: 6, threshold: 1024 }));
+// [SPEED FIX] Level 1 is much faster (less CPU) than Level 6, better for latency
+app.use(compression({ level: 1, threshold: 1024 }));
 
 // [MEMORY FIX] Optimized In-Memory Cache
 app.locals.cache = new Map();
-const CACHE_DURATION = 300;
-const MAX_CACHE_SIZE = 50;
+const CACHE_DURATION = 300; // 5 minutes
+const MAX_CACHE_SIZE = 25;  // [MEMORY] Reduced from 50 to save RAM
 
 app.use((req, res, next) => {
   const isCacheable = req.method === 'GET' && !req.url.includes('admin');
@@ -38,18 +46,41 @@ app.use((req, res, next) => {
   
   const cacheKey = req.originalUrl || req.url;
   
-  // LRU-like eviction
-  if (app.locals.cache.size > MAX_CACHE_SIZE) {
-    const firstKey = app.locals.cache.keys().next().value;
-    app.locals.cache.delete(firstKey);
-  }
-
+  // 1. READ from Cache
   const cachedData = app.locals.cache.get(cacheKey);
   if (cachedData && Date.now() - cachedData.timestamp < CACHE_DURATION * 1000) {
     res.set('X-Cache', 'HIT');
+    
+    // [FIX] Restore original Content-Type
+    if (cachedData.contentType) {
+        res.set('Content-Type', cachedData.contentType);
+    }
+
+    if (typeof cachedData.data === 'string') return res.send(cachedData.data);
     return res.json(cachedData.data);
   }
   
+  // 2. WRITE to Cache
+  const originalSend = res.send;
+  res.send = function (body) {
+    // Only cache 200 OK responses
+    if (res.statusCode === 200) {
+        // Evict oldest if full
+        if (app.locals.cache.size >= MAX_CACHE_SIZE) {
+            const firstKey = app.locals.cache.keys().next().value;
+            app.locals.cache.delete(firstKey);
+        }
+        
+        // [FIX] Store Content-Type alongside data
+        app.locals.cache.set(cacheKey, { 
+            data: body, 
+            timestamp: Date.now(),
+            contentType: res.get('Content-Type') 
+        });
+    }
+    return originalSend.call(this, body);
+  };
+
   res.set('X-Cache', 'MISS');
   next();
 });
@@ -59,25 +90,63 @@ app.disable('x-powered-by');
 // [SECURITY]
 app.use(
   helmet({
-    contentSecurityPolicy: isProd
-      ? {
-          useDefaults: true,
-          directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:", "blob:"], // Added blob: for worker scripts
-            styleSrc: ["'self'", "'unsafe-inline'", "https:"],
-            fontSrc: ["'self'", "https:", "data:"],
-            imgSrc: ["'self'", "data:", "https:", "blob:"],
-            connectSrc: ["'self'", "https:", "wss:"],
-            frameSrc: ["'self'", "https:", "blob:"], // Allowed blob for 3D viewers
-            objectSrc: ["'none'"],
-            upgradeInsecureRequests: [],
-          },
-        }
-      : false,
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'", 
+          "'unsafe-eval'",
+          "https:",
+          "blob:",
+          "*.googletagmanager.com",
+          "*.google-analytics.com",
+          "cdn.jsdelivr.net"
+        ],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https:",
+          "fonts.googleapis.com",
+          "cdn.jsdelivr.net"
+        ],
+        imgSrc: [
+          "'self'",
+          "data:",
+          "https:",
+          "blob:",
+          "*.google-analytics.com",
+          "*.googletagmanager.com"
+        ],
+        fontSrc: [
+          "'self'",
+          "https:",
+          "data:",
+          "fonts.gstatic.com",
+          "cdn.jsdelivr.net"
+        ],
+        connectSrc: [
+          "'self'",
+          "https:",
+          "wss:",
+          "*.google-analytics.com",
+          "*.googletagmanager.com",
+          "stats.g.doubleclick.net",
+          "cdn.jsdelivr.net"
+        ],
+        frameSrc: [
+          "'self'",
+          "https:",
+          "blob:", 
+          "*.google.com"
+        ],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+      },
+    },
     crossOriginEmbedderPolicy: false,
     crossOriginResourcePolicy: { policy: 'cross-origin' },
-    hsts: isProd ? { maxAge: 31536000, includeSubDomains: true, preload: true } : false,
   })
 );
 
@@ -88,16 +157,13 @@ app.use(
     etag: true,
     lastModified: true,
     setHeaders: (res, filePath) => {
-      // 3D Model Optimization - Long Cache for heavy files
       if (filePath.match(/\.(glb|gltf|bin)$/)) {
         res.set('Cache-Control', 'public, max-age=31536000, immutable');
         res.set('Content-Type', filePath.endsWith('.glb') ? 'model/gltf-binary' : 'application/json');
       } 
-      // Images & Fonts
       else if (filePath.match(/\.(jpg|jpeg|png|gif|ico|svg|webp|woff|woff2|ttf|eot)$/)) {
         res.set('Cache-Control', 'public, max-age=31536000, immutable');
       } 
-      // CSS/JS
       else if (filePath.match(/\.(css|js)$/)) {
         res.set('Cache-Control', 'public, max-age=31536000, immutable');
       }
@@ -183,4 +249,5 @@ const PORT = process.env.PORT || 4000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🧠 Cache: ${isProd ? 'Enabled' : 'Disabled'}`);
+  console.log(`📊 Performance Monitor: Active`);
 });

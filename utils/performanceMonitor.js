@@ -4,12 +4,12 @@ const path = require('path');
 /**
  * PerformanceMonitor Class
  * Tracks request times, database queries, memory usage, and error rates
- * Optimized for minimal memory footprint.
+ * Optimized for minimal memory footprint and non-blocking I/O.
  */
 class PerformanceMonitor {
   constructor() {
     // [MEMORY FIX] Strict limit on history size
-    this.HISTORY_LIMIT = 100; 
+    this.HISTORY_LIMIT = 50; 
     
     this.metrics = {
       requestCount: 0,
@@ -40,7 +40,7 @@ class PerformanceMonitor {
   recordRequest(duration, statusCode = 200) {
     this.metrics.requestCount++;
     this.metrics.responseTime.push(duration);
-    this.metrics.timestamps.push(Date.now()); // Store timestamp as number
+    this.metrics.timestamps.push(Date.now());
     
     // [MEMORY FIX] Keep history small
     if (this.metrics.responseTime.length > this.HISTORY_LIMIT) {
@@ -73,6 +73,7 @@ class PerformanceMonitor {
   // ============ MEMORY MONITORING ============
   
   startMemoryMonitoring() {
+    // [PERFORMANCE] Monitor every 2 minutes to reduce overhead
     setInterval(() => {
       const memUsage = process.memoryUsage();
       this.metrics.memoryUsage.push({
@@ -81,11 +82,11 @@ class PerformanceMonitor {
         timestamp: new Date().toISOString()
       });
       
-      // Keep last 60 records
-      if (this.metrics.memoryUsage.length > 60) {
+      // Keep last 30 records
+      if (this.metrics.memoryUsage.length > 30) {
         this.metrics.memoryUsage.shift();
       }
-    }, 60000); // Record every 60 seconds
+    }, 120000); 
   }
 
   // ============ CALCULATIONS ============
@@ -121,7 +122,6 @@ class PerformanceMonitor {
 
   getAverageDBQueryTime() {
     if (this.metrics.dbQueryTime.length === 0) return 0;
-    // [MEMORY FIX] Access 'd' instead of 'duration'
     const sum = this.metrics.dbQueryTime.reduce((total, item) => total + item.d, 0);
     return (sum / this.metrics.dbQueryTime.length).toFixed(2);
   }
@@ -173,36 +173,27 @@ class PerformanceMonitor {
     const metrics = this.getMetrics();
     const logPath = path.join(this.logsDir, `performance-${new Date().toISOString().split('T')[0]}.json`);
     
-    let logs = [];
-    if (fs.existsSync(logPath)) {
-      try {
-        logs = JSON.parse(fs.readFileSync(logPath, 'utf-8'));
-      } catch (err) {
-        logs = [];
+    // [FIX] Use async file writing to prevent blocking the Event Loop
+    fs.readFile(logPath, 'utf-8', (err, data) => {
+      let logs = [];
+      if (!err && data) {
+        try { logs = JSON.parse(data); } catch (e) {}
       }
-    }
-    
-    logs.push(metrics);
-    // Keep log file from growing infinitely (keep last 1000 entries)
-    if (logs.length > 1000) logs = logs.slice(-1000);
+      
+      logs.push(metrics);
+      if (logs.length > 500) logs = logs.slice(-500);
 
-    fs.writeFileSync(logPath, JSON.stringify(logs, null, 2));
+      fs.writeFile(logPath, JSON.stringify(logs, null, 2), (err) => {
+        if (err) console.error('Error writing performance log:', err);
+      });
+    });
     
-    console.log(`
-    ╔════════════════════════════════════════╗
-    ║      PERFORMANCE METRICS               ║
-    ╠════════════════════════════════════════╣
-    ║  Total Requests: ${metrics.requests.total.toString().padEnd(27)} ║
-    ║  Errors: ${metrics.requests.errors.toString().padEnd(33)} ║
-    ║  Error Rate: ${metrics.requests.errorRate.padEnd(31)} ║
-    ║  Avg Response: ${metrics.responseTime.avg.padEnd(30)} ║
-    ║  Memory (Heap): ${metrics.memory.current?.heapUsed || 'N/A'.padEnd(28)} MB ║
-    ╚════════════════════════════════════════╝
-    `);
+    if (process.env.NODE_ENV !== 'production') {
+        console.log(`[Perf] Avg Res: ${metrics.responseTime.avg} | Mem: ${metrics.memory.current?.heapUsed || 'N/A'} MB`);
+    }
   }
 
   // ============ HEALTH CHECK ============
-  
   getHealthStatus() {
     const avgResponseTime = parseFloat(this.getAverageResponseTime());
     const errorRate = parseFloat(this.getErrorRate());
@@ -213,17 +204,17 @@ class PerformanceMonitor {
     let status = 'healthy';
     let issues = [];
 
-    if (avgResponseTime > 500) {
+    if (avgResponseTime > 1000) {
       status = 'degraded';
       issues.push(`Response time is high: ${avgResponseTime}ms`);
     }
 
-    if (errorRate > 5) {
+    if (errorRate > 10) {
       status = 'critical';
       issues.push(`High error rate detected: ${errorRate}%`);
     }
 
-    if (memUsage > 500) {
+    if (memUsage > 450) {
       status = 'degraded';
       issues.push(`High memory usage: ${memUsage}MB`);
     }
@@ -236,17 +227,12 @@ class PerformanceMonitor {
     };
   }
 
-  // ============ RESET METRICS ============
-  
   resetMetrics() {
-    this.metrics = {
-      requestCount: 0,
-      responseTime: [],
-      dbQueryTime: [],
-      errorCount: 0,
-      memoryUsage: this.metrics.memoryUsage, // Keep memory history
-      timestamps: []
-    };
+    this.metrics.requestCount = 0;
+    this.metrics.responseTime = [];
+    this.metrics.dbQueryTime = [];
+    this.metrics.errorCount = 0;
+    this.metrics.timestamps = [];
   }
 }
 

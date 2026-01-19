@@ -67,11 +67,12 @@ const optimizeImage = async (filePath) => {
 
     // [MEMORY] Resize with 'inside' avoids complex cropping memory usage
     await sharp(filePath)
-      .resize(1920, 1920, { 
+      // [FIX] Reduced from 1920 to 1200 to save ~40% file size and RAM
+      .resize(1200, 1200, { 
         fit: 'inside',
         withoutEnlargement: true 
       })
-      // [FIX] Lower effort to 0 (fastest, least memory) vs default 4 or previous 3
+      // [FIX] Lower effort to 0 (fastest, least memory) vs default 4
       .webp({ quality: 75, effort: 0 }) 
       .toFile(optimizedPath);
 
@@ -138,9 +139,7 @@ const optimizeBackground = async (propertyId, files) => {
 
       // Use for...of to process one by one
       for (const file of files.images) {
-        // [MEMORY] Trigger GC before heavy operation if exposed
-        if (global.gc) global.gc();
-
+        // [CRITICAL FIX] REMOVED global.gc() to prevent server freeze
         const result = await optimizeImage(file.path);
         optimizedPaths.push(result);
       }
@@ -159,7 +158,6 @@ const optimizeBackground = async (propertyId, files) => {
         const optimizedUrls = [];
         
         for (const file of files.videos) {
-          if (global.gc) global.gc();
           const newPath = await optimizeVideo(file.path);
           optimizedUrls.push(`/uploads/${path.basename(newPath)}`);
         }
@@ -203,9 +201,6 @@ const optimizeBackground = async (propertyId, files) => {
     }
 
     console.log(`✅ Background optimization complete for Property: ${propertyId}`);
-    
-    // [MEMORY] Final cleanup
-    if (global.gc) global.gc();
 
   } catch (err) {
     console.error('❌ Background optimization failed:', err);

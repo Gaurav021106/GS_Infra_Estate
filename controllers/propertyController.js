@@ -11,7 +11,6 @@ const {
 const PROPERTIES_PER_PAGE = 12;
 const VALID_CITIES = ['dehradun', 'rishikesh', 'haridwar'];
 
-// Map UI filters (query ?type=) to NEW schema categories
 const UI_TYPE_TO_CATEGORY = {
   residential: 'residential_properties',
   commercial: 'commercial_plots',
@@ -21,7 +20,6 @@ const UI_TYPE_TO_CATEGORY = {
   investment: 'premium_investment',
 };
 
-// Map URL slugs (/residential-in-dehradun) to NEW schema categories
 const SLUG_TYPE_TO_CATEGORY = {
   residential: 'residential_properties',
   'commercial-plots': 'commercial_plots',
@@ -29,9 +27,9 @@ const SLUG_TYPE_TO_CATEGORY = {
   'premium-investment': 'premium_investment',
 };
 
-// Listing and detail field sets
-const LISTING_FIELDS =
-  'title price city locality imageUrls category status createdAt seoMetaDescription location pincode';
+// [OPTIMIZATION] Listing fields reduced to minimal set
+const LISTING_FIELDS = 'title price city locality imageUrls category status builtupArea plotSize'; 
+
 const DETAIL_FIELDS =
   'title description price location city state locality pincode category suitableFor status imageUrls videoUrls map3dUrl virtualTourUrl searchTags seoMetaDescription createdAt contactName contactPhone contactEmail features amenities landmarks plotSize builtupArea dimensions facing roadWidth ownership priceNote mapEmbed';
 
@@ -40,12 +38,10 @@ const buildFilterAndSort = (req, extraFilter = {}) => {
   const { type, budget, locality, sort } = req.query;
   const filter = { ...extraFilter };
 
-  // type → category
   if (type && UI_TYPE_TO_CATEGORY[type]) {
     filter.category = UI_TYPE_TO_CATEGORY[type];
   }
 
-  // budget → price range
   if (budget) {
     const priceCond = {};
     if (budget === '0-30') {
@@ -62,12 +58,10 @@ const buildFilterAndSort = (req, extraFilter = {}) => {
     if (Object.keys(priceCond).length) filter.price = priceCond;
   }
 
-  // locality (partial, case-insensitive)
   if (locality) {
     filter.locality = new RegExp(locality, 'i');
   }
 
-  // sort
   let sortObj = { createdAt: -1 };
   if (sort === 'price-low') sortObj = { price: 1 };
   else if (sort === 'price-high') sortObj = { price: -1 };
@@ -139,7 +133,6 @@ const getPropertiesByCity = async (req, res) => {
     const baseUrl =
       process.env.BASE_URL || 'https://gsinfraandestates.com';
 
-    // Add cache headers for better performance
     res.set({
       'Cache-Control': 'public, max-age=300, must-revalidate',
       'X-Content-Type-Options': 'nosniff',
@@ -306,7 +299,7 @@ const getPropertyDetail = async (req, res) => {
   try {
     let { slug, id } = req.params; // /property/:slug-:id
 
-    // [FIX] Strict ID check to handle route ambiguity
+    // [FIX] Strict ID check
     if (!mongoose.Types.ObjectId.isValid(id)) {
       console.warn('Invalid property id in URL:', id);
       return res.status(404).render('pages/404', {
@@ -327,7 +320,6 @@ const getPropertyDetail = async (req, res) => {
       });
     }
 
-    // Slug normalisation
     const correctSlug = String(property.title || '')
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
@@ -370,7 +362,6 @@ const getPropertyDetail = async (req, res) => {
       property.seoMetaDescription || property.description || ''
     ).substring(0, 155);
 
-    // [FIX] Added 'referrer' here to prevent EJS ReferenceError
     res.render('pages/property-detail', {
       pageTitle,
       metaDescription,

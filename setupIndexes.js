@@ -15,7 +15,7 @@ function ignoreExistingIndex(err) {
 
 async function main() {
   try {
-    // Connect to MongoDB (same style as db.js)
+    // Connect to MongoDB
     await mongoose.connect(MONGODB_URI, {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
@@ -28,6 +28,19 @@ async function main() {
     const alert = db.collection('alertsubscribers');
 
     // ===== Property indexes =====
+    
+    // [OPTIMIZATION] Matches getPropertiesByTypeAndCity query perfectly:
+    // Filter: { city: ..., status: 'available', category: ... }
+    // Sort: { createdAt: -1 }
+    await prop
+      .createIndex({ city: 1, status: 1, category: 1, createdAt: -1 }, { background: true })
+      .catch(ignoreExistingIndex);
+
+    // [OPTIMIZATION] Text index for "Locality" search
+    await prop
+        .createIndex({ locality: "text", title: "text" }, { background: true })
+        .catch(ignoreExistingIndex);
+
     await prop
       .createIndex({ city: 1, active: 1 }, { background: true })
       .catch(ignoreExistingIndex);
@@ -57,8 +70,6 @@ async function main() {
       .createIndex({ userId: 1 }, { background: true })
       .catch(ignoreExistingIndex);
 
-    // DO NOT create { email: 1 } again; AlertSubscriber has unique email index via schema
-
     console.log('🎉 All indexes created successfully (existing ones skipped)!');
     await mongoose.disconnect();
     process.exit(0);
@@ -69,7 +80,7 @@ async function main() {
   }
 }
 
-// Safety timeout in case connection hangs
+// Safety timeout
 setTimeout(() => {
   console.error('❌ Connection timeout');
   process.exit(1);
